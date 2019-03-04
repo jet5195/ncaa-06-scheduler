@@ -60,7 +60,7 @@ public class Game {
         this.awayTeam = awayTeam;
     }
 
-    private int getTime() {
+    public int getTime() {
         return time;
     }
 
@@ -68,7 +68,7 @@ public class Game {
         this.time = time;
     }
 
-    private int getDay() {
+    public int getDay() {
         return day;
     }
 
@@ -108,7 +108,7 @@ public class Game {
         this.gameNumber = gameNumber;
     }
 
-    private boolean isRivalryGame() {
+    public boolean isRivalryGame() {
         for (int i = 0; i < this.getHomeTeam().getRivals().size(); i++) {
             if (this.getHomeTeam().getRivals().get(i).getName().equals(this.getAwayTeam().getName())) {
                 return true;
