@@ -60,7 +60,7 @@ public class Game {
         this.awayTeam = awayTeam;
     }
 
-    public int getTime() {
+    private int getTime() {
         return time;
     }
 
@@ -68,7 +68,7 @@ public class Game {
         this.time = time;
     }
 
-    public int getDay() {
+    private int getDay() {
         return day;
     }
 
@@ -108,7 +108,7 @@ public class Game {
         this.gameNumber = gameNumber;
     }
 
-    public boolean isRivalryGame() {
+    private boolean isRivalryGame() {
         for (int i = 0; i < this.getHomeTeam().getRivals().size(); i++) {
             if (this.getHomeTeam().getRivals().get(i).getName().equals(this.getAwayTeam().getName())) {
                 return true;
@@ -123,10 +123,7 @@ public class Game {
     }
 
     public boolean isRemovableGame(){
-        if (this.getConferenceGame()==0 && !this.isRivalryGame()){
-            return true;
-        }
-        return false;
+        return this.getConferenceGame() == 0 && !this.isRivalryGame();
     }
 
     public ArrayList gameToList(){

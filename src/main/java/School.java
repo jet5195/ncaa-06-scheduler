@@ -1,7 +1,3 @@
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
 public class School {
     private int tgid;
     private String name;
@@ -92,6 +88,21 @@ public class School {
 
     public Schedule getSchedule() {
         return schedule;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public Game findRemovableGame() {
+        for (int i = 0; i < this.getSchedule().size(); i++) {
+            Game theGame = this.getSchedule().get(i);
+            //0 means non-con
+            if (theGame.isRemovableGame()) {
+                return theGame;
+            }
+        }
+        return null;
     }
 
     @Override

@@ -1,27 +1,41 @@
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
 import java.util.LinkedList;
 
 public class SchoolList extends LinkedList<School> {
+    static {
+        PropertyConfigurator.configure("src/main/resources/log4j.properties");
+    }
+    private final Logger LOGGER = Logger.getLogger(SchoolList.class.getName());
+
+    /**
+     * @param school the String name of the School you are searching for
+     * @return School with the same name as the the parameter inputted
+     */
     public School schoolSearch(String school){
-        for (int i = 0; i < this.size(); i++) {
-            School theSchool = this.get(i);
-            if (theSchool.getName().equals(school)){
+        for (School theSchool : this) {
+            if (theSchool.getName().equals(school)) {
                 return theSchool;
             }
         }
-        System.out.println(school + " could not be found, please check your spelling and try again.");
+        LOGGER.warn(school + " could not be found, please check your spelling and try again.");
         return null;
     }
 
+    /**
+     * @param tgid the tgid of the school you are searching for
+     * @return School with the same tgid as the parameter inputted
+     */
     public School schoolSearch(int tgid){
-        for (int i = 0; i < this.size(); i++) {
-            School theSchool = this.get(i);
-            if (theSchool.getTgid() == tgid){
+        for (School theSchool : this) {
+            if (theSchool.getTgid() == tgid) {
                 return theSchool;
             }
         }
-        School newSchool = new School(tgid, "null", "null", "null", "null", "null");
+        School newSchool = new School(tgid, "null", "null", "null", "null", "FCS");
         this.add(newSchool);
-/*        System.out.println(tgid + " is being added (probably an FCS team)");*/
+        LOGGER.warn(tgid + " could not be found. (This may be an FCS team that is missing in your excel document)");
         return newSchool;
     }
 
@@ -38,5 +52,35 @@ public class SchoolList extends LinkedList<School> {
                 theSchool.setUserTeam(true);
             }
         }
+    }
+
+    /**
+     *
+     * @return SchoolList of schools with > 12 games
+     */
+    public SchoolList findTooManyGames(){
+        SchoolList tooManyGames = new SchoolList();
+        for (int i = 0; i < this.size(); i++) {
+            School theSchool = this.get(i);
+            if (theSchool.getDivision().equals("FBS") && theSchool.getSchedule().size() > 12) {
+                tooManyGames.add(theSchool);
+            }
+        }
+        return tooManyGames;
+    }
+
+    /**
+     *
+     * @return SchoolList of schools with < 12 games
+     */
+    public SchoolList findTooFewGames() {
+        SchoolList tooFewGames = new SchoolList();
+        for (int i = 0; i < this.size(); i++) {
+            School theSchool = this.get(i);
+            if (theSchool.getSchedule().size() < 12 && theSchool.getDivision().equals("FBS")) {
+                tooFewGames.add(theSchool);
+            }
+        }
+        return tooFewGames;
     }
 }

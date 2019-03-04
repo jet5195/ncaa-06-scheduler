@@ -3,22 +3,18 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
-public class ExcelReader {
+class ExcelReader {
     public static final String SAMPLE_XLSX_FILE_PATH = "src/main/resources/SCHED.xlsx";
 
     private static Workbook readExcel(String path) throws IOException {
 
         // Creating a Workbook from an Excel file (.xls or .xlsx)
-        Workbook workbook = WorkbookFactory.create(new File(path));
+        return WorkbookFactory.create(new File(path));
         //workbook.close();
-        return workbook;
     }
 
     public static SchoolList getSchoolData(String path) throws IOException {
