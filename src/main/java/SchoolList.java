@@ -21,7 +21,7 @@ public class SchoolList extends LinkedList<School> {
         }
         School newSchool = new School(tgid, "null", "null", "null", "null", "null");
         this.add(newSchool);
-        System.out.println(tgid + " is being added");
+/*        System.out.println(tgid + " is being added (probably an FCS team)");*/
         return newSchool;
     }
 

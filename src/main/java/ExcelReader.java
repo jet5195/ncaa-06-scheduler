@@ -17,13 +17,6 @@ public class ExcelReader {
 
         // Creating a Workbook from an Excel file (.xls or .xlsx)
         Workbook workbook = WorkbookFactory.create(new File(path));
-
-        // 2. Or you can use a for-each loop
-        System.out.println("Retrieving Sheets using for-each loop");
-        for(Sheet sheet: workbook) {
-            System.out.println("=> " + sheet.getSheetName());
-        }
-        // Closing the workbook
         //workbook.close();
         return workbook;
     }
@@ -37,7 +30,6 @@ public class ExcelReader {
         DataFormatter dataFormatter = new DataFormatter();
         //LinkedList<School> schools = new LinkedList<School>();
         // 2. Or you can use a for-each loop to iterate over the rows and columns
-        System.out.println("\n\nIterating over Rows and Columns using for-each loop\n");
         SchoolList allSchools = new SchoolList();
         int r = 0;
         for (Row row: sheet) {
@@ -52,7 +44,7 @@ public class ExcelReader {
                 if(dataFormatter.formatCellValue(row.getCell(0))!="") {
                     for (Cell cell : row) {
                         String cellValue = dataFormatter.formatCellValue(cell);
-                        System.out.print(cellValue + "\t");
+                        //System.out.print(cellValue + "\t");
                         switch (c) {
                             case 0:
                                 tgid = Integer.parseInt(cellValue);
@@ -76,7 +68,7 @@ public class ExcelReader {
                         c++;
                     }//end col iterator
                     allSchools.add(new School(tgid, university, nickname, state, conf, div));
-                    System.out.println();
+                    //System.out.println();
                 }//end of if not null
             }//end of row iterator
             r++;
@@ -116,7 +108,7 @@ public class ExcelReader {
         DataFormatter dataFormatter = new DataFormatter();
         //LinkedList<School> schools = new LinkedList<School>();
         // 2. Or you can use a for-each loop to iterate over the rows and columns
-        System.out.println("\n\nIterating over Rows and Columns using for-each loop\n");
+        /*System.out.println("\n\nIterating over Rows and Columns using for-each loop\n");*/
         Schedule theSchedule = new Schedule();
         int r = 0;
         for (Row row: sheet) {

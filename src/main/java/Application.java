@@ -1,22 +1,47 @@
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Application {
-    static boolean debug = true;
+    static boolean debug = false;
     static int year = 2021;
     static School nullSchool = new School(999, "null", "null", "null", "null", "null");
 
     public static void main(String[] args) throws IOException {
-        final String data = "src/main/resources/School_Data_3.xlsx";
-        final String schedule = "src/main/resources/SCHED.xlsx";
-        SchoolList allSchools = ExcelReader.getSchoolData(data);
-        Schedule theSchedule = ExcelReader.getScheduleData(schedule, allSchools);
-        aggressiveAddRivalryGames(theSchedule, allSchools);
-        verifyFewerThan13Games(theSchedule, allSchools);
-        verifyMoreThan11Games(theSchedule, allSchools);
+        commandLineUI();
+    }
+
+    public static void commandLineUI() throws IOException {
+        final String schoolsFile = "src/main/resources/My_Custom_Conferences.xlsx";
+        final String scheduleFile = "src/main/resources/SCHED.xlsx";
+        SchoolList allSchools = ExcelReader.getSchoolData(schoolsFile);
+        Schedule theSchedule = ExcelReader.getScheduleData(scheduleFile, allSchools);
+        System.out.println("Welcome to the NCAA Football 06 Scheduler");
+        System.out.println("Would you like to automatically add rivalry games?");
+        System.out.println("(Y/N)");
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while(!exit) {
+            String input = scanner.next();
+            if (input.equalsIgnoreCase("Y")) {
+                addRivalryGamesOption(theSchedule, allSchools);
+                exit = true;
+            } else if (input.equalsIgnoreCase("N")) {
+                exit = true;
+            } else {
+                System.out.println(input + " is not a valid response. Enter 'Y' or 'N");
+            }
+        }
+
+    }
+
+    public static void addRivalryGamesOption(Schedule schedule, SchoolList schoolList) throws IOException {
+        aggressiveAddRivalryGames(schedule, schoolList);
+        verifyFewerThan13Games(schedule, schoolList);
+        verifyMoreThan11Games(schedule, schoolList);
         //write to excel
-        ExcelReader.write(theSchedule);
+        ExcelReader.write(schedule);
         System.out.println("done");
 
     }
