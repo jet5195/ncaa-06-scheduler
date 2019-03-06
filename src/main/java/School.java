@@ -7,7 +7,7 @@ public class School {
     private String division; //fbs or fcs
     private SchoolList rivals;
     private boolean userTeam;
-    private Schedule schedule= new Schedule();
+    private SchoolSchedule schedule = new SchoolSchedule();
 
     public School(int tgid, String name, String nickname, String state, String conference, String division){
         this.tgid = tgid;
@@ -86,7 +86,7 @@ public class School {
         this.schedule.add(theGame);
     }
 
-    public Schedule getSchedule() {
+    public SchoolSchedule getSchedule() {
         return schedule;
     }
 
@@ -103,6 +103,31 @@ public class School {
             }
         }
         return null;
+    }
+
+    public void printSchedule(){
+        int i = 0;
+        int lastWeek = -1;
+        while(i<this.getSchedule().size()){
+            int nextWeek = 100;//random high number
+            for (int j = 0; j < this.getSchedule().size(); j++) {
+                if (this.getSchedule().get(j).getWeek()<nextWeek && this.getSchedule().get(j).getWeek()>lastWeek){
+                    nextWeek = this.getSchedule().get(j).getWeek();
+                }
+            }
+
+            System.out.print(i+1 + ". ");
+            Game game = this.getSchedule().getGame(nextWeek);
+            System.out.print(this);
+            if (this.getTgid() == game.getHomeTeam().getTgid()) {
+                System.out.print(" vs " + game.getAwayTeam());
+            } else {
+                System.out.print(" at " + game.getHomeTeam());
+            }
+            System.out.println(" (week " + (nextWeek + 1) + ")");
+            i++;
+            lastWeek = nextWeek;
+        }
     }
 
     @Override

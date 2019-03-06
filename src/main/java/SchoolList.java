@@ -1,6 +1,6 @@
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class SchoolList extends LinkedList<School> {
@@ -15,12 +15,34 @@ public class SchoolList extends LinkedList<School> {
      */
     public School schoolSearch(String school){
         for (School theSchool : this) {
-            if (theSchool.getName().equals(school)) {
+            if (theSchool.getName().equalsIgnoreCase(school)) {
                 return theSchool;
             }
         }
         LOGGER.warn(school + " could not be found, please check your spelling and try again.");
         return null;
+    }
+
+    public SchoolList conferenceSearch(String conf){
+        SchoolList conference = new SchoolList();
+        for (int i = 0; i < this.size(); i++) {
+            School school = this.get(i);
+            if (school.getConference().equalsIgnoreCase(conf)){
+                conference.add(school);
+            }
+        }
+        return conference;
+    }
+
+    public ArrayList<String> getConferences(){
+        ArrayList<String> conferences = new ArrayList();
+        for (int i = 0; i < this.size(); i++) {
+            School school = this.get(i);
+            if (!conferences.contains(school.getConference())){
+                conferences.add(school.getConference());
+            }
+        }
+        return conferences;
     }
 
     /**
@@ -33,10 +55,8 @@ public class SchoolList extends LinkedList<School> {
                 return theSchool;
             }
         }
-        School newSchool = new School(tgid, "null", "null", "null", "null", "FCS");
-        this.add(newSchool);
         LOGGER.warn(tgid + " could not be found. (This may be an FCS team that is missing in your excel document)");
-        return newSchool;
+        return null;
     }
 
     public void populateUserSchools() {

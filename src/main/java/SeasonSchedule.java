@@ -1,23 +1,20 @@
 import java.util.ArrayList;
-import java.util.LinkedList;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
-public class Schedule extends LinkedList<Game> {
+public class SeasonSchedule extends SchoolSchedule {
 
-    static {
-        PropertyConfigurator.configure("src/main/resources/log4j.properties");
+    private SeasonSchedule bowlSchedule;
+
+    private final Logger LOGGER = Logger.getLogger(SeasonSchedule.class.getName());
+
+    public SeasonSchedule getBowlSchedule() {
+        return bowlSchedule;
     }
-    private final Logger LOGGER = Logger.getLogger(Schedule.class.getName());
 
-    public Game getGame(int week){
-        for (Game game : this) {
-            if (game.getWeek() == week) {
-                return game;
-            }
-        }
-        return null;
+    public void setBowlSchedule(SeasonSchedule bowlSchedule) {
+        this.bowlSchedule = bowlSchedule;
     }
+
 
     public void addGame(School s1, School s2, int week, int day, int year) {
         addGame(s1, s2, week, day, findGameNumber(week), year);
@@ -32,14 +29,6 @@ public class Schedule extends LinkedList<Game> {
         s2.addGame(newGame);
         this.add(newGame);//decide if this is actually how you want to add games.. if doing it like this I will just have to go through and remake the schedule in the end. Best solution is to make a addGame method.. NO make schedule its own new object that extends a list and change the add method.. or add to it
         LOGGER.info("Adding game " + s1.getName() + " vs " + s2.getName());
-    }
-
-    private int findGameNumber(int week) {
-        int gameNumber = 0;
-        for (Game theGame : this) {
-            gameNumber = theGame.getWeek() == week && gameNumber < theGame.getGameNumber() ? theGame.getGameNumber() : gameNumber;
-        }
-        return ++gameNumber;
     }
 
     public void removeGame(Game theGame) {
@@ -73,17 +62,54 @@ public class Schedule extends LinkedList<Game> {
         }
     }
 
+    public void removeAllFcsGames(){
+        for (int i = 0; i < this.size(); i++) {
+            Game game = this.get(i);
+            if (game.getHomeTeam().getDivision().equalsIgnoreCase("FCS")||game.getAwayTeam().getDivision().equalsIgnoreCase("FCS")){
+                this.removeGame(game);
+                i--;
+            }
+        }
+    }
+
+    public void removeAllNonConferenceGames(boolean removeRivals){
+        for (int i = 0; i < this.size(); i++) {
+            Game game = this.get(i);
+            if (!game.getHomeTeam().getConference().equalsIgnoreCase(game.getAwayTeam().getConference())){
+                if (removeRivals) {
+                    this.removeGame(game);
+                    i--;
+                } else if (!game.isRivalryGame()){
+                    this.removeGame(game);
+                    i--;
+                }
+            }
+        }
+    }
+
     /**
-     * @return ArrayList of Strings of the Schedule
+     * @return ArrayList of Strings of the SeasonSchedule
      */
-    public ArrayList scheduleToList(){
+    public ArrayList scheduleToList(boolean header){
         ArrayList<ArrayList> list = new ArrayList();
-        ArrayList<String> firstLine = new ArrayList();
-        firstLine.add("GSTA"); firstLine.add("GASC"); firstLine.add("GHSC"); firstLine.add("GTOD");
-        firstLine.add("GATG"); firstLine.add("GHTG"); firstLine.add("SGNM"); firstLine.add("SEWN");
-        firstLine.add("GDAT"); firstLine.add("GFOT"); firstLine.add("SEWT"); firstLine.add("GFFU");
-        firstLine.add("GFHU"); firstLine.add("GMFX"); firstLine.add(String.valueOf(this.size()));
-        list.add(firstLine);
+        if (header) {
+            ArrayList<String> firstLine = new ArrayList();
+            firstLine.add("GSTA");
+            firstLine.add("GASC");
+            firstLine.add("GHSC");
+            firstLine.add("GTOD");
+            firstLine.add("GATG");
+            firstLine.add("GHTG");
+            firstLine.add("SGNM");
+            firstLine.add("SEWN");
+            firstLine.add("GDAT");
+            firstLine.add("GFOT");
+            firstLine.add("SEWT");
+            firstLine.add("GFFU");
+            firstLine.add("GFHU");
+            firstLine.add("GMFX");
+            list.add(firstLine);
+        }
         for (Game game : this) {
             list.add(game.gameToList());
         }

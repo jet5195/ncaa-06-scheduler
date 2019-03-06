@@ -1,15 +1,11 @@
-
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
 class ExcelReader {
-    public static final String SAMPLE_XLSX_FILE_PATH = "src/main/resources/SCHED.xlsx";
-
     private static Workbook readExcel(String path) throws IOException {
 
         // Creating a Workbook from an Excel file (.xls or .xlsx)
@@ -91,11 +87,8 @@ class ExcelReader {
         return allSchools;
     }
 
-    public static Schedule getScheduleData(String path, SchoolList allSchools) throws IOException {
-
-        School nullSchool = new School(999, "null", "null", "null", "null", "null");
-
-
+    public static SeasonSchedule getScheduleData(String path, SchoolList allSchools) throws IOException {
+        School bowlSchool = new School(511, "Bowl", "Bowl", "Bowl", "Bowl", "Bowl");
         Workbook workbook = readExcel(path);
         // Getting the Sheet at index zero
         Sheet sheet = workbook.getSheetAt(0);
@@ -105,7 +98,8 @@ class ExcelReader {
         //LinkedList<School> schools = new LinkedList<School>();
         // 2. Or you can use a for-each loop to iterate over the rows and columns
         /*System.out.println("\n\nIterating over Rows and Columns using for-each loop\n");*/
-        Schedule theSchedule = new Schedule();
+        SeasonSchedule seasonSchedule = new SeasonSchedule();
+        SeasonSchedule bowlSchedule = new SeasonSchedule();
         int r = 0;
         for (Row row: sheet) {
             int gtod = 0;//time of day 3
@@ -154,37 +148,50 @@ class ExcelReader {
                     }
                     c++;
                 }
-                awaySchool = allSchools.schoolSearch(gatg);
-                homeSchool = allSchools.schoolSearch(ghtg);
-
-                //System.out.println();
-                Game newGame = new Game(gtod, awaySchool, homeSchool, sgnm, sewn, gdat, gffu, gmfx);
-                awaySchool.addGame(newGame);
-                homeSchool.addGame(newGame);
-                theSchedule.add(newGame);
+                if (ghtg!=511) {//don't add bowl games
+                    awaySchool = allSchools.schoolSearch(gatg);
+                    homeSchool = allSchools.schoolSearch(ghtg);
+                    if (awaySchool == null){
+                        awaySchool = new School(gatg, "null", "null", "null", "null", "FCS");
+                        awaySchool.setRivals(new SchoolList());
+                        allSchools.add(awaySchool);
+                    }
+                    if (homeSchool == null){
+                        homeSchool = new School(ghtg, "null", "null", "null", "null", "FCS");
+                        homeSchool.setRivals(new SchoolList());
+                        allSchools.add(homeSchool);
+                    }
+                    Game newGame = new Game(gtod, awaySchool, homeSchool, sgnm, sewn, gdat, gffu, gmfx);
+                    awaySchool.addGame(newGame);
+                    homeSchool.addGame(newGame);
+                    seasonSchedule.add(newGame);
+                } else {
+                    bowlSchedule.add(new Game(gtod, bowlSchool, bowlSchool, sgnm, sewn, gdat, gffu, gmfx));
+                }
             }
             r++;
         }
 
         allSchools.populateUserSchools();
-        return theSchedule;
+        seasonSchedule.setBowlSchedule(bowlSchedule);
+        return seasonSchedule;
     }
 
-    public static void addGame(){
-        //code to add a game to the spreadsheet
-    }
-
-    public static void removeGame(){
-        //code to remove game from the spreadsheet
-    }
-
-    public static void write(Schedule theSchedule) throws IOException {
+    public static void write(SeasonSchedule seasonSchedule) throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet();
-        ArrayList<ArrayList> list = theSchedule.scheduleToList();
-        for (int i = 0; i < list.size(); i++) {
+        ArrayList<ArrayList> list = seasonSchedule.scheduleToList(true);
+        int i = 0;
+        while (i < list.size()) {
             addLine(sheet, list.get(i), i);
+            i++;
         }
+        ArrayList<ArrayList> bowlList = seasonSchedule.getBowlSchedule().scheduleToList(false);
+        for (int j = 0; j < bowlList.size(); j++) {
+            addLine(sheet, bowlList.get(j), i);
+            i++;
+        }
+        sheet.getRow(0).createCell(14).setCellValue(String.valueOf(i-1));
         FileOutputStream fileOut = new FileOutputStream("output.xlsx");
         workbook.write(fileOut);
         fileOut.close();
