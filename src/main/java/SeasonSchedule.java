@@ -24,7 +24,6 @@ public class SeasonSchedule extends SchoolSchedule {
     private void addGame(School s1, School s2, int week, int day, int gameNumber, int year) {
         //this if statement is so rivalry games switch back and forth from year to year
         Game newGame = year % 2 == 0 ? new Game(s1, s2, gameNumber, week, day) : new Game(s2, s1, gameNumber, week, day);
-
         s1.addGame(newGame);
         s2.addGame(newGame);
         this.add(newGame);//decide if this is actually how you want to add games.. if doing it like this I will just have to go through and remake the schedule in the end. Best solution is to make a addGame method.. NO make schedule its own new object that extends a list and change the add method.. or add to it

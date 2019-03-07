@@ -105,6 +105,29 @@ public class School {
         return null;
     }
 
+    public boolean isInConference(School school){
+        return this.getConference().equalsIgnoreCase(school.getConference());
+    }
+
+    public boolean isOpponent(School school) {
+        for (int i = 0; i < this.getSchedule().size(); i++) {
+            if (this.getSchedule().get(i).getHomeTeam() != null && this.getSchedule().get(i).getAwayTeam() != null) {
+                if (this.getSchedule().get(i).getHomeTeam().getTgid() == school.getTgid() ||
+                        this.getSchedule().get(i).getAwayTeam().getTgid() == school.getTgid()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isPossibleOpponent(School school){
+        if (!this.isInConference(school) && !this.isOpponent(school)){
+            return true;
+        }
+        return false;
+    }
+
     public void printSchedule(){
         int i = 0;
         int lastWeek = -1;
