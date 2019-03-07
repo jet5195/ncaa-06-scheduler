@@ -1,6 +1,7 @@
+import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 
-public class Game {
+public class Game implements Comparable{
     private School homeTeam;//ghtg
     private School awayTeam;//gatg
     private int time;//gtod 750, 930, 1080, 1200,
@@ -123,10 +124,7 @@ public class Game {
     }
 
     public boolean isRemovableGame(){
-        if (this.getConferenceGame()==0 && !this.isRivalryGame()){
-            return true;
-        }
-        return false;
+        return this.getConferenceGame() == 0 && !this.isRivalryGame();
     }
 
     public ArrayList gameToList(){
@@ -159,5 +157,10 @@ public class Game {
             i++;
         }
         return list;
+    }
+
+    public int compareTo(@NotNull Object game2){
+        int compareWeek=((Game)game2).getWeek();
+        return this.getWeek()-compareWeek;
     }
 }

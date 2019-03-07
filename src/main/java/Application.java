@@ -1,45 +1,421 @@
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Scanner;
 
-public class Application {
-    static boolean debug = true;
-    static int year = 2021;
-    static School nullSchool = new School(999, "null", "null", "null", "null", "null");
+class Application {
+    private static boolean debug = false;
+    private static int year = 2021;
+    private static final School nullSchool = new School(999, "null", "null", "null", "null", "null");
+
+    private final Logger LOGGER = Logger.getLogger(Application.class.getName());
 
     public static void main(String[] args) throws IOException {
-        final String data = "src/main/resources/School_Data_3.xlsx";
-        final String schedule = "src/main/resources/SCHED.xlsx";
-        SchoolList allSchools = ExcelReader.getSchoolData(data);
-        Schedule theSchedule = ExcelReader.getScheduleData(schedule, allSchools);
-        aggressiveAddRivalryGames(theSchedule, allSchools);
-        verifyFewerThan13Games(theSchedule, allSchools);
-        verifyMoreThan11Games(theSchedule, allSchools);
-        //write to excel
-        ExcelReader.write(theSchedule);
-        System.out.println("done");
-
+        PropertyConfigurator.configure("src/main/resources/log4j.properties");
+        commandLineUI();
     }
 
-    public static void ui(){
-
-    }
-
-    public static ArrayList<Integer> findEmptyWeeks(School s1, School s2) {//returns list of empty weeks between 2 schools
-        ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
-        ArrayList<Integer> s2weeks = findEmptyWeeks(s2);
-
-        ArrayList<Integer> freeWeeks = new ArrayList<Integer>();
-        for (int i = 0; i < s1weeks.size(); i++) {
-            if (s2weeks.contains(s1weeks.get(i))) {
-                freeWeeks.add(s1weeks.get(i));
+    private static void commandLineUI() throws IOException {
+        final String schoolsFile = "src/main/resources/My_Custom_Conferences.xlsx";
+        final String scheduleFile = "src/main/resources/SCHED.xlsx";
+        SchoolList schoolList = ExcelReader.getSchoolData(schoolsFile);
+        SeasonSchedule seasonSchedule = ExcelReader.getScheduleData(scheduleFile, schoolList);
+        System.out.println("Welcome to the NCAA Football PS2 Scheduler");
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            printTitle("Home");
+            System.out.println("0. Exit");
+            System.out.println("1. Automatically add rivalry games (Conservative)");
+            System.out.println("2. Automatically add rivalry games (Aggressive)");
+            System.out.println("3. Remove extra games");
+            System.out.println("4. Remove Non-Conference Games");
+            System.out.println("5. Manual Schedule Editing");
+            System.out.println("6. Options");
+            System.out.println("7. Save to Excel Sheet");
+            String input = scanner.next();
+            if (input.equals("0")) {
+                exit = true;
+            } else if (input.equals("1")) {
+                addRivalryGamesOption(seasonSchedule, schoolList, false);
+            } else if (input.equals("2")) {
+                addRivalryGamesOption(seasonSchedule, schoolList, true);
+            } else if (input.equals("3")) {
+                removeExtraGames(seasonSchedule, schoolList);
+            } else if (input.equals("4")) {
+                removeNonConferenceGamesUI(seasonSchedule);
+            } else if (input.equals("5")) {
+                manualOptionUI(seasonSchedule, schoolList);
+            } else if (input.equals("6")) {
+                optionsOptionUI();
+            } else if (input.equals("7")) {
+                ExcelReader.write(seasonSchedule);
+            } else {
+                System.out.println("Please choose an option.");
             }
         }
-        return freeWeeks;
+    }
+
+    private static void removeNonConferenceGamesUI(SeasonSchedule seasonSchedule) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            printTitle("Remove Non-Conference Games");
+            System.out.println("0. Back");
+            System.out.println("1. Remove All FCS Games");
+            System.out.println("2. Remove All Non-Conference Games (Keep Rivals)");
+            System.out.println("3. Remove All Non-Conference Games");
+            String input = scanner.next();
+            if (input.equals("0")) {
+                exit = true;
+            } else if (input.equals("1")) {
+                seasonSchedule.removeAllFcsGames();
+            } else if (input.equals("2")) {
+                seasonSchedule.removeAllNonConferenceGames(false);
+            } else if (input.equals("3")) {
+                seasonSchedule.removeAllNonConferenceGames(true);
+            } else  {
+                System.out.println("Please choose an option.");
+            }
+        }
+    }
+
+    private static void manualOptionUI(SeasonSchedule seasonSchedule, SchoolList schoolList) throws IOException {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            printTitle("Manual Schedule Editing");
+            System.out.println("0. Back");
+            System.out.println("1. Select School");
+            System.out.println("2. Options");
+            System.out.println("3. Save to Excel Sheet");
+            String input = scanner.next();
+            if (input.equals("0")) {
+                exit = true;
+            } else if (input.equals("1")) {
+                School school = schoolSelectUI(schoolList);
+                if (school != null) {
+                    modifyScheduleUI(seasonSchedule, schoolList, school);
+                }
+            } else if (input.equals("2")) {
+                optionsOptionUI();
+            } else if (input.equals("3")) {
+                ExcelReader.write(seasonSchedule);
+            } else {
+                System.out.println("Please choose an option.");
+            }
+        }
+    }
+
+    private static void optionsOptionUI() {
+        System.out.println("This option is still under development...");
+    }
+
+    private static School searchByConferenceUI(SchoolList schoolList) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        ArrayList<String> conferences = schoolList.getConferences();
+        while (!exit) {
+            printTitle("Enter number of desired Conference");
+            System.out.println("0. Back");
+            int i;
+            for (i = 0; i < conferences.size(); i++) {
+                System.out.println(i + 1 + ". " + conferences.get(i));
+            }
+            int input = scanner.nextInt();
+            if (input == 0) {
+                exit = true;
+            } else if (input > 0 && input < i + 1) {
+                School school = selectSchoolByNumUI(schoolList.conferenceSearch(conferences.get(input - 1)));
+                if (school != null) {
+                    return school;
+                }
+            } else {
+                System.out.println("Please choose an option.");
+            }
+        }
+        return null;
+    }
+
+    private static School searchByNameUI(SchoolList schoolList) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            printTitle("Enter School name");
+            System.out.println("0. Back");
+            String input = scanner.nextLine();
+            School result = schoolList.schoolSearch(input);
+            if (input.equals("0")) {
+                exit = true;
+            } else if (result != null) {
+                return result;
+            } else {
+                System.out.println("Try again, " + input + " was not found.");
+            }
+        }
+        return null;
+    }
+
+    private static School searchByTgidUI(SchoolList schoolList) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        School school;
+        while (!exit) {
+            int tgid = 0;//dummy value
+            boolean modifiedTgid = false;
+            printTitle("Enter School TGID");
+            System.out.println("B. Back");
+            String input = scanner.next();
+            if (input.equalsIgnoreCase("B")) {
+                exit = true;
+            } else {
+                try {
+                    tgid = Integer.parseInt(input);
+                    modifiedTgid = true;
+                } catch (NumberFormatException error) {
+                    System.out.println("You must either enter an Integer or 'B' to go back.");
+                }
+            }
+            if (modifiedTgid) {
+                school = schoolList.schoolSearch(tgid);
+                if (school != null) {
+                    return school;
+                } else {
+                    System.out.println("Invalid TGID, please try again.");
+                }
+            }
+        }
+        return null;
+    }
+
+    private static School schoolSelectUI(SchoolList schoolList) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        School school = nullSchool;
+        while (!exit) {
+            printTitle("Select School");
+            System.out.println("0. Back");
+            System.out.println("1. Search by Conference");
+            System.out.println("2. Search by School Name");
+            System.out.println("3. Search by TGID");
+            String input = scanner.next();
+            if (input.equals("0")) {
+                exit = true;
+            } else if (input.equals("1")) {
+                school = searchByConferenceUI(schoolList);
+            } else if (input.equals("2")) {
+                school = searchByNameUI(schoolList);
+            } else if (input.equals("3")) {
+                school = searchByTgidUI(schoolList);
+            } else {
+                System.out.println("Please choose an option.");
+            }
+            if (school != null) {
+                return school;
+            }
+        }
+        return null;
+    }
+
+    private static void modifyScheduleUI(SeasonSchedule seasonSchedule, SchoolList schoolList, School school) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            printTitle(school.getName() + " " + school.getNickname());
+            System.out.println("0. Back");
+            System.out.println("1. View Schedule");
+            System.out.println("2. Add Game");
+            System.out.println("3. Remove Game");
+            String input = scanner.next();
+            if (input.equals("0")) {
+                exit = true;
+            } else if (input.equals("1")) {
+                school.printSchedule();
+            } else if (input.equals("2")) {
+                addGameOptionUI(seasonSchedule, schoolList, school);
+            } else if (input.equals("3")) {
+                removeGameUI(seasonSchedule, school);
+            } else {
+                System.out.println("Please enter a valid option.");
+            }
+        }
+    }
+
+    private static void addGameOptionUI(SeasonSchedule seasonSchedule, SchoolList schoolList, School school) {
+        if (school.getSchedule().size() < 12) {
+            Scanner scanner = new Scanner(System.in);
+            boolean exit = false;
+            while (!exit) {
+                printTitle("Manually Add Games");
+                System.out.println("0. Back");
+                System.out.println("1. Automatically add rivalry games (Conservative)");
+                System.out.println("2. Automatically add rivalry games (Aggressive)");
+                System.out.println("3. Add rivalry games manually");
+                System.out.println("4. Add other games manually");
+                String input = scanner.next();
+                if (input.equals("0")) {
+                    exit = true;
+                } else if (input.equals("1")) {
+                    addRivalryGamesSchool(seasonSchedule, school, false);
+                } else if (input.equals("2")) {
+                    addRivalryGamesSchool(seasonSchedule, school, true);
+                } else if (input.equals("3")) {
+                    addRivalryGamesManuallyUI(seasonSchedule, school);
+                } else if (input.equals("4")) {
+                    addGameTwoSchoolsUI(seasonSchedule, school, schoolSelectUI(schoolList));
+                } else {
+                    System.out.println("Select a valid option.");
+                }
+            }
+        } else {
+            System.out.println(school + " is already at the maximum scheduled games. Try removing games before adding any.");
+        }
+    }
+
+    private static void removeGameUI(SeasonSchedule seasonSchedule, School school) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            printTitle("Remove Game");
+            System.out.println("0. Back");
+            school.printSchedule();
+            String input = scanner.next();
+            if (input.equals("0")) {
+                exit = true;
+            } else {
+                try {
+                    int selection = Integer.parseInt(input);
+                    if (selection > 0 && selection <= school.getSchedule().size()) {
+                        SchoolSchedule newSchedule = new SchoolSchedule();
+                        for (int i = 0; i < school.getSchedule().size(); i++) {
+                            newSchedule.add(school.getSchedule().get(i));
+                        }
+                        Collections.sort(newSchedule);
+                        Game removeMe = newSchedule.get(selection - 1);
+                        if (removeMe.getConferenceGame() != 1) {
+                            seasonSchedule.removeGame(school.getSchedule().getGame(newSchedule.get(selection - 1).getWeek()));
+                        } else {
+                            System.out.println("Please enter a different option. You can not remove Conference games.");
+                        }
+                    } else {
+                        System.out.println("Please enter a valid option.");
+                    }
+                } catch (NumberFormatException error) {
+                    System.out.println("Please enter a valid option.");
+                }
+            }
+        }
+    }
+
+    private static void addRivalryGamesManuallyUI(SeasonSchedule seasonSchedule, School school) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            printTitle("Add Game VS Rival");
+            System.out.println("0. Back");
+            SchoolList rivalList = new SchoolList();
+            for (int i = 0; i < school.getRivals().size(); i++) {
+                School rival = school.getRivals().get(i);
+                if (school.isPossibleOpponent(rival)) {
+                    rivalList.add(rival);
+                    System.out.println((rivalList.size()) + ". " + rival);
+                }
+            }
+            if (!rivalList.isEmpty()) {
+                String input = scanner.next();
+                if (input.equals("0")) {
+                    exit = true;
+                } else {
+                    try {
+                        int selection = Integer.parseInt(input);
+                        if (selection > 0 && selection < rivalList.size()) {
+                            addGameTwoSchoolsUI(seasonSchedule, school, rivalList.get(selection - 1));
+                        } else {
+                            System.out.println("Please enter a valid option.");
+                        }
+                    } catch (NumberFormatException error) {
+                        System.out.println("Please enter a valid option.");
+                    }
+                }
+            }
+        }
+    }
+
+    private static void addGameTwoSchoolsUI(SeasonSchedule seasonSchedule, School s1, School s2) {
+        boolean isOpponent = s1.isOpponent(s2);
+        if (!isOpponent && ! s1.isInConference(s2)) {
+            Scanner scanner = new Scanner(System.in);
+            boolean exit = false;
+            while (!exit) {
+                printTitle("Choose an Empty Week");
+                ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, s2);
+                System.out.println("0. Back");
+                if (!emptyWeeks.isEmpty()) {
+                    for (int i = 0; i < emptyWeeks.size(); i++) {
+                        System.out.println((i + 1) + ". " + (emptyWeeks.get(i) + 1));
+                    }
+                    int input = scanner.nextInt();
+                    if (input == 0) {
+                        exit = true;
+                    } else {
+                        int week = emptyWeeks.get(input - 1);
+                        seasonSchedule.addGame(s1, s2, week, 5, year);
+                        exit = true;
+                    }
+                } else {
+                    System.out.println("Sorry, there are no free weeks between these two teams, try removing a game first.");
+                    exit = true;
+                }
+            }
+        } else {
+            if (isOpponent) {
+                System.out.println("Cannot add a game between schools that already play each other.");
+            } else {
+                System.out.println("Cannot add a game between schools in the same conference.");
+            }
+        }
+    }
+
+    private static School selectSchoolByNumUI(SchoolList schoolList) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            printTitle("Enter number of desired school");
+            int i = 0;
+            System.out.println("0. Back");
+            for (i = 0; i < schoolList.size(); i++) {
+                System.out.println(i + 1 + ". " + schoolList.get(i));
+            }
+            int input = scanner.nextInt();
+            if (input == 0) {
+                exit = true;
+            } else if (input > 0 && input < i + 1) {
+                return schoolList.get(input - 1);
+            } else {
+                System.out.println("Please choose an option.");
+            }
+        }
+        return null;
+    }
+
+    private static void addRivalryGamesOption(SeasonSchedule seasonSchedule, SchoolList schoolList, boolean aggressive) {
+        addRivalryGamesAll(seasonSchedule, schoolList, aggressive);
+        removeExtraGames(seasonSchedule, schoolList);
+        fillOpenGames(seasonSchedule, schoolList);
+    }
+
+    private static ArrayList<Integer> findEmptyWeeks(School s1, School s2) {//returns list of empty weeks between 2 schools
+        ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
+        ArrayList<Integer> s2weeks = findEmptyWeeks(s2);
+        return findEmptyWeeks(s1weeks, s2weeks);
     }
 
     //finds empty weeks for one school
-    public static ArrayList<Integer> findEmptyWeeks(School s) {
+    private static ArrayList<Integer> findEmptyWeeks(School s) {
         ArrayList<Integer> freeWeeks = new ArrayList<Integer>();
         ArrayList<Integer> usedWeeks = new ArrayList<Integer>();
         for (int i = 0; i < s.getSchedule().size(); i++) {
@@ -53,7 +429,7 @@ public class Application {
         return freeWeeks;
     }
 
-    public static ArrayList<Integer> findEmptyWeeks(ArrayList<Integer> s1weeks, ArrayList<Integer> s2weeks) {
+    private static ArrayList<Integer> findEmptyWeeks(ArrayList<Integer> s1weeks, ArrayList<Integer> s2weeks) {
         ArrayList<Integer> freeWeeks = new ArrayList<Integer>();
         for (int i = 0; i < s1weeks.size(); i++) {
             if (s2weeks.contains(s1weeks.get(i))) {
@@ -63,143 +439,157 @@ public class Application {
         return freeWeeks;
     }
 
-    public static boolean doSchoolsPlay(School s1, School s2) {
-        //boolean play = false;
-        for (int i = 0; i < s1.getSchedule().size(); i++) {
-            if (s1.getSchedule().get(i).getHomeTeam() != null && s1.getSchedule().get(i).getAwayTeam() != null) {
-                if (s1.getSchedule().get(i).getHomeTeam().getTgid() == s2.getTgid() ||
-                        s1.getSchedule().get(i).getAwayTeam().getTgid() == s2.getTgid()) {
-                    if (debug) {
-                        //System.out.println(s1.getName() + " plays " + s2.getName());
-                    }
-                    return true;
-                }
-            }
-        }
-        //System.out.println(s1.getName() + " does NOT play " + s2.getName());
-        return false;
-    }
-
-    public static void addRivalryGames(Schedule theSchedule, SchoolList allSchools) {
-        for (int j = 0; j <= 8; j++) {
-            for (int i = 0; i < allSchools.size(); i++) {
-                //go through all the schools
-                School s1 = allSchools.get(i);
-                if (j < s1.getRivals().size()) {
-                    School rival = s1.getRivals().get(j);
-                    if (!doSchoolsPlay(s1, rival) && !s1.getConference().equals(rival.getConference())) {
-                        //if they don't play and aren't in the same conference
-                        //go through all the rivals for a team
-                        if (rival.getSchedule().size() < 12 && s1.getSchedule().size() < 12) {
-                            //and stop if the schedule is full
-                            addRivalryGamesHelper(theSchedule, s1, rival);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public static void aggressiveAddRivalryGames(Schedule theSchedule, SchoolList allSchools) {
+    private static void addRivalryGamesAll(SeasonSchedule seasonSchedule, SchoolList allSchools, boolean aggressive) {
         for (int j = 0; j <= 8; j++) {
             for (int i = 0; i < allSchools.size(); i++) {
                 //go through all the schools
                 School s1 = allSchools.get(i);
                 if (s1.getDivision().equals("FBS") && j < s1.getRivals().size()) {
                     School rival = s1.getRivals().get(j);
-                    if (!doSchoolsPlay(s1, rival) && !s1.getConference().equals(rival.getConference())) {
-                        if (j < 2) {
-                            aggressiveAddRivalryGamesHelper(theSchedule, s1, rival);
-                        }
-                        //if they don't play and aren't in the same conference
-                        //go through all the rivals for a team
-                        else if (rival.getSchedule().size() < 12 && s1.getSchedule().size() < 12) {
-                            //and stop if the schedule is full
-                            addRivalryGamesHelper(theSchedule, s1, rival);
-                        }
-                    }
+                    addRivalryGameTwoSchools(seasonSchedule, s1, rival, aggressive, j);
                 }
             }
         }
     }
 
-    public static void addRivalryGamesHelper(Schedule theSchedule, School s1, School rival) {
-        ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
-        if (emptyWeeks.contains(12)) {
-            addGame(theSchedule, s1, rival, 12, 5);
-            //week 12 is empty
-        } else if (emptyWeeks.contains(13)) {
-            addGame(theSchedule, s1, rival, 13, 5);
-            //week 13 is empty
-        } else if (!emptyWeeks.isEmpty()) {
-            addGame(theSchedule, s1, rival, emptyWeeks.get(0), 5);
-            //add game at emptyWeeks.get(0);
-        } else if (debug) {
-            //System.out.println("No free weeks");
+    private static void addRivalryGamesSchool(SeasonSchedule seasonSchedule, School school, boolean aggressive) {
+        for (int j = 0; j < school.getRivals().size(); j++) {
+            School rival = school.getRivals().get(j);
+            addRivalryGameTwoSchools(seasonSchedule, school, rival, aggressive, j);
         }
     }
 
-    public static boolean aggressiveAddRivalryGamesHelper(Schedule theSchedule, School s1, School rival) {
+    private static void addRivalryGameTwoSchools(SeasonSchedule seasonSchedule, School school, School rival, boolean aggressive, int rivalRank) {
+        //School rival = school.getRivals().get(j);
+        if (school.isPossibleOpponent(rival)) {
+            if (aggressive && rivalRank < 2) {
+                aggressiveAddRivalryGameHelper(seasonSchedule, school, rival);
+            }
+            //if they don't play and aren't in the same conference
+            //go through all the rivals for a team
+            else if (rival.getSchedule().size() < 12 && school.getSchedule().size() < 12) {
+                //and stop if the seasonSchedule is full
+                addRivalryGameHelper(seasonSchedule, school, rival, rivalRank);
+            }
+        }
+    }
+
+    private static void addRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival, int rivalRank) {
+        ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
+        if (rivalRank < 2) {
+            if (emptyWeeks.contains(12)) {
+                seasonSchedule.addGame(s1, rival, 12, 5, year);
+                //week 13 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is referenced by 12
+            } else if (emptyWeeks.contains(11)) {
+                seasonSchedule.addGame(s1, rival, 11, 5, year);
+                //week 12 is empty
+            } else if (emptyWeeks.contains(13)) {
+                seasonSchedule.addGame(s1, rival, 13, 5, year);
+                //week 14 is empty
+            } else if (!emptyWeeks.isEmpty()) {
+                seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5, year);
+                //add game at emptyWeeks.get(0);
+            }
+        } else if (!emptyWeeks.isEmpty()) {
+            seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5, year);
+        }
+    }
+
+    private static void aggressiveAddRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival) {
         ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
         ArrayList<Integer> rweeks = findEmptyWeeks(rival);
         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1weeks, rweeks);
         if (emptyWeeks.contains(12)) {
-            addGame(theSchedule, s1, rival, 12, 5);
-            return true;
+            seasonSchedule.addGame(s1, rival, 12, 5, year);
+            return;
+            //week 13 is empty
+        } else if (emptyWeeks.contains(11)) {
+            seasonSchedule.addGame(s1, rival, 11, 5, year);
+            return;
             //week 12 is empty
         }
         if (emptyWeeks.contains(13)) {
-            addGame(theSchedule, s1, rival, 13, 5);
-            return true;
-            //week 13 is empty
+            seasonSchedule.addGame(s1, rival, 13, 5, year);
+            return;
+            //week 14 is empty
         }
         if (s1weeks.contains(12)) {
-            //if the first team has an opening in week 12...
-            Game theGame = rival.getSchedule().getGame(12);
+            //if the first team has an opening in week 13...
+            Game game = rival.getSchedule().getGame(12);
             //set game to variable
-            if (theGame.isRemovableGame()) {
+            if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
-                replaceGame(theSchedule, theGame, s1, rival);
-                return true;
+                seasonSchedule.replaceGame(game, s1, rival, year);
+                return;
+            }
+        }
+        if (s1weeks.contains(11)) {
+            //if the first team has an opening in week 12...
+            Game game = rival.getSchedule().getGame(11);
+            //set game to variable
+            if (game.isRemovableGame()) {
+                //if the game that is blocking a game being added isn't required..
+                seasonSchedule.replaceGame(game, s1, rival, year);
+                return;
             }
         }
         if (s1weeks.contains(13)) {
-            //if the first team has an opening in week 12...
-            Game theGame = rival.getSchedule().getGame(13);
+            //if the first team has an opening in week 14...
+            Game game = rival.getSchedule().getGame(13);
             //set game to variable
-            if (theGame.isRemovableGame()) {
+            if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
-                replaceGame(theSchedule, theGame, s1, rival);
-                return true;
+                seasonSchedule.replaceGame(game, s1, rival, year);
+                return;
             }
         }
         if (rweeks.contains(12)) {
-            //if the first team has an opening in week 12...
-            Game theGame = s1.getSchedule().getGame(12);
+            //if the first team has an opening in week 13...
+            Game game = s1.getSchedule().getGame(12);
             //set game to variable
-            if (theGame.isRemovableGame()) {
+            if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
-                replaceGame(theSchedule, theGame, s1, rival);
-                return true;
+                seasonSchedule.replaceGame(game, s1, rival, year);
+                return;
+            }
+        }
+        if (rweeks.contains(11)) {
+            //if the first team has an opening in week 12...
+            Game game = s1.getSchedule().getGame(11);
+            //set game to variable
+            if (game.isRemovableGame()) {
+                //if the game that is blocking a game being added isn't required..
+                seasonSchedule.replaceGame(game, s1, rival, year);
+                return;
             }
         }
         if (rweeks.contains(13)) {
-            //if the first team has an opening in week 12...
-            Game theGame = s1.getSchedule().getGame(13);
+            //if the first team has an opening in week 14...
+            Game game = s1.getSchedule().getGame(13);
             //set game to variable
-            if (theGame.isRemovableGame()) {
+            if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
-                replaceGame(theSchedule, theGame, s1, rival);
-                return true;
+                seasonSchedule.replaceGame(game, s1, rival, year);
+                return;
             }
         }
         if (!s1weeks.contains(12) && !rweeks.contains(12)) {
             Game s1game = s1.getSchedule().getGame(12);
             Game rgame = rival.getSchedule().getGame(12);
             if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
-                removeGame(theSchedule, s1game);
-                replaceGame(theSchedule, rgame, s1, rival);
-                return true;
+                seasonSchedule.removeGame(s1game);
+                seasonSchedule.replaceGame(rgame, s1, rival, year);
+                return;
+                //remove both games and replace with this one...
+            }
+        }
+        if (!s1weeks.contains(11) && !rweeks.contains(11)) {
+            Game s1game = s1.getSchedule().getGame(11);
+            Game rgame = rival.getSchedule().getGame(11);
+            if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
+                seasonSchedule.removeGame(s1game);
+                seasonSchedule.replaceGame(rgame, s1, rival, year);
+                return;
                 //remove both games and replace with this one...
             }
         }
@@ -207,184 +597,36 @@ public class Application {
             Game s1game = s1.getSchedule().getGame(13);
             Game rgame = rival.getSchedule().getGame(13);
             if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
-                removeGame(theSchedule, s1game);
-                replaceGame(theSchedule, rgame, s1, rival);
-                return true;
+                seasonSchedule.removeGame(s1game);
+                seasonSchedule.replaceGame(rgame, s1, rival, year);
+                return;
                 //remove both games and replace with this one...
             }
         }
-        if (doSchoolsPlay(s1, nullSchool)) {
-            for (int i = 0; i < s1.getSchedule().size(); i++) {
-                Game s1game = s1.getSchedule().get(i);
-                if (nullSchool.getTgid() == s1game.getAwayTeam().getTgid() || nullSchool.getTgid() == s1game.getHomeTeam().getTgid()) {
-                    if (rweeks.contains(s1game.getWeek())) {
-                        replaceGame(theSchedule, s1game, s1, rival);
-                        return true;
-                    } else {
-                        Game rgame = rival.getSchedule().getGame(s1game.getWeek());
-                        if (rgame.isRemovableGame()) {
-                            removeGame(theSchedule, s1game);
-                            replaceGame(theSchedule, rgame, s1, rival);
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        if (doSchoolsPlay(rival, nullSchool)) {
-            for (int i = 0; i < rival.getSchedule().size(); i++) {
-                Game rgame = rival.getSchedule().get(i);
-                if (nullSchool.getTgid() == rgame.getAwayTeam().getTgid() || nullSchool.getTgid() == rgame.getHomeTeam().getTgid()) {
-                    if (s1weeks.contains(rgame.getWeek())) {
-                        replaceGame(theSchedule, rgame, s1, rival);
-                        return true;
-                    } else {
-                        Game s1game = s1.getSchedule().getGame(rgame.getWeek());
-                        if (s1game.isRemovableGame()) {
-                            removeGame(theSchedule, rgame);
-                            replaceGame(theSchedule, s1game, s1, rival);
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
         if (!emptyWeeks.isEmpty()) {
-            addGame(theSchedule, s1, rival, emptyWeeks.get(0), 5);
-            return true;
+            seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5, year);
+            return;
             //add game at emptyWeeks.get(0);
         }
-
-        if (debug) {
-            //System.out.println("No free weeks");
-        }
-        return false;
-        //add to week 12 or 13
-        //addGame(theSchedule, s1, rival, 800, emptyWeeks.get(0), 5, 0, 0);
-        //add game at emptyWeeks.get(0);
-
-
-        //add check for number of games for both teams
     }
 
-    public static void addGame(Schedule theSchedule, School s1, School s2, int week, int day) {
-        int gameNumber = findGameNumber(theSchedule, week);
-        //This wonky if statement is so some yearly rivalry games switch off betweeen home and away
-        Game newGame = year % 2 == 0 ? new Game(s1, s2, gameNumber, week, day) : new Game(s2, s1, gameNumber, week, day);
-
-        s1.addGame(newGame);
-        s2.addGame(newGame);
-        theSchedule.add(newGame);//decide if this is actually how you want to add games.. if doing it like this I will just have to go through and remake the schedule in the end. Best solution is to make a addGame method.. NO make schedule its own new object that extends a list and change the add method.. or add to it
-        if (debug) {
-            System.out.println("Adding game between " + s1.getName() + " and " + s2.getName());
-        }
-    }
-
-    //only used in replaceGame method
-    public static void addGame(Schedule theSchedule, School s1, School s2, int week, int day, int gameNumber) {
-        Game newGame = year % 2 == 0 ? new Game(s1, s2, gameNumber, week, day) : new Game(s2, s1, gameNumber, week, day);
-
-        s1.addGame(newGame);
-        s2.addGame(newGame);
-        theSchedule.add(newGame);//decide if this is actually how you want to add games.. if doing it like this I will just have to go through and remake the schedule in the end. Best solution is to make a addGame method.. NO make schedule its own new object that extends a list and change the add method.. or add to it
-        if (debug) {
-            System.out.println("Adding game between " + s1.getName() + " and " + s2.getName());
-        }
-    }
-
-    public static void removeGame(Schedule theSchedule, Game theGame) {
-        //code to change the game numbers for all games afterwards in this week
-        School s1 = theGame.getHomeTeam();
-        School s2 = theGame.getAwayTeam();
-        int gameNumber = theGame.getGameNumber();
-        int weekNumber = theGame.getWeek();
-        theSchedule.remove(theGame);
-        s1.getSchedule().remove(theGame);
-        s2.getSchedule().remove(theGame);
-        updateGameNumbers(theSchedule, gameNumber, weekNumber);
-        if (debug) {
-            System.out.println("Removing game between " + s1 + " and " + s2);
-        }
-    }
-
-    public static void replaceGame(Schedule theSchedule, Game theGame, School s1, School s2) {
-        int gameNumber = theGame.getGameNumber();
-        int weekNumber = theGame.getWeek();
-        theSchedule.remove(theGame);
-        if (debug) {
-            System.out.println("Removing & replacing game between " + theGame.getAwayTeam() + " and " + theGame.getHomeTeam());
-        }
-        theGame.getHomeTeam().getSchedule().remove(theGame);
-        theGame.getAwayTeam().getSchedule().remove(theGame);
-        addGame(theSchedule, s1, s2, weekNumber, 5, gameNumber);
-    }
-
-    public static int findGameNumber(Schedule theSchedule, int week) {
-        int gameNumber = 0;
-        for (int i = 0; i < theSchedule.size(); i++) {
-            Game theGame = theSchedule.get(i);
-            gameNumber = theGame.getWeek() == week && gameNumber < theGame.getGameNumber() ? theGame.getGameNumber() : gameNumber;
-        }
-        return ++gameNumber;
-    }
-
-    public static void updateGameNumbers(Schedule theSchedule, int gameNumber, int weekNumber) {
-        for (int i = 0; i < theSchedule.size(); i++) {
-            if (theSchedule.get(i).getWeek() == weekNumber && theSchedule.get(i).getGameNumber() > gameNumber) {
-                theSchedule.get(i).setGameNumber(theSchedule.get(i).getGameNumber() - 1);
-            }
-        }
-        //does this only update the games in theSchedule? it shouldnt
-    }
-
-    public static boolean isRivalryGame(School s1, School s2) {
-        if (s1.getRivals() != null && s2.getRivals() != null) {
-            for (int i = 0; i < s1.getRivals().size(); i++) {
-                if (s1.getRivals().get(i).getName().equals(s2.getName())) {
-                    return true;
-                }
-            }
-            for (int i = 0; i < s2.getRivals().size(); i++) {
-                if (s2.getRivals().get(i).getName().equals(s1.getName())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    //returns game that is non-conference and not between rivals
-    public static Game findRemovableGame(School s1) {
-        for (int i = 0; i < s1.getSchedule().size(); i++) {
-            Game theGame = s1.getSchedule().get(i);
-            //0 means non-con
-            if (theGame.isRemovableGame()) {
-                return theGame;
-            }
-        }
-        return null;
-    }
-
-    public static void verifyFewerThan13Games(Schedule theSchedule, SchoolList schoolList) {
-        for (int i = 0; i < schoolList.size(); i++) {
-            if (schoolList.get(i).getDivision().equals("FBS")) {
-                verifyFewerThan13Games(theSchedule, schoolList.get(i));
-            }
-        }
-    }
-
-    public static void verifyFewerThan13Games(Schedule theSchedule, School theSchool) {
-        while (theSchool.getSchedule().size() > 12) {
-            Game removeMe = findRemovableGame(theSchool);
-            if(removeMe!=null) {
-                removeGame(theSchedule, removeMe);
-            } else{
-                for (int i = theSchool.getRivals().size()-1; theSchool.getSchedule().size() > 12; i--) {
-                    School rival = theSchool.getRivals().get(i);
-                    if (doSchoolsPlay(theSchool, rival)){
-                        removeMe = findGame(theSchool, rival);
-                        if (removeMe.getConferenceGame() == 0) {
-                            removeGame(theSchedule, removeMe);
+    private static void removeExtraGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+        SchoolList tooManyGames = schoolList.findTooManyGames();
+        for (int i = 0; i < tooManyGames.size(); i++) {
+            School school = tooManyGames.get(i);
+            while (school.getSchedule().size() > 12) {
+                Game removeMe = school.findRemovableGame();
+                if (removeMe != null) {
+                    seasonSchedule.removeGame(removeMe);
+                } else {
+                    //remove extra rivalry games
+                    for (int j = school.getRivals().size() - 1; school.getSchedule().size() > 12; j--) {
+                        School rival = school.getRivals().get(j);
+                        if (school.isOpponent(rival)) {
+                            removeMe = findGame(school, rival);
+                            if (removeMe.getConferenceGame() == 0) {
+                                seasonSchedule.removeGame(removeMe);
+                            }
                         }
                     }
                 }
@@ -392,72 +634,135 @@ public class Application {
         }
     }
 
-    public static void verifyMoreThan11Games(Schedule theSchedule, SchoolList schoolList) {
-        SchoolList tooFewGames = new SchoolList();
-        for (int i = 0; i < schoolList.size(); i++) {
-            School theSchool = schoolList.get(i);
-            if (theSchool.getSchedule().size() < 12 && theSchool.getDivision().equals("FBS")) {
-                tooFewGames.add(theSchool);
-                if (debug) {
-                    //System.out.println(theSchool + " has too few games");
-                }
-            }
-        }
-        addRivalryGames(theSchedule, tooFewGames);
-        addRandomGames(theSchedule, schoolList, tooFewGames);
-
+    private static void fillOpenGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+        SchoolList tooFewGames = schoolList.findTooFewGames();
+        addRivalryGamesAll(seasonSchedule, tooFewGames, false);
+        addRandomGames2(seasonSchedule, schoolList, tooFewGames);
     }
 
-    public static void addRandomGames(Schedule theSchedule, SchoolList schoolList, SchoolList tooFewGames) {
+
+    private static void addRandomGames(SeasonSchedule seasonSchedule, SchoolList schoolList, SchoolList tooFewGames) {
         for (int i = 0; i < tooFewGames.size(); i++) {
             School s1 = tooFewGames.get(i);
             if (s1.getSchedule().size() < 12) {
                 for (int j = 0; j < tooFewGames.size() && s1.getSchedule().size() < 12; j++) {
                     School s2 = tooFewGames.get(j);
-                    if (s1.getTgid() != s2.getTgid() && !s1.getConference().equals(s2.getConference()) && s2.getSchedule().size()<12) {
+                    if (s1.isPossibleOpponent(s2) && s2.getSchedule().size() < 12) {
                         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, s2);
                         if (!emptyWeeks.isEmpty()) {
-                            addGame(theSchedule, s1, s2, emptyWeeks.get(0), 5);
+                            seasonSchedule.addGame(s1, s2, emptyWeeks.get(0), 5, year);
                         }
                     }
                 }
             }
         }
-        for (int i = tooFewGames.size()-1; i >= 0; i--) {
-            if (tooFewGames.get(i).getSchedule().size()==12){
+        for (int i = tooFewGames.size() - 1; i >= 0; i--) {
+            if (tooFewGames.get(i).getSchedule().size() == 12) {
                 tooFewGames.remove(i);
             }
         }
 
-        if (!tooFewGames.isEmpty()){
+        if (!tooFewGames.isEmpty()) {
             //add games vs fcs schools
             for (int i = 0; i < tooFewGames.size(); i++) {
                 School s1 = tooFewGames.get(i);
-                for (int j = 0; j < schoolList.size() && s1.getSchedule().size()<12; j++) {
-                    if (!schoolList.get(j).getDivision().equals("FBS")){
+                for (int j = 0; j < schoolList.size() && s1.getSchedule().size() < 12; j++) {
+                    if (!schoolList.get(j).getDivision().equals("FBS")) {
                         School fcs = schoolList.get(j);
                         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, fcs);
-                        if (!emptyWeeks.isEmpty()){
-                            addGame(theSchedule, s1, fcs, emptyWeeks.get(0), 5);
+                        if (!emptyWeeks.isEmpty()) {
+                            seasonSchedule.addGame(s1, fcs, emptyWeeks.get(0), 5, year);
                         }
                     }
                 }
             }
         }
-        for (int i = tooFewGames.size()-1; i >= 0; i--) {
-            if (tooFewGames.get(i).getSchedule().size()==12){
+        for (int i = tooFewGames.size() - 1; i >= 0; i--) {
+            if (tooFewGames.get(i).getSchedule().size() == 12) {
                 tooFewGames.remove(i);
             }
         }
     }
 
-    public static Game findGame(School s1, School s2){
+    private static Game findGame(School s1, School s2) {
         for (int i = 0; i < s1.getSchedule().size(); i++) {
-            Game theGame = s1.getSchedule().get(i);
-            if (theGame.getHomeTeam().getTgid() == s2.getTgid() ||
-                    theGame.getAwayTeam().getTgid() == s2.getTgid())
-            return theGame;
+            Game game = s1.getSchedule().get(i);
+            if (game.getHomeTeam().getTgid() == s2.getTgid() ||
+                    game.getAwayTeam().getTgid() == s2.getTgid())
+                return game;
         }
         return null;
+    }
+
+    private static void addRandomGames2(SeasonSchedule seasonSchedule, SchoolList allSchools, SchoolList needGames) {
+        for (int i = 0; i < needGames.size(); i++) {
+            School s1 = needGames.get(i);
+            SchoolList myOptions = new SchoolList();
+            for (int j = 0; j < needGames.size(); j++) {
+                myOptions.add(needGames.get(j));
+            }
+            boolean exit = false;
+            while (!exit) {
+                int max = myOptions.size() - 1;
+                int min = 0;
+                int range = max - min + 1;
+                int randomNum = (int) (Math.random() * range) + min;
+                School randomSchool = myOptions.get(randomNum);
+                ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, randomSchool);
+                if (randomSchool.getSchedule().size() < 12) {
+                    if (s1.isPossibleOpponent(randomSchool) && !emptyWeeks.isEmpty()) {
+                        seasonSchedule.addGame(s1, randomSchool, emptyWeeks.get(0), 5, year);
+                    }
+                    myOptions.remove(randomSchool);
+                    if (randomSchool.getSchedule().size() > 11) {
+                        if (randomNum < i) {
+                            i--;
+                        }
+                        needGames.remove(randomSchool);
+                    }
+                    if (myOptions.isEmpty()) {
+                        exit = true;
+                    }
+                    if (s1.getSchedule().size() > 11) {
+                        needGames.remove(s1);
+                        i--;
+                        exit = true;
+                    }
+                } else {//remove random school if it has enough games
+                    if (randomNum < i) {
+                        i--;
+                    }
+                    needGames.remove(randomSchool);
+                    myOptions.remove(randomSchool);
+                }
+            }
+        }
+
+        if (!needGames.isEmpty()) {
+            //add games vs fcs schools
+            for (int i = 0; i < needGames.size(); i++) {
+                School s1 = needGames.get(i);
+                for (int j = 0; j < allSchools.size() && s1.getSchedule().size() < 12; j++) {
+                    if (!allSchools.get(j).getDivision().equals("FBS")) {
+                        School fcs = allSchools.get(j);
+                        ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, fcs);
+                        if (!emptyWeeks.isEmpty()) {
+                            seasonSchedule.addGame(s1, fcs, emptyWeeks.get(0), 5, year);
+                        }
+                    }
+                }
+            }
+        }
+        for (int i = needGames.size() - 1; i >= 0; i--) {
+            if (needGames.get(i).getSchedule().size() == 12) {
+                needGames.remove(i);
+            }
+        }
+    }
+
+    private static void printTitle(String text) {
+        System.out.println("_________________________________________");
+        System.out.println(text);
+        System.out.println("_________________________________________");
     }
 }

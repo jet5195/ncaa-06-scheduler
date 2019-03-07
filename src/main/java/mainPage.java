@@ -1,6 +1,6 @@
 import javax.swing.*;
 
-public class mainPage {
+class mainPage {
     private JComboBox schoolSelect;
 
     public void setData(SchoolList data) {
