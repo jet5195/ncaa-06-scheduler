@@ -1,7 +1,8 @@
 import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
-public class Game implements Comparable{
+public class Game implements Comparable {
     private School homeTeam;//ghtg
     private School awayTeam;//gatg
     private int time;//gtod 750, 930, 1080, 1200,
@@ -11,7 +12,7 @@ public class Game implements Comparable{
     private int userGame; //gffu & gfhu
     private int gameNumber; //sgnm, must be unique per week, highest num I've seen is 55
 
-    public Game(int time, School awayTeam, School homeTeam, int gameNumber, int week, int day, int userGame, int conferenceGame){
+    public Game(int time, School awayTeam, School homeTeam, int gameNumber, int week, int day, int userGame, int conferenceGame) {
         this.time = time;
         this.awayTeam = awayTeam;
         this.homeTeam = homeTeam;
@@ -22,25 +23,25 @@ public class Game implements Comparable{
         this.conferenceGame = conferenceGame;
     }
 
-    public Game(School awayTeam, School homeTeam, int gameNumber, int week, int day){
+    public Game(School awayTeam, School homeTeam, int gameNumber, int week, int day) {
         this.awayTeam = awayTeam;
         this.homeTeam = homeTeam;
         this.gameNumber = gameNumber;
         this.week = week;
         this.day = day;
-        if(isRivalryGame()){
+        if (isRivalryGame()) {
             this.time = 1080;
-        } else{
+        } else {
             this.time = 1200;
         }
-        if (awayTeam.isUserTeam()||homeTeam.isUserTeam()){
+        if (awayTeam.isUserTeam() || homeTeam.isUserTeam()) {
             this.userGame = 1;
         } else {
             this.userGame = 0;
         }
-        if (awayTeam.getConference().equals(homeTeam.getConference())){
+        if (awayTeam.getConference().equals(homeTeam.getConference())) {
             this.conferenceGame = 1;
-        } else{
+        } else {
             this.conferenceGame = 0;
         }
     }
@@ -110,46 +111,36 @@ public class Game implements Comparable{
     }
 
     public boolean isRivalryGame() {
-        for (int i = 0; i < this.getHomeTeam().getRivals().size(); i++) {
-            if (this.getHomeTeam().getRivals().get(i).getName().equals(this.getAwayTeam().getName())) {
-                return true;
-            }
-        }
-        for (int i = 0; i < this.getAwayTeam().getRivals().size(); i++) {
-            if (this.getAwayTeam().getRivals().get(i).getName().equals(this.getHomeTeam().getName())) {
-                return true;
-            }
-        }
-        return false;
+        return this.getHomeTeam().isRival(this.getAwayTeam());
     }
 
-    public boolean isRemovableGame(){
+    public boolean isRemovableGame() {
         return this.getConferenceGame() == 0 && !this.isRivalryGame();
     }
 
-    public ArrayList gameToList(){
+    public ArrayList gameToList() {
         ArrayList<Integer> list = new ArrayList();
         int i = 0;
-        while(i<14){
-            if (i==3){
+        while (i < 14) {
+            if (i == 3) {
                 list.add(this.getTime());
-            } else if (i==4){
+            } else if (i == 4) {
                 list.add(this.getAwayTeam().getTgid());
-            } else if (i==5){
+            } else if (i == 5) {
                 list.add(this.getHomeTeam().getTgid());
-            } else if (i==6){
+            } else if (i == 6) {
                 list.add(this.getGameNumber());
-            } else if (i==7){
+            } else if (i == 7) {
                 list.add(this.getWeek());
-            } else if (i==8){
+            } else if (i == 8) {
                 list.add(this.getDay());
-            } else if (i==10){
+            } else if (i == 10) {
                 list.add(this.getWeek());
-            } else if (i==11){
+            } else if (i == 11) {
                 list.add(this.getUserGame());
-            } else if (i==12){
+            } else if (i == 12) {
                 list.add(this.getUserGame());
-            } else if (i==13){
+            } else if (i == 13) {
                 list.add(this.getConferenceGame());
             } else {
                 list.add(0);
@@ -159,8 +150,8 @@ public class Game implements Comparable{
         return list;
     }
 
-    public int compareTo(@NotNull Object game2){
-        int compareWeek=((Game)game2).getWeek();
-        return this.getWeek()-compareWeek;
+    public int compareTo(@NotNull Object game2) {
+        int compareWeek = ((Game) game2).getWeek();
+        return this.getWeek() - compareWeek;
     }
 }

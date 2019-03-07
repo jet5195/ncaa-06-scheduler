@@ -8,8 +8,9 @@ public class School {
     private SchoolList rivals;
     private boolean userTeam;
     private SchoolSchedule schedule = new SchoolSchedule();
+    private boolean powerConf;
 
-    public School(int tgid, String name, String nickname, String state, String conference, String division){
+    public School(int tgid, String name, String nickname, String state, String conference, String division) {
         this.tgid = tgid;
         this.name = name;
         this.nickname = nickname;
@@ -18,11 +19,11 @@ public class School {
         this.division = division;
     }
 
-    public SchoolList getRivals(){
+    public SchoolList getRivals() {
         return this.rivals;
     }
 
-    public void setRivals(SchoolList rivals){
+    public void setRivals(SchoolList rivals) {
         this.rivals = rivals;
     }
 
@@ -82,7 +83,7 @@ public class School {
         this.userTeam = userTeam;
     }
 
-    public void addGame(Game theGame){
+    public void addGame(Game theGame) {
         this.schedule.add(theGame);
     }
 
@@ -90,8 +91,15 @@ public class School {
         return schedule;
     }
 
+    public boolean isPowerConf() {
+        return powerConf;
+    }
+
+    public void setPowerConf(boolean powerConf) {
+        this.powerConf = powerConf;
+    }
+
     /**
-     *
      * @return
      */
     public Game findRemovableGame() {
@@ -105,7 +113,7 @@ public class School {
         return null;
     }
 
-    public boolean isInConference(School school){
+    public boolean isInConference(School school) {
         return this.getConference().equalsIgnoreCase(school.getConference());
     }
 
@@ -121,25 +129,22 @@ public class School {
         return false;
     }
 
-    public boolean isPossibleOpponent(School school){
-        if (!this.isInConference(school) && !this.isOpponent(school)){
-            return true;
-        }
-        return false;
+    public boolean isPossibleOpponent(School school) {
+        return !this.isInConference(school) && !this.isOpponent(school);
     }
 
-    public void printSchedule(){
+    public void printSchedule() {
         int i = 0;
         int lastWeek = -1;
-        while(i<this.getSchedule().size()){
+        while (i < this.getSchedule().size()) {
             int nextWeek = 100;//random high number
             for (int j = 0; j < this.getSchedule().size(); j++) {
-                if (this.getSchedule().get(j).getWeek()<nextWeek && this.getSchedule().get(j).getWeek()>lastWeek){
+                if (this.getSchedule().get(j).getWeek() < nextWeek && this.getSchedule().get(j).getWeek() > lastWeek) {
                     nextWeek = this.getSchedule().get(j).getWeek();
                 }
             }
 
-            System.out.print(i+1 + ". ");
+            System.out.print(i + 1 + ". ");
             Game game = this.getSchedule().getGame(nextWeek);
             System.out.print(this);
             if (this.getTgid() == game.getHomeTeam().getTgid()) {
@@ -153,8 +158,22 @@ public class School {
         }
     }
 
+    public boolean isRival(School opponent) {
+        for (int i = 0; i < this.getRivals().size(); i++) {
+            if (this.getRivals().get(i).getName().equals(opponent.getName())) {
+                return true;
+            }
+        }
+        for (int i = 0; i < opponent.getRivals().size(); i++) {
+            if (opponent.getRivals().get(i).getName().equals(this.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
-    public String toString(){
+    public String toString() {
         return this.getName();
     }
 }
