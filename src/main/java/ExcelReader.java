@@ -1,5 +1,6 @@
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,8 +25,8 @@ class ExcelReader {
         // 2. Or you can use a for-each loop to iterate over the rows and columns
         SchoolList allSchools = new SchoolList();
         int r = 0;
-        for (Row row: sheet) {
-            if(r>0) {//disregard the headers
+        for (Row row : sheet) {
+            if (r > 0) {//disregard the headers
                 int tgid = 0;
                 String university = "";
                 String nickname = "";
@@ -33,7 +34,7 @@ class ExcelReader {
                 String conf = "";
                 String div = "";
                 int c = 0;
-                if(dataFormatter.formatCellValue(row.getCell(0))!="") {
+                if (dataFormatter.formatCellValue(row.getCell(0)) != "") {
                     for (Cell cell : row) {
                         String cellValue = dataFormatter.formatCellValue(cell);
                         //System.out.print(cellValue + "\t");
@@ -66,21 +67,21 @@ class ExcelReader {
             r++;
         }
         int iterator = 0;
-        for(Row row: sheet) {
+        for (Row row : sheet) {
             SchoolList rivals = new SchoolList();
-            if (iterator != 0 && dataFormatter.formatCellValue(row.getCell(0))!="") {
+            if (iterator != 0 && dataFormatter.formatCellValue(row.getCell(0)) != "") {
                 int i = 0;
-                for (Cell cell: row) {
-                    if (i>=6 && dataFormatter.formatCellValue(cell)!="") {
+                for (Cell cell : row) {
+                    if (i >= 6 && dataFormatter.formatCellValue(cell) != "") {
                         String cellValue = dataFormatter.formatCellValue(cell);
                         School rival = allSchools.schoolSearch(cellValue);
-                        if (rival!=null){
+                        if (rival != null) {
                             rivals.add(rival);
                         }
                     }
                     i++;
                 }
-                allSchools.get(iterator-1).setRivals(rivals);
+                allSchools.get(iterator - 1).setRivals(rivals);
             }
             iterator++;
         }
@@ -101,7 +102,7 @@ class ExcelReader {
         SeasonSchedule seasonSchedule = new SeasonSchedule();
         SeasonSchedule bowlSchedule = new SeasonSchedule();
         int r = 0;
-        for (Row row: sheet) {
+        for (Row row : sheet) {
             int gtod = 0;//time of day 3
             int gatg = 0;//away team tgid 4
             School awaySchool;
@@ -114,7 +115,7 @@ class ExcelReader {
             int gmfx = 0;//conference game 13
 
             int c = 0;
-            if (r>0) {
+            if (r > 0) {
                 for (Cell cell : row) {
                     String cellValue = dataFormatter.formatCellValue(cell);
                     //System.out.print(cellValue + "\t");
@@ -148,15 +149,15 @@ class ExcelReader {
                     }
                     c++;
                 }
-                if (ghtg!=511) {//don't add bowl games
+                if (ghtg != 511) {//don't add bowl games
                     awaySchool = allSchools.schoolSearch(gatg);
                     homeSchool = allSchools.schoolSearch(ghtg);
-                    if (awaySchool == null){
+                    if (awaySchool == null) {
                         awaySchool = new School(gatg, "null", "null", "null", "null", "FCS");
                         awaySchool.setRivals(new SchoolList());
                         allSchools.add(awaySchool);
                     }
-                    if (homeSchool == null){
+                    if (homeSchool == null) {
                         homeSchool = new School(ghtg, "null", "null", "null", "null", "FCS");
                         homeSchool.setRivals(new SchoolList());
                         allSchools.add(homeSchool);
@@ -191,13 +192,13 @@ class ExcelReader {
             addLine(sheet, bowlList.get(j), i);
             i++;
         }
-        sheet.getRow(0).createCell(14).setCellValue(String.valueOf(i-1));
+        sheet.getRow(0).createCell(14).setCellValue(String.valueOf(i - 1));
         FileOutputStream fileOut = new FileOutputStream("output.xlsx");
         workbook.write(fileOut);
         fileOut.close();
     }
 
-    private static void addLine(Sheet sheet, ArrayList game, int r){
+    private static void addLine(Sheet sheet, ArrayList game, int r) {
         Row row = sheet.createRow(r);
         for (int c = 0; c < game.size(); c++) {
             if (r == 0) {

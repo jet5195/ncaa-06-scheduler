@@ -7,13 +7,14 @@ public class SchoolList extends LinkedList<School> {
     static {
         PropertyConfigurator.configure("src/main/resources/log4j.properties");
     }
+
     private final Logger LOGGER = Logger.getLogger(SchoolList.class.getName());
 
     /**
      * @param school the String name of the School you are searching for
      * @return School with the same name as the the parameter inputted
      */
-    public School schoolSearch(String school){
+    public School schoolSearch(String school) {
         for (School theSchool : this) {
             if (theSchool.getName().equalsIgnoreCase(school)) {
                 return theSchool;
@@ -23,22 +24,22 @@ public class SchoolList extends LinkedList<School> {
         return null;
     }
 
-    public SchoolList conferenceSearch(String conf){
+    public SchoolList conferenceSearch(String conf) {
         SchoolList conference = new SchoolList();
         for (int i = 0; i < this.size(); i++) {
             School school = this.get(i);
-            if (school.getConference().equalsIgnoreCase(conf)){
+            if (school.getConference().equalsIgnoreCase(conf)) {
                 conference.add(school);
             }
         }
         return conference;
     }
 
-    public ArrayList<String> getConferences(){
+    public ArrayList<String> getConferences() {
         ArrayList<String> conferences = new ArrayList();
         for (int i = 0; i < this.size(); i++) {
             School school = this.get(i);
-            if (!conferences.contains(school.getConference())){
+            if (!conferences.contains(school.getConference())) {
                 conferences.add(school.getConference());
             }
         }
@@ -49,7 +50,7 @@ public class SchoolList extends LinkedList<School> {
      * @param tgid the tgid of the school you are searching for
      * @return School with the same tgid as the parameter inputted
      */
-    public School schoolSearch(int tgid){
+    public School schoolSearch(int tgid) {
         for (School theSchool : this) {
             if (theSchool.getTgid() == tgid) {
                 return theSchool;
@@ -75,10 +76,9 @@ public class SchoolList extends LinkedList<School> {
     }
 
     /**
-     *
      * @return SchoolList of schools with > 12 games
      */
-    public SchoolList findTooManyGames(){
+    public SchoolList findTooManyGames() {
         SchoolList tooManyGames = new SchoolList();
         for (int i = 0; i < this.size(); i++) {
             School theSchool = this.get(i);
@@ -90,7 +90,6 @@ public class SchoolList extends LinkedList<School> {
     }
 
     /**
-     *
      * @return SchoolList of schools with < 12 games
      */
     public SchoolList findTooFewGames() {

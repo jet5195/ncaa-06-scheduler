@@ -1,7 +1,7 @@
 import java.util.LinkedList;
 
 public class SchoolSchedule extends LinkedList<Game> {
-    public Game getGame(int week){
+    public Game getGame(int week) {
         for (Game game : this) {
             if (game.getWeek() == week) {
                 return game;
@@ -9,6 +9,7 @@ public class SchoolSchedule extends LinkedList<Game> {
         }
         return null;
     }
+
     protected int findGameNumber(int week) {
         int gameNumber = 0;
         for (Game theGame : this) {

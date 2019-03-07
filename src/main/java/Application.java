@@ -2,14 +2,11 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 
 class Application {
-    private static boolean debug = false;
-    private static int year = 2021;
     private static final School nullSchool = new School(999, "null", "null", "null", "null", "null");
 
     private final Logger LOGGER = Logger.getLogger(Application.class.getName());
@@ -32,9 +29,9 @@ class Application {
             System.out.println("0. Exit");
             System.out.println("1. Automatically add rivalry games (Conservative)");
             System.out.println("2. Automatically add rivalry games (Aggressive)");
-            System.out.println("3. Remove extra games");
-            System.out.println("4. Remove Non-Conference Games");
-            System.out.println("5. Manual Schedule Editing");
+            System.out.println("3. Remove Non-Conference Games");
+            System.out.println("4. Manual Schedule Editing");
+            System.out.println("5. Validate Schedule");
             System.out.println("6. Options");
             System.out.println("7. Save to Excel Sheet");
             String input = scanner.next();
@@ -45,13 +42,13 @@ class Application {
             } else if (input.equals("2")) {
                 addRivalryGamesOption(seasonSchedule, schoolList, true);
             } else if (input.equals("3")) {
-                removeExtraGames(seasonSchedule, schoolList);
-            } else if (input.equals("4")) {
                 removeNonConferenceGamesUI(seasonSchedule);
-            } else if (input.equals("5")) {
+            } else if (input.equals("4")) {
                 manualOptionUI(seasonSchedule, schoolList);
+            } else if (input.equals("5")) {
+                validateSchedule(seasonSchedule, schoolList);
             } else if (input.equals("6")) {
-                optionsOptionUI();
+                optionsOptionUI(seasonSchedule, schoolList);
             } else if (input.equals("7")) {
                 ExcelReader.write(seasonSchedule);
             } else {
@@ -78,7 +75,7 @@ class Application {
                 seasonSchedule.removeAllNonConferenceGames(false);
             } else if (input.equals("3")) {
                 seasonSchedule.removeAllNonConferenceGames(true);
-            } else  {
+            } else {
                 System.out.println("Please choose an option.");
             }
         }
@@ -102,7 +99,7 @@ class Application {
                     modifyScheduleUI(seasonSchedule, schoolList, school);
                 }
             } else if (input.equals("2")) {
-                optionsOptionUI();
+                optionsOptionUI(seasonSchedule, schoolList);
             } else if (input.equals("3")) {
                 ExcelReader.write(seasonSchedule);
             } else {
@@ -111,8 +108,22 @@ class Application {
         }
     }
 
-    private static void optionsOptionUI() {
-        System.out.println("This option is still under development...");
+    private static void optionsOptionUI(SeasonSchedule schedule, SchoolList schoolList) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            printTitle("Options");
+            System.out.println("0. Back");
+            System.out.println("1. Assign Power Conferences");
+            int input = scanner.nextInt();
+            if (input == 0) {
+                exit = true;
+            } else if (input == 1) {
+                setPowerConferencesUI(schoolList);
+            } else {
+                System.out.println("Please choose an option.");
+            }
+        }
     }
 
     private static School searchByConferenceUI(SchoolList schoolList) {
@@ -326,28 +337,67 @@ class Application {
                 }
             }
             if (!rivalList.isEmpty()) {
-                String input = scanner.next();
-                if (input.equals("0")) {
+                int input = scanner.nextInt();
+                if (input == 0) {
                     exit = true;
+                } else if (input > 0 && input <= rivalList.size()) {
+                    addGameTwoSchoolsUI(seasonSchedule, school, rivalList.get(input - 1));
                 } else {
-                    try {
-                        int selection = Integer.parseInt(input);
-                        if (selection > 0 && selection < rivalList.size()) {
-                            addGameTwoSchoolsUI(seasonSchedule, school, rivalList.get(selection - 1));
-                        } else {
-                            System.out.println("Please enter a valid option.");
+                    System.out.println("Please enter a valid option.");
+                }
+            } else {
+                System.out.println("Sorry, all available rivalry games are already added.");
+                exit = true;
+            }
+        }
+    }
+
+    private static void setPowerConferencesUI(SchoolList schoolList) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            printTitle("Choose Conference to switch Power Conference flag");
+            System.out.println("0. Back");
+            ArrayList<String> conferences = schoolList.getConferences();
+            for (int i = 0; i < conferences.size(); i++) {
+                System.out.print((i + 1) + ". " + conferences.get(i));
+                boolean exit2 = false;
+                for (int j = 0; j < schoolList.size() && !exit2; j++) {
+                    if (schoolList.get(j).getConference().equals(conferences.get(i))) {
+                        exit2 = true;
+                        if (schoolList.get(j).isPowerConf()) {
+                            System.out.print("\t Power");
                         }
-                    } catch (NumberFormatException error) {
-                        System.out.println("Please enter a valid option.");
+                        System.out.println();
                     }
                 }
+            }
+            int input = scanner.nextInt();
+            if (input == 0) {
+                exit = true;
+            } else if (input > 0 && input <= conferences.size()) {
+                String selectedConf = conferences.get(input - 1);
+                for (int i = 0; i < schoolList.size(); i++) {
+                    School school = schoolList.get(i);
+                    if (school.getConference().equals(selectedConf)) {
+                        if (school.isPowerConf()) {
+                            school.setPowerConf(false);
+                        } else {
+                            school.setPowerConf(true);
+                        }
+                    }
+                }
+            } else {
+                System.out.println("Select a valid option.");
             }
         }
     }
 
     private static void addGameTwoSchoolsUI(SeasonSchedule seasonSchedule, School s1, School s2) {
         boolean isOpponent = s1.isOpponent(s2);
-        if (!isOpponent && ! s1.isInConference(s2)) {
+        boolean tooManyGames = s2.getSchedule().size() > 11;
+        printTitle(s2.getName() + " " + s2.getNickname());
+        if (!isOpponent && !s1.isInConference(s2) && !tooManyGames) {
             Scanner scanner = new Scanner(System.in);
             boolean exit = false;
             while (!exit) {
@@ -362,9 +412,35 @@ class Application {
                     if (input == 0) {
                         exit = true;
                     } else {
-                        int week = emptyWeeks.get(input - 1);
-                        seasonSchedule.addGame(s1, s2, week, 5, year);
-                        exit = true;
+                        boolean exit2 = false;
+                        boolean gameAdded = false;
+                        while (!exit2) {
+                            int week = emptyWeeks.get(input - 1);
+                            printTitle("Choose the Home Team");
+                            System.out.println("0. Back");
+                            System.out.println("1. " + s1);
+                            System.out.println("2. " + s2);
+                            System.out.println("3. Random");
+                            input = scanner.nextInt();
+                            if (input == 0) {
+                                exit2 = true;
+                            } else if (input == 1) {
+                                seasonSchedule.addGameSpecificHomeTeam(s2, s1, week, 5);
+                                exit2 = true;
+                                gameAdded = true;
+                            } else if (input == 2) {
+                                seasonSchedule.addGameSpecificHomeTeam(s1, s2, week, 5);
+                                exit2 = true;
+                                gameAdded = true;
+                            } else if (input == 3) {
+                                seasonSchedule.addGame(s1, s2, week, 5);
+                            } else {
+                                System.out.println("Please enter a valid option.");
+                            }
+                        }
+                        if (gameAdded) {
+                            exit = true;
+                        }
                     }
                 } else {
                     System.out.println("Sorry, there are no free weeks between these two teams, try removing a game first.");
@@ -374,6 +450,8 @@ class Application {
         } else {
             if (isOpponent) {
                 System.out.println("Cannot add a game between schools that already play each other.");
+            } else if (tooManyGames) {
+                System.out.println("Sorry, " + s2 + " already has the maximum number of scheduled games.");
             } else {
                 System.out.println("Cannot add a game between schools in the same conference.");
             }
@@ -478,20 +556,20 @@ class Application {
         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
         if (rivalRank < 2) {
             if (emptyWeeks.contains(12)) {
-                seasonSchedule.addGame(s1, rival, 12, 5, year);
+                seasonSchedule.addGame(s1, rival, 12, 5);
                 //week 13 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is referenced by 12
             } else if (emptyWeeks.contains(11)) {
-                seasonSchedule.addGame(s1, rival, 11, 5, year);
+                seasonSchedule.addGame(s1, rival, 11, 5);
                 //week 12 is empty
             } else if (emptyWeeks.contains(13)) {
-                seasonSchedule.addGame(s1, rival, 13, 5, year);
+                seasonSchedule.addGame(s1, rival, 13, 5);
                 //week 14 is empty
             } else if (!emptyWeeks.isEmpty()) {
-                seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5, year);
+                seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5);
                 //add game at emptyWeeks.get(0);
             }
         } else if (!emptyWeeks.isEmpty()) {
-            seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5, year);
+            seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5);
         }
     }
 
@@ -500,16 +578,16 @@ class Application {
         ArrayList<Integer> rweeks = findEmptyWeeks(rival);
         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1weeks, rweeks);
         if (emptyWeeks.contains(12)) {
-            seasonSchedule.addGame(s1, rival, 12, 5, year);
+            seasonSchedule.addGame(s1, rival, 12, 5);
             return;
             //week 13 is empty
         } else if (emptyWeeks.contains(11)) {
-            seasonSchedule.addGame(s1, rival, 11, 5, year);
+            seasonSchedule.addGame(s1, rival, 11, 5);
             return;
             //week 12 is empty
         }
         if (emptyWeeks.contains(13)) {
-            seasonSchedule.addGame(s1, rival, 13, 5, year);
+            seasonSchedule.addGame(s1, rival, 13, 5);
             return;
             //week 14 is empty
         }
@@ -519,7 +597,7 @@ class Application {
             //set game to variable
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
-                seasonSchedule.replaceGame(game, s1, rival, year);
+                seasonSchedule.replaceGame(game, s1, rival);
                 return;
             }
         }
@@ -529,7 +607,7 @@ class Application {
             //set game to variable
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
-                seasonSchedule.replaceGame(game, s1, rival, year);
+                seasonSchedule.replaceGame(game, s1, rival);
                 return;
             }
         }
@@ -539,7 +617,7 @@ class Application {
             //set game to variable
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
-                seasonSchedule.replaceGame(game, s1, rival, year);
+                seasonSchedule.replaceGame(game, s1, rival);
                 return;
             }
         }
@@ -549,7 +627,7 @@ class Application {
             //set game to variable
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
-                seasonSchedule.replaceGame(game, s1, rival, year);
+                seasonSchedule.replaceGame(game, s1, rival);
                 return;
             }
         }
@@ -559,7 +637,7 @@ class Application {
             //set game to variable
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
-                seasonSchedule.replaceGame(game, s1, rival, year);
+                seasonSchedule.replaceGame(game, s1, rival);
                 return;
             }
         }
@@ -569,7 +647,7 @@ class Application {
             //set game to variable
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
-                seasonSchedule.replaceGame(game, s1, rival, year);
+                seasonSchedule.replaceGame(game, s1, rival);
                 return;
             }
         }
@@ -578,7 +656,7 @@ class Application {
             Game rgame = rival.getSchedule().getGame(12);
             if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
                 seasonSchedule.removeGame(s1game);
-                seasonSchedule.replaceGame(rgame, s1, rival, year);
+                seasonSchedule.replaceGame(rgame, s1, rival);
                 return;
                 //remove both games and replace with this one...
             }
@@ -588,7 +666,7 @@ class Application {
             Game rgame = rival.getSchedule().getGame(11);
             if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
                 seasonSchedule.removeGame(s1game);
-                seasonSchedule.replaceGame(rgame, s1, rival, year);
+                seasonSchedule.replaceGame(rgame, s1, rival);
                 return;
                 //remove both games and replace with this one...
             }
@@ -598,16 +676,20 @@ class Application {
             Game rgame = rival.getSchedule().getGame(13);
             if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
                 seasonSchedule.removeGame(s1game);
-                seasonSchedule.replaceGame(rgame, s1, rival, year);
+                seasonSchedule.replaceGame(rgame, s1, rival);
                 return;
                 //remove both games and replace with this one...
             }
         }
         if (!emptyWeeks.isEmpty()) {
-            seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5, year);
-            return;
+            seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5);
             //add game at emptyWeeks.get(0);
         }
+    }
+
+    private static void validateSchedule(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+        removeExtraGames(seasonSchedule, schoolList);
+        fillOpenGames(seasonSchedule, schoolList);
     }
 
     private static void removeExtraGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
@@ -637,51 +719,7 @@ class Application {
     private static void fillOpenGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
         SchoolList tooFewGames = schoolList.findTooFewGames();
         addRivalryGamesAll(seasonSchedule, tooFewGames, false);
-        addRandomGames2(seasonSchedule, schoolList, tooFewGames);
-    }
-
-
-    private static void addRandomGames(SeasonSchedule seasonSchedule, SchoolList schoolList, SchoolList tooFewGames) {
-        for (int i = 0; i < tooFewGames.size(); i++) {
-            School s1 = tooFewGames.get(i);
-            if (s1.getSchedule().size() < 12) {
-                for (int j = 0; j < tooFewGames.size() && s1.getSchedule().size() < 12; j++) {
-                    School s2 = tooFewGames.get(j);
-                    if (s1.isPossibleOpponent(s2) && s2.getSchedule().size() < 12) {
-                        ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, s2);
-                        if (!emptyWeeks.isEmpty()) {
-                            seasonSchedule.addGame(s1, s2, emptyWeeks.get(0), 5, year);
-                        }
-                    }
-                }
-            }
-        }
-        for (int i = tooFewGames.size() - 1; i >= 0; i--) {
-            if (tooFewGames.get(i).getSchedule().size() == 12) {
-                tooFewGames.remove(i);
-            }
-        }
-
-        if (!tooFewGames.isEmpty()) {
-            //add games vs fcs schools
-            for (int i = 0; i < tooFewGames.size(); i++) {
-                School s1 = tooFewGames.get(i);
-                for (int j = 0; j < schoolList.size() && s1.getSchedule().size() < 12; j++) {
-                    if (!schoolList.get(j).getDivision().equals("FBS")) {
-                        School fcs = schoolList.get(j);
-                        ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, fcs);
-                        if (!emptyWeeks.isEmpty()) {
-                            seasonSchedule.addGame(s1, fcs, emptyWeeks.get(0), 5, year);
-                        }
-                    }
-                }
-            }
-        }
-        for (int i = tooFewGames.size() - 1; i >= 0; i--) {
-            if (tooFewGames.get(i).getSchedule().size() == 12) {
-                tooFewGames.remove(i);
-            }
-        }
+        addRandomGames(seasonSchedule, schoolList, tooFewGames);
     }
 
     private static Game findGame(School s1, School s2) {
@@ -694,7 +732,7 @@ class Application {
         return null;
     }
 
-    private static void addRandomGames2(SeasonSchedule seasonSchedule, SchoolList allSchools, SchoolList needGames) {
+    private static void addRandomGames(SeasonSchedule seasonSchedule, SchoolList allSchools, SchoolList needGames) {
         for (int i = 0; i < needGames.size(); i++) {
             School s1 = needGames.get(i);
             SchoolList myOptions = new SchoolList();
@@ -702,7 +740,7 @@ class Application {
                 myOptions.add(needGames.get(j));
             }
             boolean exit = false;
-            while (!exit) {
+            while (!exit && !myOptions.isEmpty()) {
                 int max = myOptions.size() - 1;
                 int min = 0;
                 int range = max - min + 1;
@@ -711,7 +749,7 @@ class Application {
                 ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, randomSchool);
                 if (randomSchool.getSchedule().size() < 12) {
                     if (s1.isPossibleOpponent(randomSchool) && !emptyWeeks.isEmpty()) {
-                        seasonSchedule.addGame(s1, randomSchool, emptyWeeks.get(0), 5, year);
+                        seasonSchedule.addGame(s1, randomSchool, emptyWeeks.get(0), 5);
                     }
                     myOptions.remove(randomSchool);
                     if (randomSchool.getSchedule().size() > 11) {
@@ -747,7 +785,7 @@ class Application {
                         School fcs = allSchools.get(j);
                         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, fcs);
                         if (!emptyWeeks.isEmpty()) {
-                            seasonSchedule.addGame(s1, fcs, emptyWeeks.get(0), 5, year);
+                            seasonSchedule.addGame(s1, fcs, emptyWeeks.get(0), 5);
                         }
                     }
                 }

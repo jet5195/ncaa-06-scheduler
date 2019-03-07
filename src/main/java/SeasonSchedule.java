@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 public class SeasonSchedule extends SchoolSchedule {
@@ -16,18 +17,22 @@ public class SeasonSchedule extends SchoolSchedule {
     }
 
 
-    public void addGame(School s1, School s2, int week, int day, int year) {
-        addGame(s1, s2, week, day, findGameNumber(week), year);
+    public void addGame(School s1, School s2, int week, int day) {
+        randomizeHomeTeam(s1, s2, week, day, findGameNumber(week));
+    }
+
+    public void addGameSpecificHomeTeam(School s1, School s2, int week, int day) {
+        addGame(s1, s2, week, day, findGameNumber(week));
     }
 
     //only used in replaceGame method
-    private void addGame(School s1, School s2, int week, int day, int gameNumber, int year) {
+    private void addGame(School away, School home, int week, int day, int gameNumber) {
         //this if statement is so rivalry games switch back and forth from year to year
-        Game newGame = year % 2 == 0 ? new Game(s1, s2, gameNumber, week, day) : new Game(s2, s1, gameNumber, week, day);
-        s1.addGame(newGame);
-        s2.addGame(newGame);
+        Game newGame = new Game(away, home, gameNumber, week, day);
+        away.addGame(newGame);
+        home.addGame(newGame);
         this.add(newGame);//decide if this is actually how you want to add games.. if doing it like this I will just have to go through and remake the schedule in the end. Best solution is to make a addGame method.. NO make schedule its own new object that extends a list and change the add method.. or add to it
-        LOGGER.info("Adding game " + s1.getName() + " vs " + s2.getName());
+        LOGGER.info("Adding game " + away.getName() + " at " + home.getName());
     }
 
     public void removeGame(Game theGame) {
@@ -40,17 +45,38 @@ public class SeasonSchedule extends SchoolSchedule {
         s1.getSchedule().remove(theGame);
         s2.getSchedule().remove(theGame);
         updateGameNumbers(gameNumber, weekNumber);
-        LOGGER.info("Removing game " + s1 + " vs " + s2);
+        LOGGER.info("Removing game " + s1 + " at " + s2);
     }
 
-    public void replaceGame(Game theGame, School s1, School s2, int year) {
+    public void replaceGame(Game theGame, School s1, School s2) {
         int gameNumber = theGame.getGameNumber();
         int weekNumber = theGame.getWeek();
+        int dayNumber = theGame.getDay();
         this.remove(theGame);
-        LOGGER.info("Removing & replacing game between " + theGame.getAwayTeam() + " and " + theGame.getHomeTeam());
+        LOGGER.info("Removing and replacing " + theGame.getAwayTeam() + " at " + theGame.getHomeTeam());
         theGame.getHomeTeam().getSchedule().remove(theGame);
         theGame.getAwayTeam().getSchedule().remove(theGame);
-        addGame(s1, s2, weekNumber, 5, gameNumber, year);
+        randomizeHomeTeam(s1, s2, weekNumber, dayNumber, gameNumber);
+    }
+
+    private void randomizeHomeTeam(School s1, School s2, int week, int day, int game) {
+        if (s1.isRival(s2) || s1.isPowerConf() == s2.isPowerConf()) {
+            int max = 2;
+            int min = 1;
+            int range = max - min + 1;
+            int random = (int) (Math.random() * range) + min;
+            if (random == 1 && (s1.isRival(s2) || !s2.getDivision().equalsIgnoreCase("FCS"))) {
+                addGame(s1, s2, week, day, game);
+            } else {
+                addGame(s2, s1, week, day, game);
+            }
+        } else {
+            if (s1.isPowerConf()) {
+                addGame(s2, s1, week, day, game);
+            } else {
+                addGame(s1, s2, week, day, game);
+            }
+        }
     }
 
     private void updateGameNumbers(int gameNumber, int weekNumber) {
@@ -61,24 +87,24 @@ public class SeasonSchedule extends SchoolSchedule {
         }
     }
 
-    public void removeAllFcsGames(){
+    public void removeAllFcsGames() {
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
-            if (game.getHomeTeam().getDivision().equalsIgnoreCase("FCS")||game.getAwayTeam().getDivision().equalsIgnoreCase("FCS")){
+            if (game.getHomeTeam().getDivision().equalsIgnoreCase("FCS") || game.getAwayTeam().getDivision().equalsIgnoreCase("FCS")) {
                 this.removeGame(game);
                 i--;
             }
         }
     }
 
-    public void removeAllNonConferenceGames(boolean removeRivals){
+    public void removeAllNonConferenceGames(boolean removeRivals) {
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
-            if (!game.getHomeTeam().getConference().equalsIgnoreCase(game.getAwayTeam().getConference())){
+            if (!game.getHomeTeam().getConference().equalsIgnoreCase(game.getAwayTeam().getConference())) {
                 if (removeRivals) {
                     this.removeGame(game);
                     i--;
-                } else if (!game.isRivalryGame()){
+                } else if (!game.isRivalryGame()) {
                     this.removeGame(game);
                     i--;
                 }
@@ -89,7 +115,7 @@ public class SeasonSchedule extends SchoolSchedule {
     /**
      * @return ArrayList of Strings of the SeasonSchedule
      */
-    public ArrayList scheduleToList(boolean header){
+    public ArrayList scheduleToList(boolean header) {
         ArrayList<ArrayList> list = new ArrayList();
         if (header) {
             ArrayList<String> firstLine = new ArrayList();
