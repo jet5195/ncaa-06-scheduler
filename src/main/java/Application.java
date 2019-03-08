@@ -17,8 +17,19 @@ class Application {
     }
 
     private static void commandLineUI() throws IOException {
-        final String schoolsFile = "src/main/resources/My_Custom_Conferences.xlsx";
-        final String scheduleFile = "src/main/resources/SCHED.xlsx";
+        FileChooser fileChooser = new FileChooser();
+        final String schoolsFile = fileChooser.chooseFile("Select Custom Conferences Excel Document");
+        if (schoolsFile == null){
+            System.out.println("No file selected, exiting program.");
+            System.exit(0);
+        }
+        //final String schoolsFile = "src/main/resources/My_Custom_Conferences.xlsx";
+        final String scheduleFile =  fileChooser.chooseFile("Select Schedule Excel Document");
+        if (scheduleFile == null){
+            System.out.println("No file selected, exiting program.");
+            System.exit(0);
+        }
+        //final String scheduleFile = "src/main/resources/SCHED.xlsx";
         SchoolList schoolList = ExcelReader.getSchoolData(schoolsFile);
         SeasonSchedule seasonSchedule = ExcelReader.getScheduleData(scheduleFile, schoolList);
         System.out.println("Welcome to the NCAA Football PS2 Scheduler");
@@ -55,6 +66,7 @@ class Application {
                 System.out.println("Please choose an option.");
             }
         }
+        System.exit(0);
     }
 
     private static void removeNonConferenceGamesUI(SeasonSchedule seasonSchedule) {
