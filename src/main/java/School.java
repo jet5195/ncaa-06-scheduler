@@ -95,12 +95,17 @@ public class School {
         return powerConf;
     }
 
+    /**
+     *
+     * @param powerConf true if school is in a power conference, false if else
+     */
     public void setPowerConf(boolean powerConf) {
         this.powerConf = powerConf;
     }
 
     /**
-     * @return
+     * Searches a school's schedule for a game that is not in conference or a rivalry game
+     * @return Game that is removable (not a rivalry and not a conference game)
      */
     public Game findRemovableGame() {
         for (int i = 0; i < this.getSchedule().size(); i++) {
@@ -113,10 +118,20 @@ public class School {
         return null;
     }
 
+    /**
+     * Checks to see if this school is in the same conference as another
+     * @param school the shcool you are checking against
+     * @return true if in the same conference, false if else
+     */
     public boolean isInConference(School school) {
         return this.getConference().equalsIgnoreCase(school.getConference());
     }
 
+    /**
+     * Checks to see if this school plays an opponent
+     * @param school the opponent
+     * @return true if these schools do play, false if else
+     */
     public boolean isOpponent(School school) {
         for (int i = 0; i < this.getSchedule().size(); i++) {
             if (this.getSchedule().get(i).getHomeTeam() != null && this.getSchedule().get(i).getAwayTeam() != null) {
@@ -129,10 +144,18 @@ public class School {
         return false;
     }
 
+    /**
+     * Returns true if schools are not in the same conference and don't already play one another
+     * @param school the opponent
+     * @return true if schools are not in the same conference and don't already play one another
+     */
     public boolean isPossibleOpponent(School school) {
         return !this.isInConference(school) && !this.isOpponent(school);
     }
 
+    /**
+     * Prints the schedule of a school
+     */
     public void printSchedule() {
         int i = 0;
         int lastWeek = -1;
@@ -158,6 +181,11 @@ public class School {
         }
     }
 
+    /**
+     * Returns true if opponent is a rival, false if else
+     * @param opponent the opponent
+     * @return true if opponent is a rival, false if else
+     */
     public boolean isRival(School opponent) {
         for (int i = 0; i < this.getRivals().size(); i++) {
             if (this.getRivals().get(i).getName().equals(opponent.getName())) {

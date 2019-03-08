@@ -110,14 +110,26 @@ public class Game implements Comparable {
         this.gameNumber = gameNumber;
     }
 
+    /**
+     * Returns true if game is a rivalry game
+     * @return true if game is a rivalry game, false if else
+     */
     public boolean isRivalryGame() {
         return this.getHomeTeam().isRival(this.getAwayTeam());
     }
 
+    /**
+     * Returns true if a game is not a rivalry and is not in conference
+     * @return true if a game is not a rivalry and not in conference, false if else
+     */
     public boolean isRemovableGame() {
         return this.getConferenceGame() == 0 && !this.isRivalryGame();
     }
 
+    /**
+     *
+     * @return an arrayList of all the data of a specific game, is used when creating the output excel file
+     */
     public ArrayList gameToList() {
         ArrayList<Integer> list = new ArrayList();
         int i = 0;
@@ -150,6 +162,11 @@ public class Game implements Comparable {
         return list;
     }
 
+    /**
+     * Compares 2 games by week ascending.
+     * @param game2 the game to compare
+     * @return a negative number if this game is before game2 in terms of what week they play
+     */
     public int compareTo(@NotNull Object game2) {
         int compareWeek = ((Game) game2).getWeek();
         return this.getWeek() - compareWeek;

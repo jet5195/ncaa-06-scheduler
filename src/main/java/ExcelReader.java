@@ -14,6 +14,12 @@ class ExcelReader {
         //workbook.close();
     }
 
+    /**
+     * Populates a school list of all schools in your excel file
+     * @param path the path of your custom conferences excel file
+     * @return SchoolList of all schools in your excel file
+     * @throws IOException
+     */
     public static SchoolList getSchoolData(String path) throws IOException {
         Workbook workbook = readExcel(path);
         // Getting the Sheet at index zero
@@ -88,6 +94,13 @@ class ExcelReader {
         return allSchools;
     }
 
+    /**
+     * Populates the season's schedule as well as all school's schedules. Also adds FCS schools to the school list as they are found.
+     * @param path the path of the Schedule excel file
+     * @param allSchools the list of all schools
+     * @return SeasonSchedule a list of all games in a season
+     * @throws IOException
+     */
     public static SeasonSchedule getScheduleData(String path, SchoolList allSchools) throws IOException {
         School bowlSchool = new School(511, "Bowl", "Bowl", "Bowl", "Bowl", "Bowl");
         Workbook workbook = readExcel(path);
@@ -178,6 +191,11 @@ class ExcelReader {
         return seasonSchedule;
     }
 
+    /**
+     * Writes schedule to a new excel file
+     * @param seasonSchedule the schedule to write to a new excel file
+     * @throws IOException
+     */
     public static void write(SeasonSchedule seasonSchedule) throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet();

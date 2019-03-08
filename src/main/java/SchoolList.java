@@ -24,6 +24,11 @@ public class SchoolList extends LinkedList<School> {
         return null;
     }
 
+    /**
+     *
+     * @param conf the name of a a conference
+     * @return all schools in a given conference conf
+     */
     public SchoolList conferenceSearch(String conf) {
         SchoolList conference = new SchoolList();
         for (int i = 0; i < this.size(); i++) {
@@ -35,6 +40,10 @@ public class SchoolList extends LinkedList<School> {
         return conference;
     }
 
+    /**
+     *
+     * @return ArrayList<String> a list of all conferences in the list
+     */
     public ArrayList<String> getConferences() {
         ArrayList<String> conferences = new ArrayList();
         for (int i = 0; i < this.size(); i++) {
@@ -60,6 +69,9 @@ public class SchoolList extends LinkedList<School> {
         return null;
     }
 
+    /**
+     * Searches for user schools and adds that flag to every user school in the list
+     */
     public void populateUserSchools() {
         for (int i = 0; i < this.size(); i++) {
             School theSchool = this.get(i);

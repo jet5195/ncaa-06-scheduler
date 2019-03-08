@@ -5,27 +5,54 @@ import org.apache.log4j.Logger;
 public class SeasonSchedule extends SchoolSchedule {
 
     private SeasonSchedule bowlSchedule;
-
     private final Logger LOGGER = Logger.getLogger(SeasonSchedule.class.getName());
 
+    /**
+     *
+     * @return the bowl schedule
+     */
     public SeasonSchedule getBowlSchedule() {
         return bowlSchedule;
     }
 
+    /**
+     * Sets the bowl schedule. Currently this is only called once when the excel file is being read
+     * @param bowlSchedule
+     */
     public void setBowlSchedule(SeasonSchedule bowlSchedule) {
         this.bowlSchedule = bowlSchedule;
     }
 
-
+    /**
+     * Adds game with a randomized home team
+     * @param s1 school 1
+     * @param s2 school 2
+     * @param week the week of the game
+     * @param day the day of the game
+     */
     public void addGame(School s1, School s2, int week, int day) {
         randomizeHomeTeam(s1, s2, week, day, findGameNumber(week));
     }
 
-    public void addGameSpecificHomeTeam(School s1, School s2, int week, int day) {
-        addGame(s1, s2, week, day, findGameNumber(week));
+    /**
+     * Adds game to the schedule with the home team already selected
+     * @param away the away school
+     * @param home the home school
+     * @param week the week of the game
+     * @param day the day of the game
+     */
+    public void addGameSpecificHomeTeam(School away, School home, int week, int day) {
+        addGame(away, home, week, day, findGameNumber(week));
     }
 
-    //only used in replaceGame method
+    /**
+     * Adds game to schedule after the home team is selected, either randomly or via addGameSpecificHomeTeam method
+     * @param away the away school
+     * @param home the home school
+     * @param week the week of the game
+     * @param day the day of the game
+     * @param gameNumber the game of the week
+     */
     private void addGame(School away, School home, int week, int day, int gameNumber) {
         //this if statement is so rivalry games switch back and forth from year to year
         Game newGame = new Game(away, home, gameNumber, week, day);
@@ -35,6 +62,10 @@ public class SeasonSchedule extends SchoolSchedule {
         LOGGER.info("Adding game " + away.getName() + " at " + home.getName());
     }
 
+    /**
+     * Removes a game from the schedule and updates all affected game numbers
+     * @param theGame the game to be removed
+     */
     public void removeGame(Game theGame) {
         //code to change the game numbers for all games afterwards in this week
         School s1 = theGame.getHomeTeam();
@@ -48,6 +79,12 @@ public class SeasonSchedule extends SchoolSchedule {
         LOGGER.info("Removing game " + s1 + " at " + s2);
     }
 
+    /**
+     * Replaces theGame with a new game between school s1 & s2
+     * @param theGame the game to be replaced
+     * @param s1 school 1 of the new game
+     * @param s2 school 2 of the new game
+     */
     public void replaceGame(Game theGame, School s1, School s2) {
         int gameNumber = theGame.getGameNumber();
         int weekNumber = theGame.getWeek();
@@ -59,6 +96,14 @@ public class SeasonSchedule extends SchoolSchedule {
         randomizeHomeTeam(s1, s2, weekNumber, dayNumber, gameNumber);
     }
 
+    /**
+     * Adds a game with a random home team. This does contain logic for P5 getting home preference over G5 and FCS schools as well.
+     * @param s1 school 1
+     * @param s2 school 2
+     * @param week week of the game
+     * @param day day of the game
+     * @param game game number of the week
+     */
     private void randomizeHomeTeam(School s1, School s2, int week, int day, int game) {
         if (s1.isRival(s2) || s1.isPowerConf() == s2.isPowerConf()) {
             int max = 2;
@@ -79,6 +124,11 @@ public class SeasonSchedule extends SchoolSchedule {
         }
     }
 
+    /**
+     * Updates the game numbers after removing a game from a week's schedule
+     * @param gameNumber the game number that is being removed
+     * @param weekNumber the week of the game that is being removed
+     */
     private void updateGameNumbers(int gameNumber, int weekNumber) {
         for (Game game : this) {
             if (game.getWeek() == weekNumber && game.getGameNumber() > gameNumber) {
@@ -87,6 +137,9 @@ public class SeasonSchedule extends SchoolSchedule {
         }
     }
 
+    /**
+     * Removes all FCS games from the schedule
+     */
     public void removeAllFcsGames() {
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
@@ -97,6 +150,10 @@ public class SeasonSchedule extends SchoolSchedule {
         }
     }
 
+    /**
+     * Removes all non-conference games from schedule
+     * @param removeRivals if true, all Non-Conference games will be removed. If false, then only non-conference games that aren't rivalry games will be removed
+     */
     public void removeAllNonConferenceGames(boolean removeRivals) {
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
