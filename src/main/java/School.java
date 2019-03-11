@@ -124,7 +124,10 @@ public class School {
      * @return true if in the same conference, false if else
      */
     public boolean isInConference(School school) {
-        return this.getConference().equalsIgnoreCase(school.getConference());
+        if(this.getConference().equals("Independent")) {
+            return false;
+
+        } else return this.getConference().equalsIgnoreCase(school.getConference());
     }
 
     /**
