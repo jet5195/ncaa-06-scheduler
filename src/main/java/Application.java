@@ -40,11 +40,12 @@ class Application {
             System.out.println("0. Exit");
             System.out.println("1. Automatically add rivalry games (Conservative)");
             System.out.println("2. Automatically add rivalry games (Aggressive)");
-            System.out.println("3. Remove Non-Conference Games");
-            System.out.println("4. Manual Schedule Editing");
-            System.out.println("5. Validate Schedule");
-            System.out.println("6. Options");
-            System.out.println("7. Save to Excel Sheet");
+            System.out.println("3. Add Games Randomly");
+            System.out.println("4. Remove Non-Conference Games");
+            System.out.println("5. Manual Schedule Editing");
+            System.out.println("6. Validate Schedule");
+            System.out.println("7. Options");
+            System.out.println("8. Save to Excel Sheet");
             String input = scanner.next();
             if (input.equals("0")) {
                 exit = true;
@@ -53,14 +54,16 @@ class Application {
             } else if (input.equals("2")) {
                 addRivalryGamesOption(seasonSchedule, schoolList, true);
             } else if (input.equals("3")) {
-                removeNonConferenceGamesUI(seasonSchedule);
+                addRandomGames(seasonSchedule, schoolList, schoolList.findTooFewGames());
             } else if (input.equals("4")) {
-                manualOptionUI(seasonSchedule, schoolList);
+                removeNonConferenceGamesUI(seasonSchedule);
             } else if (input.equals("5")) {
-                validateSchedule(seasonSchedule, schoolList);
+                manualOptionUI(seasonSchedule, schoolList);
             } else if (input.equals("6")) {
-                optionsOptionUI(seasonSchedule, schoolList);
+                validateSchedule(seasonSchedule, schoolList);
             } else if (input.equals("7")) {
+                optionsOptionUI(seasonSchedule, schoolList);
+            } else if (input.equals("8")) {
                 ExcelReader.write(seasonSchedule);
             } else {
                 System.out.println("Please choose an option.");
@@ -289,7 +292,10 @@ class Application {
                 } else if (input.equals("3")) {
                     addRivalryGamesManuallyUI(seasonSchedule, school);
                 } else if (input.equals("4")) {
-                    addGameTwoSchoolsUI(seasonSchedule, school, schoolSelectUI(schoolList));
+                    School opponent = schoolSelectUI(schoolList);
+                    if (opponent!= null && !opponent.getName().equals("null")) {
+                        addGameTwoSchoolsUI(seasonSchedule, school, opponent);
+                    }
                 } else {
                     System.out.println("Select a valid option.");
                 }
@@ -420,35 +426,40 @@ class Application {
                     for (int i = 0; i < emptyWeeks.size(); i++) {
                         System.out.println((i + 1) + ". " + (emptyWeeks.get(i) + 1));
                     }
-                    int input = scanner.nextInt();
-                    if (input == 0) {
+                    int week = scanner.nextInt();
+                    if (week == 0) {
                         exit = true;
                     } else {
                         boolean exit2 = false;
                         boolean gameAdded = false;
                         while (!exit2) {
-                            int week = emptyWeeks.get(input - 1);
                             printTitle("Choose the Home Team");
                             System.out.println("0. Back");
                             System.out.println("1. " + s1);
                             System.out.println("2. " + s2);
                             System.out.println("3. Random");
-                            input = scanner.nextInt();
+                            int input = scanner.nextInt();
                             if (input == 0) {
                                 exit2 = true;
-                            } else if (input == 1) {
-                                seasonSchedule.addGameSpecificHomeTeam(s2, s1, week, 5);
-                                exit2 = true;
-                                gameAdded = true;
-                            } else if (input == 2) {
-                                seasonSchedule.addGameSpecificHomeTeam(s1, s2, week, 5);
-                                exit2 = true;
-                                gameAdded = true;
-                            } else if (input == 3) {
-                                seasonSchedule.addGame(s1, s2, week, 5);
                             } else {
-                                System.out.println("Please enter a valid option.");
+                                week = emptyWeeks.get(week - 1);
+                                if (input == 1) {
+                                    seasonSchedule.addGameSpecificHomeTeam(s2, s1, week, 5);
+                                    exit2 = true;
+                                    gameAdded = true;
+                                } else if (input == 2) {
+                                    seasonSchedule.addGameSpecificHomeTeam(s1, s2, week, 5);
+                                    exit2 = true;
+                                    gameAdded = true;
+                                } else if (input == 3) {
+                                    seasonSchedule.addGame(s1, s2, week, 5);
+                                    exit2 = true;
+                                    gameAdded = true;
+                                } else {
+                                    System.out.println("Please enter a valid option.");
+                                }
                             }
+
                         }
                         if (gameAdded) {
                             exit = true;
