@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Game implements Comparable {
     private School homeTeam;//ghtg
     private School awayTeam;//gatg
-    private int time;//gtod 750, 930, 1080, 1200,
+    private int time;//gtod 750 = 12:30 pm, 930 = 3:30 pm, 1080 = 6:00 pm, 1200 = 8:00 pm,
     private int day;//gdat 5 sat.. etc
     private int conferenceGame; // gmfx 0 if out of conference, 1 if conference
     private int week; //sewn & sewt
@@ -29,10 +29,20 @@ public class Game implements Comparable {
         this.gameNumber = gameNumber;
         this.week = week;
         this.day = day;
+        // 750 = 12:30 pm, 930 = 3:30 pm, 1080 = 6:00 pm, 1200 = 8:00 pm,
+        boolean random = Math.random() < .5;
         if (isRivalryGame()) {
-            this.time = 1080;
+            if (random) {
+                this.time = 930;
+            } else {
+                this.time = 1200;
+            }
         } else {
-            this.time = 1200;
+            if (random){
+                this.time = 750;
+            } else {
+                this.time = 1080;
+            }
         }
         if (awayTeam.isUserTeam() || homeTeam.isUserTeam()) {
             this.userGame = 1;
