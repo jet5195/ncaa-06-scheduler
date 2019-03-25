@@ -157,7 +157,11 @@ public class Game implements Comparable {
             } else if (i == 8) {
                 list.add(this.getDay());
             } else if (i == 10) {
-                list.add(this.getWeek());
+                if (this.getWeek()<18) {
+                    list.add(this.getWeek());
+                } else {
+                    list.add(this.getWeek()+12);
+                }
             } else if (i == 11) {
                 list.add(this.getUserGame());
             } else if (i == 12) {
