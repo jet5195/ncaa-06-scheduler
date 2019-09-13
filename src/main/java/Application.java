@@ -772,7 +772,10 @@ class Application {
                 ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, randomSchool);
                 if (randomSchool.getSchedule().size() < 12) {
                     if (s1.isPossibleOpponent(randomSchool) && !emptyWeeks.isEmpty()) {
-                        seasonSchedule.addGame(s1, randomSchool, emptyWeeks.get(0), 5);
+                        //verify Alabama won't play Michigan to end the year. Instead they'll play LA Monroe
+                        if (emptyWeeks.get(0) < 11 || (s1.isPowerConf() ^ randomSchool.isPowerConf())) {
+                            seasonSchedule.addGame(s1, randomSchool, emptyWeeks.get(0), 5);
+                        }
                     }
                     myOptions.remove(randomSchool);
                     if (randomSchool.getSchedule().size() > 11) {
