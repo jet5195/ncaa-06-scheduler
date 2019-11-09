@@ -94,7 +94,7 @@ public class SchoolList extends LinkedList<School> {
         SchoolList tooManyGames = new SchoolList();
         for (int i = 0; i < this.size(); i++) {
             School theSchool = this.get(i);
-            if (theSchool.getDivision().equals("FBS") && theSchool.getSchedule().size() > 12) {
+            if (theSchool.getSubdivision().equals("FBS") && theSchool.getSchedule().size() > 12) {
                 tooManyGames.add(theSchool);
             }
         }
@@ -108,7 +108,7 @@ public class SchoolList extends LinkedList<School> {
         SchoolList tooFewGames = new SchoolList();
         for (int i = 0; i < this.size(); i++) {
             School theSchool = this.get(i);
-            if (theSchool.getSchedule().size() < 12 && theSchool.getDivision().equals("FBS")) {
+            if (theSchool.getSchedule().size() < 12 && theSchool.getSubdivision().equals("FBS")) {
                 tooFewGames.add(theSchool);
             }
         }

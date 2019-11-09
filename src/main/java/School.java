@@ -4,19 +4,22 @@ public class School {
     private String nickname;
     private String state;
     private String conference;
-    private String division; //fbs or fcs
+    private String subdivision; //fbs or fcs
+    private String division; //east, west, etc
+    private School crossDivRival;
     private SchoolList rivals;
     private boolean userTeam;
     private SchoolSchedule schedule = new SchoolSchedule();
     private boolean powerConf;
 
-    public School(int tgid, String name, String nickname, String state, String conference, String division) {
+    public School(int tgid, String name, String nickname, String state, String conference, String division, String subdivision) {
         this.tgid = tgid;
         this.name = name;
         this.nickname = nickname;
         this.state = state;
         this.conference = conference;
         this.division = division;
+        this.subdivision = subdivision;
     }
 
     public SchoolList getRivals() {
@@ -75,6 +78,14 @@ public class School {
         this.division = division;
     }
 
+    public String getSubdivision() {
+        return subdivision;
+    }
+
+    public void setSubdivision(String subdivision) {
+        this.subdivision = subdivision;
+    }
+
     public boolean isUserTeam() {
         return userTeam;
     }
@@ -93,6 +104,14 @@ public class School {
 
     public boolean isPowerConf() {
         return powerConf;
+    }
+
+    public School getCrossDivRival() {
+        return crossDivRival;
+    }
+
+    public void setCrossDivRival(School crossDivRival) {
+        this.crossDivRival = crossDivRival;
     }
 
     /**

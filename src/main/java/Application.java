@@ -7,7 +7,8 @@ import java.util.Collections;
 import java.util.Scanner;
 
 class Application {
-    private static final School nullSchool = new School(999, "null", "null", "null", "null", "null");
+    private static final School nullSchool = new School(999, "null", "null", "null", "null", "null", "null");
+    private static int year = 2020;
 
     private final Logger LOGGER = Logger.getLogger(Application.class.getName());
 
@@ -130,11 +131,14 @@ class Application {
             printTitle("Options");
             System.out.println("0. Back");
             System.out.println("1. Assign Power Conferences");
+            System.out.println("2. Set Year");
             int input = scanner.nextInt();
             if (input == 0) {
                 exit = true;
             } else if (input == 1) {
                 setPowerConferencesUI(schoolList);
+            } else if (input == 2) {
+                year = scanner.nextInt();
             } else {
                 System.out.println("Please choose an option.");
             }
@@ -545,7 +549,7 @@ class Application {
             for (int i = 0; i < allSchools.size(); i++) {
                 //go through all the schools
                 School s1 = allSchools.get(i);
-                if (s1.getDivision().equals("FBS") && j < s1.getRivals().size()) {
+                if (s1.getSubdivision().equals("FBS") && j < s1.getRivals().size()) {
                     School rival = s1.getRivals().get(j);
                     addRivalryGameTwoSchools(seasonSchedule, s1, rival, aggressive, j);
                 }
@@ -807,7 +811,7 @@ class Application {
             for (int i = 0; i < needGames.size(); i++) {
                 School s1 = needGames.get(i);
                 for (int j = 0; j < allSchools.size() && s1.getSchedule().size() < 12; j++) {
-                    if (!allSchools.get(j).getDivision().equals("FBS")) {
+                    if (!allSchools.get(j).getSubdivision().equals("FBS")) {
                         School fcs = allSchools.get(j);
                         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, fcs);
                         if (!emptyWeeks.isEmpty()) {
@@ -822,6 +826,9 @@ class Application {
                 needGames.remove(i);
             }
         }
+    }
+    private static void confSchedAlgorithm(SeasonSchedule seasonSchedule) {
+
     }
 
     private static void printTitle(String text) {

@@ -79,6 +79,12 @@ public class SeasonSchedule extends SchoolSchedule {
         LOGGER.info("Removing game " + s1 + " at " + s2);
     }
 
+    public void clearSchedule() {
+        for (Game game : this) {
+            this.removeGame(game);
+        }
+    }
+
     /**
      * Replaces theGame with a new game between school s1 & s2
      * @param theGame the game to be replaced
@@ -110,7 +116,7 @@ public class SeasonSchedule extends SchoolSchedule {
             int min = 1;
             int range = max - min + 1;
             int random = (int) (Math.random() * range) + min;
-            if (random == 1 && (s1.isRival(s2) || !s2.getDivision().equalsIgnoreCase("FCS"))) {
+            if (random == 1 && (s1.isRival(s2) || !s2.getSubdivision().equalsIgnoreCase("FCS"))) {
                 addGame(s1, s2, week, day, game);
             } else {
                 addGame(s2, s1, week, day, game);
@@ -143,7 +149,7 @@ public class SeasonSchedule extends SchoolSchedule {
     public void removeAllFcsGames() {
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
-            if (game.getHomeTeam().getDivision().equalsIgnoreCase("FCS") || game.getAwayTeam().getDivision().equalsIgnoreCase("FCS")) {
+            if (game.getHomeTeam().getSubdivision().equalsIgnoreCase("FCS") || game.getAwayTeam().getDivision().equalsIgnoreCase("FCS")) {
                 this.removeGame(game);
                 i--;
             }
