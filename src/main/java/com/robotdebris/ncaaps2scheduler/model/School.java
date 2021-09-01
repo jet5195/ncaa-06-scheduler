@@ -1,4 +1,7 @@
-package com.robotdebris.ncaaps2scheduler;
+package com.robotdebris.ncaaps2scheduler.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class School {
     private int tgid;
     private String name;
@@ -6,8 +9,10 @@ public class School {
     private String state;
     private String conference;
     private String division; //fbs or fcs
+    @JsonIgnore
     private SchoolList rivals;
     private boolean userTeam;
+    @JsonIgnore
     private SchoolSchedule schedule = new SchoolSchedule();
     private boolean powerConf;
 

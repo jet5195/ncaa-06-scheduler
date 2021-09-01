@@ -1,4 +1,4 @@
-package com.robotdebris.ncaaps2scheduler;
+package com.robotdebris.ncaaps2scheduler.model;
 import java.util.LinkedList;
 
 public class SchoolSchedule extends LinkedList<Game> {

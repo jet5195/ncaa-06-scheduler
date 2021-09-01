@@ -2,6 +2,12 @@ package com.robotdebris.ncaaps2scheduler;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import com.robotdebris.ncaaps2scheduler.model.Game;
+import com.robotdebris.ncaaps2scheduler.model.School;
+import com.robotdebris.ncaaps2scheduler.model.SchoolList;
+import com.robotdebris.ncaaps2scheduler.model.SchoolSchedule;
+import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;

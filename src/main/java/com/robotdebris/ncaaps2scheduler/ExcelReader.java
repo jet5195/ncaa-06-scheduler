@@ -2,12 +2,17 @@ package com.robotdebris.ncaaps2scheduler;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.robotdebris.ncaaps2scheduler.model.Game;
+import com.robotdebris.ncaaps2scheduler.model.School;
+import com.robotdebris.ncaaps2scheduler.model.SchoolList;
+import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-class ExcelReader {
+public class ExcelReader {
     private static Workbook readExcel(String path) throws IOException {
 
         // Creating a Workbook from an Excel file (.xls or .xlsx)

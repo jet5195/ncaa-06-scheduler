@@ -1,6 +1,7 @@
-package com.robotdebris.ncaaps2scheduler;
+package com.robotdebris.ncaaps2scheduler.model;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 

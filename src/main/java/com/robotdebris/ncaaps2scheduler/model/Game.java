@@ -1,4 +1,4 @@
-package com.robotdebris.ncaaps2scheduler;
+package com.robotdebris.ncaaps2scheduler.model;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
