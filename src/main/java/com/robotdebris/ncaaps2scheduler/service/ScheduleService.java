@@ -21,13 +21,13 @@ public class ScheduleService {
 	static {
 		FileChooser fileChooser = new FileChooser();
 	    //final String schoolsFile = fileChooser.chooseFile("Select Custom Conferences Excel Document");
-		final String schoolsFile = "C:\\Users\\jared.boleyn\\Documents\\GitHub\\ncaa-06-scheduler\\src\\main\\resources\\My_Custom_Conferences.xlsx";
+		final String schoolsFile = "src/main/resources/My_Custom_Conferences.xlsx";
 //	    if (schoolsFile == null){
 //	        System.out.println("No file selected, exiting program.");
 //	        System.exit(0);
 //	    }
 	    //final String schoolsFile = "src/main/resources/My_Custom_Conferences.xlsx";
-	    final String scheduleFile =  "C:\\Users\\jared.boleyn\\Documents\\GitHub\\ncaa-06-scheduler\\src\\main\\resources\\SCHED.xlsx";
+	    final String scheduleFile =  "src/main/resources/SCHED.xlsx";
 //	    final String scheduleFile =  fileChooser.chooseFile("Select Schedule Excel Document");
 //	    if (scheduleFile == null){
 //	        System.out.println("No file selected, exiting program.");

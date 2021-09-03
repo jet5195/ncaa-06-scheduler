@@ -45,6 +45,9 @@ public class ExcelReader {
                 String state = "";
                 String conf = "";
                 String div = "";
+                String color = "";
+                String altColor = "";
+                String logo = "";
                 int c = 0;
                 if (dataFormatter.formatCellValue(row.getCell(0)) != "") {
                     for (Cell cell : row) {
@@ -67,12 +70,18 @@ public class ExcelReader {
                                 conf = cellValue;
                             case 5:
                                 div = cellValue;
+                            case 6:
+                                color = cellValue;
+                            case 7:
+                                altColor = cellValue;
+                            case 8:
+                                logo = cellValue;
                             default:
                                 break;
                         }//end of switch
                         c++;
                     }//end col iterator
-                    allSchools.add(new School(tgid, university, nickname, state, conf, div));
+                    allSchools.add(new School(tgid, university, nickname, state, conf, div, color, altColor, logo));
                     //System.out.println();
                 }//end of if not null
             }//end of row iterator
@@ -108,7 +117,7 @@ public class ExcelReader {
      * @throws IOException
      */
     public static SeasonSchedule getScheduleData(String path, SchoolList allSchools) throws IOException {
-        School bowlSchool = new School(511, "Bowl", "Bowl", "Bowl", "Bowl", "Bowl");
+        School bowlSchool = new School(511, "Bowl", "Bowl", "Bowl", "Bowl", "Bowl", "Bowl", "Bowl", "Bowl");
         Workbook workbook = readExcel(path);
         // Getting the Sheet at index zero
         Sheet sheet = workbook.getSheetAt(0);
@@ -172,12 +181,12 @@ public class ExcelReader {
                     awaySchool = allSchools.schoolSearch(gatg);
                     homeSchool = allSchools.schoolSearch(ghtg);
                     if (awaySchool == null) {
-                        awaySchool = new School(gatg, "null", "null", "null", "null", "FCS");
+                        awaySchool = new School(gatg, "null", "null", "null", "null", "FCS", "null", "null", "null");
                         awaySchool.setRivals(new SchoolList());
                         allSchools.add(awaySchool);
                     }
                     if (homeSchool == null) {
-                        homeSchool = new School(ghtg, "null", "null", "null", "null", "FCS");
+                        homeSchool = new School(ghtg, "null", "null", "null", "null", "FCS", "null", "null", "null");
                         homeSchool.setRivals(new SchoolList());
                         allSchools.add(homeSchool);
                     }

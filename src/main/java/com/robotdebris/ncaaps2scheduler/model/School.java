@@ -9,6 +9,9 @@ public class School {
     private String state;
     private String conference;
     private String division; //fbs or fcs
+    private String color;
+    private String altColor;
+    private String logo;
     @JsonIgnore
     private SchoolList rivals;
     private boolean userTeam;
@@ -16,13 +19,16 @@ public class School {
     private SchoolSchedule schedule = new SchoolSchedule();
     private boolean powerConf;
 
-    public School(int tgid, String name, String nickname, String state, String conference, String division) {
+    public School(int tgid, String name, String nickname, String state, String conference, String division, String color, String altColor, String logo) {
         this.tgid = tgid;
         this.name = name;
         this.nickname = nickname;
         this.state = state;
         this.conference = conference;
         this.division = division;
+        this.color = color;
+        this.altColor = altColor;
+        this.logo = logo;
     }
 
     public SchoolList getRivals() {
@@ -79,6 +85,30 @@ public class School {
 
     public void setDivision(String division) {
         this.division = division;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getAltColor() {
+        return altColor;
+    }
+
+    public void setAltColor(String altColor) {
+        this.altColor = altColor;
+    }
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
     }
 
     public boolean isUserTeam() {
