@@ -2,6 +2,7 @@ package com.robotdebris.ncaaps2scheduler.model;
 import java.util.LinkedList;
 
 public class SchoolSchedule extends LinkedList<Game> {
+
     /**
      * Finds a game in a school's schedule for a given week
      * @param week the week to search for
@@ -27,5 +28,9 @@ public class SchoolSchedule extends LinkedList<Game> {
             gameNumber = theGame.getWeek() == week && gameNumber < theGame.getGameNumber() ? theGame.getGameNumber() : gameNumber;
         }
         return ++gameNumber;
+    }
+
+    public boolean isFull() {
+        return this.size() >= 12;
     }
 }

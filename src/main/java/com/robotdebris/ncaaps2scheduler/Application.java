@@ -537,6 +537,7 @@ class Application {
         return freeWeeks;
     }
 
+    //finds emtpy weeks for 2 schools (I think)
     private static ArrayList<Integer> findEmptyWeeks(ArrayList<Integer> s1weeks, ArrayList<Integer> s2weeks) {
         ArrayList<Integer> freeWeeks = new ArrayList<Integer>();
         for (int i = 0; i < s1weeks.size(); i++) {

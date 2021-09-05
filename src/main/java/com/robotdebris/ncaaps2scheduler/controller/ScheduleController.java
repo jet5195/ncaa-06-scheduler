@@ -1,16 +1,12 @@
 package com.robotdebris.ncaaps2scheduler.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.robotdebris.ncaaps2scheduler.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.robotdebris.ncaaps2scheduler.model.School;
-import com.robotdebris.ncaaps2scheduler.model.SchoolList;
-import com.robotdebris.ncaaps2scheduler.model.SchoolSchedule;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -50,4 +46,52 @@ public class ScheduleController {
 		return school.getRivals();
 	}
 
+	@GetMapping(value = "school/{id}/availableOpponents/{week}")
+	public SchoolList getAvailableOpponents(@PathVariable int id, @PathVariable int week) {
+		SchoolList availableOpponents = scheduleService.getAvailableOpponents(id, week);
+		return availableOpponents;
+	}
+
+	@GetMapping(value = "school/{id}/availableRivals/{week}")
+	public SchoolList getAvailableRivals(@PathVariable int id, @PathVariable int week) {
+		SchoolList availableRivals = scheduleService.getAvailableRivals(id, week);
+		return availableRivals;
+	}
+
+	@DeleteMapping(value = "school/{id}/removeGame/{week}")
+	public void removeGame(@PathVariable int id, int week){
+		scheduleService.removeGame(id, week);
+	}
+
+	@DeleteMapping(value = "removeAllOocGames")
+	public void removeAllOocGames(){
+		scheduleService.removeAllOocGames();
+	}
+
+	@DeleteMapping(value = "removeAllOocNonRivalGames")
+	public void removeAllOocNonRivalGames(){
+		scheduleService.removeAllOocNonRivalGames();
+	}
+
+	@DeleteMapping(value = "removeAllFcsGames")
+	public void removeAllFcsGames(){
+		scheduleService.removeAllFcsGames();
+	}
+
+	@GetMapping(value = "school/{id}/findemptyweeks")
+	public ArrayList<Integer> getEmptyWeeks(@PathVariable int id){
+		School school = scheduleService.searchByTgid(id);
+		return scheduleService.findEmptyWeeks(school);
+	}
+
+	@GetMapping(value = "school/{id}/findemptyweeks/{id2}")
+	public ArrayList<Integer> getEmptyWeeks(@PathVariable int id, @PathVariable int id2){
+		return scheduleService.getEmptyWeeks(id, id2);
+	}
+
+	//Change this to use a RequestGame object that doesn't exist yet
+	@PostMapping(value = "addGame")
+	public void addGame(@RequestBody AddGameRequest addGameRequest){
+		scheduleService.addGame(addGameRequest.getAwayId(), addGameRequest.getHomeId(), addGameRequest.getWeek());
+	}
 }
