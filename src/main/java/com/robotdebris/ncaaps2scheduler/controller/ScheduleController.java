@@ -59,7 +59,7 @@ public class ScheduleController {
 	}
 
 	@DeleteMapping(value = "school/{id}/removeGame/{week}")
-	public void removeGame(@PathVariable int id, int week){
+	public void removeGame(@PathVariable int id, @PathVariable int week){
 		scheduleService.removeGame(id, week);
 	}
 
