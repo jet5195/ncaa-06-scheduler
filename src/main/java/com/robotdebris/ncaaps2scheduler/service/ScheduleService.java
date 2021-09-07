@@ -82,7 +82,7 @@ public class ScheduleService {
 			// if they don't already play one another
 			if (input.isPossibleOpponent(school)){
 				// if they don't have a game that week
-				if (school.getSchedule().getGame(week) != null){
+				if (school.getSchedule().getGame(week) == null){
 					availableOpponents.add(school);
 				}
 			}
