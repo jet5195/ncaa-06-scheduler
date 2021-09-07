@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RestController
 public class ScheduleController {
 
@@ -93,5 +93,30 @@ public class ScheduleController {
 	@PostMapping(value = "addGame")
 	public void addGame(@RequestBody AddGameRequest addGameRequest){
 		scheduleService.addGame(addGameRequest.getAwayId(), addGameRequest.getHomeId(), addGameRequest.getWeek());
+	}
+	
+	@GetMapping(value = "school/{id}/suggestgame")
+	public Game getSuggestedGame(@PathVariable long id) {
+		return scheduleService.getSuggestedGame(id);
+	}
+	
+	@PutMapping(value = "schedule/autoaddgames")
+	public void autoAddGames() {
+		scheduleService.autoAddGames(false);
+	}
+	
+	@PutMapping(value = "schedule/autoaddgamesaggressive")
+	public void autoAddGamesAgressive() {
+		scheduleService.autoAddGames(true);
+	}
+	
+	@PutMapping(value = "schedule/fixschedule")
+	public void fixSchedule() {
+		scheduleService.fixSchedule();
+	}
+	
+	@PostMapping(value = "schedule/savetofile")
+	public void saveToFile() {
+		scheduleService.saveToFile();
 	}
 }
