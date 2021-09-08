@@ -106,18 +106,18 @@ public class SeasonSchedule extends SchoolSchedule {
      * @param game game number of the week
      */
     private void randomizeHomeTeam(School s1, School s2, int week, int day, int game) {
-        if (s1.isRival(s2) || s1.isPowerConf() == s2.isPowerConf()) {
+        if (s1.isRival(s2) || s1.getConference().isPowerConf() == s2.getConference().isPowerConf()) {
             int max = 2;
             int min = 1;
             int range = max - min + 1;
             int random = (int) (Math.random() * range) + min;
-            if (random == 1 && (s1.isRival(s2) || !s2.getDivision().equalsIgnoreCase("FCS"))) {
+            if (random == 1 && (s1.isRival(s2) || !s2.getNcaaDivision().equalsIgnoreCase("FCS"))) {
                 addGame(s1, s2, week, day, game);
             } else {
                 addGame(s2, s1, week, day, game);
             }
         } else {
-            if (s1.isPowerConf()) {
+            if (s1.getConference().isPowerConf()) {
                 addGame(s2, s1, week, day, game);
             } else {
                 addGame(s1, s2, week, day, game);
@@ -144,7 +144,10 @@ public class SeasonSchedule extends SchoolSchedule {
     public void removeAllFcsGames() {
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
-            if (game.getHomeTeam().getDivision().equalsIgnoreCase("FCS") || game.getAwayTeam().getDivision().equalsIgnoreCase("FCS")) {
+            if(game.getHomeTeam().getNcaaDivision() == null || game.getAwayTeam().getNcaaDivision() == null) {
+            	i= i;
+            }
+            if (game.getHomeTeam().getNcaaDivision().equalsIgnoreCase("FCS") || game.getAwayTeam().getNcaaDivision().equalsIgnoreCase("FCS")) {
                 this.removeGame(game);
                 i--;
             }
@@ -158,7 +161,7 @@ public class SeasonSchedule extends SchoolSchedule {
     public void removeAllNonConferenceGames(boolean removeRivals) {
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
-            if (!game.getHomeTeam().getConference().equalsIgnoreCase(game.getAwayTeam().getConference())) {
+            if (!game.getHomeTeam().getConference().getName().equalsIgnoreCase(game.getAwayTeam().getConference().getName())) {
                 if (removeRivals) {
                     this.removeGame(game);
                     i--;

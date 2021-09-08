@@ -7,8 +7,9 @@ public class School {
     private String name;
     private String nickname;
     private String state;
-    private String conference;
-    private String division; //fbs or fcs
+    private Conference conference;
+    private String division;
+    private String ncaaDivision; //fbs or fcs
     private String color;
     private String altColor;
     private String logo;
@@ -17,15 +18,25 @@ public class School {
     private boolean userTeam;
     @JsonIgnore
     private SchoolSchedule schedule = new SchoolSchedule();
-    private boolean powerConf;
 
-    public School(int tgid, String name, String nickname, String state, String conference, String division, String color, String altColor, String logo) {
+    public School(int tgid, String name, String nickname, String state, Conference conference, String division, String ncaaDivision, String color, String altColor, String logo) {
         this.tgid = tgid;
         this.name = name;
         this.nickname = nickname;
         this.state = state;
         this.conference = conference;
         this.division = division;
+        this.ncaaDivision = ncaaDivision;
+        this.color = color;
+        this.altColor = altColor;
+        this.logo = logo;
+    }
+    
+    public School(int tgid, String name, String nickname, String state, String color, String altColor, String logo) {
+        this.tgid = tgid;
+        this.name = name;
+        this.nickname = nickname;
+        this.state = state;
         this.color = color;
         this.altColor = altColor;
         this.logo = logo;
@@ -71,20 +82,20 @@ public class School {
         this.state = state;
     }
 
-    public String getConference() {
+    public Conference getConference() {
         return conference;
     }
 
-    public void setConference(String conference) {
+    public void setConference(Conference conference) {
         this.conference = conference;
     }
 
-    public String getDivision() {
-        return division;
+    public String getNcaaDivision() {
+        return ncaaDivision;
     }
 
-    public void setDivision(String division) {
-        this.division = division;
+    public void setNcaaDivision(String ncaaDivision) {
+        this.ncaaDivision = ncaaDivision;
     }
 
     public String getColor() {
@@ -127,16 +138,12 @@ public class School {
         return schedule;
     }
 
-    public boolean isPowerConf() {
-        return powerConf;
+    public String getDivision() {
+        return division;
     }
 
-    /**
-     *
-     * @param powerConf true if school is in a power conference, false if else
-     */
-    public void setPowerConf(boolean powerConf) {
-        this.powerConf = powerConf;
+    public void setDivision(String division) {
+        this.division = division;
     }
 
     /**
@@ -156,14 +163,14 @@ public class School {
 
     /**
      * Checks to see if this school is in the same conference as another
-     * @param school the shcool you are checking against
+     * @param school the school you are checking against
      * @return true if in the same conference, false if else
      */
     public boolean isInConference(School school) {
         if(this.getConference().equals("Independent")) {
             return false;
 
-        } else return this.getConference().equalsIgnoreCase(school.getConference());
+        } else return this.getConference().getName().equalsIgnoreCase(school.getConference().getName());
     }
 
     /**
@@ -243,4 +250,11 @@ public class School {
     public String toString() {
         return this.getName();
     }
+
+	public void updateAlignment(Conference conference, String division, String ncaaDivision) {
+		this.conference = conference;
+		this.division = division;
+		this.ncaaDivision = ncaaDivision;
+		
+	}
 }

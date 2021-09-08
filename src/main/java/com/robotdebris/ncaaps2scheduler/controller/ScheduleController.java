@@ -24,25 +24,25 @@ public class ScheduleController {
 
 	@GetMapping(value = "/searchSchoolByTgid/{tgid}")
 	public School getSchoolByTgid(@PathVariable int tgid) {
-		School school = scheduleService.searchByTgid(tgid);
+		School school = scheduleService.searchSchoolByTgid(tgid);
 		return school;
 	}
 	
 	@GetMapping(value = "/searchSchoolByName/{name}")
 	public School getSchoolByName(@PathVariable String name) {
-		School school = scheduleService.searchByName(name);
+		School school = scheduleService.searchSchoolByName(name);
 		return school;
 	}
 
 	@GetMapping(value = "school/{id}/schedule")
 	public SchoolSchedule getSchoolSchedule(@PathVariable Integer id) {
-		School school = scheduleService.searchByTgid(id);
+		School school = scheduleService.searchSchoolByTgid(id);
 		return school.getSchedule();
 	}
 
 	@GetMapping(value = "school/{id}/rivals")
 	public SchoolList getSchoolRivals(@PathVariable int id) {
-		School school = scheduleService.searchByTgid(id);
+		School school = scheduleService.searchSchoolByTgid(id);
 		return school.getRivals();
 	}
 
@@ -80,7 +80,7 @@ public class ScheduleController {
 
 	@GetMapping(value = "school/{id}/findemptyweeks")
 	public ArrayList<Integer> getEmptyWeeks(@PathVariable int id){
-		School school = scheduleService.searchByTgid(id);
+		School school = scheduleService.searchSchoolByTgid(id);
 		return scheduleService.findEmptyWeeks(school);
 	}
 
@@ -118,5 +118,17 @@ public class ScheduleController {
 	@PostMapping(value = "schedule/savetofile")
 	public void saveToFile() {
 		scheduleService.saveToFile();
+	}
+	
+	@GetMapping(value = "allConferences")
+	public ConferenceList getAllConferences() {
+		ConferenceList conferenceList = scheduleService.getConferenceList();
+		return conferenceList;
+	}
+	
+	@GetMapping(value = "/searchConferenceByName/{name}")
+	public Conference getConferenceByName(@PathVariable String name) {
+		Conference conference = scheduleService.searchConferenceByName(name);
+		return conference;
 	}
 }

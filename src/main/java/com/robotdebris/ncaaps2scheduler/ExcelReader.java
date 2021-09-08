@@ -2,6 +2,8 @@ package com.robotdebris.ncaaps2scheduler;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.robotdebris.ncaaps2scheduler.model.Conference;
+import com.robotdebris.ncaaps2scheduler.model.ConferenceList;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SchoolList;
@@ -18,6 +20,108 @@ public class ExcelReader {
         // Creating a Workbook from an Excel file (.xls or .xlsx)
         return WorkbookFactory.create(new File(path));
         //workbook.close();
+    }
+    
+    public static ConferenceList getConferenceData(String path) throws IOException {
+    	Workbook workbook = readExcel(path);
+    	Sheet sheet = workbook.getSheetAt(0);
+    	DataFormatter dataFormatter = new DataFormatter();
+    	ConferenceList conferenceList = new ConferenceList();
+    	int r = 0;
+        for (Row row : sheet) {
+            if (r > 0) {//disregard the headers
+                String conferenceName = "";
+                boolean powerConf = false;
+                String division1 = "";
+                String division2 = "";
+                String color = "";
+                String altColor = "";
+                String logo = "";
+                int c = 0;
+                if (dataFormatter.formatCellValue(row.getCell(0)) != "") {
+                    for (Cell cell : row) {
+                        String cellValue = dataFormatter.formatCellValue(cell);
+                        //System.out.print(cellValue + "\t");
+                        switch (c) {
+                            case 0:
+                            	conferenceName = cellValue;
+                                break;
+                            case 1:
+                            	if(cellValue != null) {
+                            		powerConf = Boolean.parseBoolean(cellValue);
+                            	}
+                                break;
+                            case 2:
+                                division1 = cellValue;
+                                break;
+                            case 3:
+                                division2 = cellValue;
+                                break;
+                            case 4:
+                                color = cellValue;
+                                break;
+                            case 5:
+                                altColor = cellValue;
+                            case 6:
+                                logo = cellValue;
+                            default:
+                                break;
+                        }//end of switch
+                        c++;
+                    }//end col iterator
+                    conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, color, altColor, logo));
+                    //System.out.println();
+                }//end of if not null
+            }//end of row iterator
+            r++;
+        }
+    	return conferenceList;
+    }
+    
+    public static void setAlignmentData(String path, SchoolList allSchools, ConferenceList conferenceList) throws IOException {
+    	Workbook workbook = readExcel(path);
+    	Sheet sheet = workbook.getSheetAt(1);
+    	DataFormatter dataFormatter = new DataFormatter();
+    	
+    	int r = 0;
+        for (Row row : sheet) {
+            if (r > 0) {//disregard the headers
+                int tgid = 0;
+                String university = "";
+                String conf = "";
+                String div = "";
+                String ncaaDiv = "";
+                int c = 0;
+                if (dataFormatter.formatCellValue(row.getCell(0)) != "") {
+                    for (Cell cell : row) {
+                        String cellValue = dataFormatter.formatCellValue(cell);
+                        //System.out.print(cellValue + "\t");
+                        switch (c) {
+                            case 0:
+                                tgid = Integer.parseInt(cellValue);
+                                break;
+                            case 2:
+                                conf = cellValue;
+                                break;
+                            case 3:
+                                div = cellValue;
+                                break;
+                            case 4:
+                                ncaaDiv = cellValue;
+                                break;
+                            default:
+                                break;
+                        }//end of switch
+                        c++;
+                    }//end col iterator
+                    School school = allSchools.schoolSearch(tgid);
+                    Conference conference = conferenceList.conferenceSearch(conf);
+                    school.updateAlignment(conference, div, ncaaDiv);
+                    //System.out.println();
+                }//end of if not null
+            }//end of row iterator
+            r++;
+        }
     }
 
     /**
@@ -43,8 +147,6 @@ public class ExcelReader {
                 String university = "";
                 String nickname = "";
                 String state = "";
-                String conf = "";
-                String div = "";
                 String color = "";
                 String altColor = "";
                 String logo = "";
@@ -67,21 +169,20 @@ public class ExcelReader {
                                 state = cellValue;
                                 break;
                             case 4:
-                                conf = cellValue;
-                            case 5:
-                                div = cellValue;
-                            case 6:
                                 color = cellValue;
-                            case 7:
+                                break;
+                            case 5:
                                 altColor = cellValue;
-                            case 8:
+                                break;
+                            case 6:
                                 logo = cellValue;
+                                break;
                             default:
                                 break;
                         }//end of switch
                         c++;
                     }//end col iterator
-                    allSchools.add(new School(tgid, university, nickname, state, conf, div, color, altColor, logo));
+                    allSchools.add(new School(tgid, university, nickname, state, color, altColor, logo));
                     //System.out.println();
                 }//end of if not null
             }//end of row iterator
@@ -92,7 +193,12 @@ public class ExcelReader {
             SchoolList rivals = new SchoolList();
             if (iterator != 0 && dataFormatter.formatCellValue(row.getCell(0)) != "") {
                 int i = 0;
+                int tgid = 0;
                 for (Cell cell : row) {
+                	if(i == 0) {
+                		String cellValue = dataFormatter.formatCellValue(cell);
+                		tgid = Integer.parseInt(cellValue);
+                	}
                     if (i >= 6 && dataFormatter.formatCellValue(cell) != "") {
                         String cellValue = dataFormatter.formatCellValue(cell);
                         School rival = allSchools.schoolSearch(cellValue);
@@ -102,7 +208,7 @@ public class ExcelReader {
                     }
                     i++;
                 }
-                allSchools.get(iterator - 1).setRivals(rivals);
+                allSchools.schoolSearch(tgid).setRivals(rivals);
             }
             iterator++;
         }
@@ -117,7 +223,7 @@ public class ExcelReader {
      * @throws IOException
      */
     public static SeasonSchedule getScheduleData(String path, SchoolList allSchools) throws IOException {
-        School bowlSchool = new School(511, "Bowl", "Bowl", "Bowl", "Bowl", "Bowl", "Bowl", "Bowl", "Bowl");
+        School bowlSchool = new School(511, "Bowl", "Bowl", "Bowl", "Bowl", "Bowl", "Bowl");
         Workbook workbook = readExcel(path);
         // Getting the Sheet at index zero
         Sheet sheet = workbook.getSheetAt(0);
@@ -177,16 +283,17 @@ public class ExcelReader {
                     }
                     c++;
                 }
+                
                 if (ghtg != 511) {//don't add bowl games
                     awaySchool = allSchools.schoolSearch(gatg);
                     homeSchool = allSchools.schoolSearch(ghtg);
                     if (awaySchool == null) {
-                        awaySchool = new School(gatg, "null", "null", "null", "null", "FCS", "null", "null", "null");
+                        awaySchool = new School(gatg, "null", "null", "null", null, null, "FCS", "null", "null", "null");
                         awaySchool.setRivals(new SchoolList());
                         allSchools.add(awaySchool);
                     }
                     if (homeSchool == null) {
-                        homeSchool = new School(ghtg, "null", "null", "null", "null", "FCS", "null", "null", "null");
+                        homeSchool = new School(ghtg, "null", "null", "null", null, null, "FCS", "null", "null", "null");
                         homeSchool.setRivals(new SchoolList());
                         allSchools.add(homeSchool);
                     }

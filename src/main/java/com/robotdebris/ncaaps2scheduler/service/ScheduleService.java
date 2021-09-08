@@ -16,14 +16,15 @@ import com.robotdebris.ncaaps2scheduler.FileChooser;
 public class ScheduleService {
 
 	private static SchoolList schoolList = new SchoolList();
-
+	private static ConferenceList conferenceList = new ConferenceList();
 	private static SeasonSchedule seasonSchedule;
 
 	
 	static {
 		FileChooser fileChooser = new FileChooser();
 	    //final String schoolsFile = fileChooser.chooseFile("Select Custom Conferences Excel Document");
-		final String schoolsFile = "src/main/resources/My_Custom_Conferences.xlsx";
+		final String conferencesFile = "src/main/resources/My_Custom_Conferences.xlsx";
+		final String schoolsFile = "src/main/resources/School_Data.xlsx";
 //	    if (schoolsFile == null){
 //	        System.out.println("No file selected, exiting program.");
 //	        System.exit(0);
@@ -38,6 +39,18 @@ public class ScheduleService {
 	    //final String scheduleFile = "src/main/resources/SCHED.xlsx";
 	    try {
 			schoolList = ExcelReader.getSchoolData(schoolsFile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    try {
+			conferenceList = ExcelReader.getConferenceData(conferencesFile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    try {
+			ExcelReader.setAlignmentData(conferencesFile, schoolList, conferenceList);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -67,11 +80,11 @@ public class ScheduleService {
 		return schoolList.get(schoolId).getRivals();
 	}
 	
-	public static School searchByTgid(int tgid) {
+	public static School searchSchoolByTgid(int tgid) {
 		return schoolList.schoolSearch(tgid);
     }
 	
-	public static School searchByName(String name) {
+	public static School searchSchoolByName(String name) {
 		return schoolList.schoolSearch(name);
     }
 
@@ -124,15 +137,15 @@ public class ScheduleService {
 	}
 
 	public void addGame(int awayId, int homeId, int week){
-		School home = ScheduleService.searchByTgid(homeId);
-		School away = ScheduleService.searchByTgid(awayId);
+		School home = ScheduleService.searchSchoolByTgid(homeId);
+		School away = ScheduleService.searchSchoolByTgid(awayId);
 		int day = 5;
 		seasonSchedule.addGameSpecificHomeTeam(away, home, week, day);
 	}
 
 	public ArrayList<Integer> getEmptyWeeks(int id, int id2) {
-		School s1 = ScheduleService.searchByTgid(id);
-		School s2 = ScheduleService.searchByTgid(id2);
+		School s1 = ScheduleService.searchSchoolByTgid(id);
+		School s2 = ScheduleService.searchSchoolByTgid(id2);
 		ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
 		ArrayList<Integer> s2weeks = findEmptyWeeks(s2);
 		return findEmptyWeeks(s1weeks, s2weeks);
@@ -227,7 +240,7 @@ public class ScheduleService {
             for (int i = 0; i < allSchools.size(); i++) {
                 //go through all the schools
                 School s1 = allSchools.get(i);
-                if (s1.getDivision().equals("FBS") && j < s1.getRivals().size()) {
+                if (s1.getNcaaDivision().equals("FBS") && j < s1.getRivals().size()) {
                     School rival = s1.getRivals().get(j);
                     addRivalryGameTwoSchools(seasonSchedule, s1, rival, aggressive, j);
                 }
@@ -403,7 +416,7 @@ public class ScheduleService {
                 if (randomSchool.getSchedule().size() < 12) {
                     if (s1.isPossibleOpponent(randomSchool) && !emptyWeeks.isEmpty()) {
                         //verify Alabama won't play Michigan to end the year. Instead they'll play LA Monroe
-                        if (emptyWeeks.get(0) < 11 || (s1.isPowerConf() ^ randomSchool.isPowerConf())) {
+                        if (emptyWeeks.get(0) < 11 || (s1.getConference().isPowerConf() ^ randomSchool.getConference().isPowerConf())) {
                             seasonSchedule.addGame(s1, randomSchool, emptyWeeks.get(0), 5);
                         }
                     }
@@ -437,7 +450,7 @@ public class ScheduleService {
             for (int i = 0; i < needGames.size(); i++) {
                 School s1 = needGames.get(i);
                 for (int j = 0; j < allSchools.size() && s1.getSchedule().size() < 12; j++) {
-                    if (!allSchools.get(j).getDivision().equals("FBS")) {
+                    if (!allSchools.get(j).getNcaaDivision().equals("FBS")) {
                         School fcs = allSchools.get(j);
                         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, fcs);
                         if (!emptyWeeks.isEmpty()) {
@@ -466,6 +479,14 @@ public class ScheduleService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public Conference searchConferenceByName(String name) {
+		return conferenceList.conferenceSearch(name);
+	}
+
+	public ConferenceList getConferenceList() {
+		return conferenceList;
 	}
 }
 

@@ -2,6 +2,7 @@ package com.robotdebris.ncaaps2scheduler;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import com.robotdebris.ncaaps2scheduler.model.ConferenceList;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SchoolList;
@@ -14,7 +15,7 @@ import java.util.Collections;
 import java.util.Scanner;
 
 class Application {
-    private static final School nullSchool = new School(999, "null", "null", "null", "null", "null", "null", "null", "null");
+    private static final School nullSchool = new School(999, "null", "null", "null", null, null, "null", "null", "null", "null");
 
     private final Logger LOGGER = Logger.getLogger(Application.class.getName());
 
@@ -25,8 +26,9 @@ class Application {
 
     private static void commandLineUI() throws IOException {
         FileChooser fileChooser = new FileChooser();
-        final String schoolsFile = fileChooser.chooseFile("Select Custom Conferences Excel Document");
-        if (schoolsFile == null){
+        final String schoolsFile = "src/main/resources/School_Data.xlsx";
+        final String conferencesFile = fileChooser.chooseFile("Select Custom Conferences Excel Document");
+        if (conferencesFile == null){
             System.out.println("No file selected, exiting program.");
             System.exit(0);
         }
@@ -38,6 +40,8 @@ class Application {
         }
         //final String scheduleFile = "src/main/resources/SCHED.xlsx";
         SchoolList schoolList = ExcelReader.getSchoolData(schoolsFile);
+        ConferenceList conferenceList = ExcelReader.getConferenceData(conferencesFile);
+        ExcelReader.setAlignmentData(conferencesFile, schoolList, conferenceList);
         SeasonSchedule seasonSchedule = ExcelReader.getScheduleData(scheduleFile, schoolList);
         System.out.println("Welcome to the NCAA Football PS2 Scheduler");
         Scanner scanner = new Scanner(System.in);
@@ -65,11 +69,11 @@ class Application {
             } else if (input.equals("4")) {
                 removeNonConferenceGamesUI(seasonSchedule);
             } else if (input.equals("5")) {
-                manualOptionUI(seasonSchedule, schoolList);
+                manualOptionUI(seasonSchedule, schoolList, conferenceList);
             } else if (input.equals("6")) {
                 validateSchedule(seasonSchedule, schoolList);
             } else if (input.equals("7")) {
-                optionsOptionUI(seasonSchedule, schoolList);
+                optionsOptionUI(seasonSchedule, schoolList, conferenceList);
             } else if (input.equals("8")) {
                 ExcelReader.write(seasonSchedule);
             } else {
@@ -103,7 +107,7 @@ class Application {
         }
     }
 
-    private static void manualOptionUI(SeasonSchedule seasonSchedule, SchoolList schoolList) throws IOException {
+    private static void manualOptionUI(SeasonSchedule seasonSchedule, SchoolList schoolList, ConferenceList conferenceList) throws IOException {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
         while (!exit) {
@@ -116,12 +120,12 @@ class Application {
             if (input.equals("0")) {
                 exit = true;
             } else if (input.equals("1")) {
-                School school = schoolSelectUI(schoolList);
+                School school = schoolSelectUI(schoolList, conferenceList);
                 if (school != null) {
-                    modifyScheduleUI(seasonSchedule, schoolList, school);
+                    modifyScheduleUI(seasonSchedule, schoolList, conferenceList, school);
                 }
             } else if (input.equals("2")) {
-                optionsOptionUI(seasonSchedule, schoolList);
+                optionsOptionUI(seasonSchedule, schoolList, conferenceList);
             } else if (input.equals("3")) {
                 ExcelReader.write(seasonSchedule);
             } else {
@@ -130,7 +134,7 @@ class Application {
         }
     }
 
-    private static void optionsOptionUI(SeasonSchedule schedule, SchoolList schoolList) {
+    private static void optionsOptionUI(SeasonSchedule schedule, SchoolList schoolList, ConferenceList conferenceList) {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
         while (!exit) {
@@ -141,29 +145,28 @@ class Application {
             if (input == 0) {
                 exit = true;
             } else if (input == 1) {
-                setPowerConferencesUI(schoolList);
+                setPowerConferencesUI(schoolList, conferenceList);
             } else {
                 System.out.println("Please choose an option.");
             }
         }
     }
 
-    private static School searchByConferenceUI(SchoolList schoolList) {
+    private static School searchByConferenceUI(SchoolList schoolList, ConferenceList conferenceList) {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
-        ArrayList<String> conferences = schoolList.getConferences();
         while (!exit) {
             printTitle("Enter number of desired Conference");
             System.out.println("0. Back");
             int i;
-            for (i = 0; i < conferences.size(); i++) {
-                System.out.println(i + 1 + ". " + conferences.get(i));
+            for (i = 0; i < conferenceList.size(); i++) {
+                System.out.println(i + 1 + ". " + conferenceList.get(i));
             }
             int input = scanner.nextInt();
             if (input == 0) {
                 exit = true;
             } else if (input > 0 && input < i + 1) {
-                School school = selectSchoolByNumUI(schoolList.conferenceSearch(conferences.get(input - 1)));
+                School school = selectSchoolByNumUI(schoolList.getAllSchoolsInConference(conferenceList.get(input - 1).getName()));
                 if (school != null) {
                     return school;
                 }
@@ -225,7 +228,7 @@ class Application {
         return null;
     }
 
-    private static School schoolSelectUI(SchoolList schoolList) {
+    private static School schoolSelectUI(SchoolList schoolList, ConferenceList conferenceList) {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
         School school = nullSchool;
@@ -239,7 +242,7 @@ class Application {
             if (input.equals("0")) {
                 exit = true;
             } else if (input.equals("1")) {
-                school = searchByConferenceUI(schoolList);
+                school = searchByConferenceUI(schoolList, conferenceList);
             } else if (input.equals("2")) {
                 school = searchByNameUI(schoolList);
             } else if (input.equals("3")) {
@@ -254,7 +257,7 @@ class Application {
         return null;
     }
 
-    private static void modifyScheduleUI(SeasonSchedule seasonSchedule, SchoolList schoolList, School school) {
+    private static void modifyScheduleUI(SeasonSchedule seasonSchedule, SchoolList schoolList, ConferenceList conferenceList, School school) {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
         while (!exit) {
@@ -269,7 +272,7 @@ class Application {
             } else if (input.equals("1")) {
                 school.printSchedule();
             } else if (input.equals("2")) {
-                addGameOptionUI(seasonSchedule, schoolList, school);
+                addGameOptionUI(seasonSchedule, schoolList, conferenceList, school);
             } else if (input.equals("3")) {
                 removeGameUI(seasonSchedule, school);
             } else {
@@ -278,7 +281,7 @@ class Application {
         }
     }
 
-    private static void addGameOptionUI(SeasonSchedule seasonSchedule, SchoolList schoolList, School school) {
+    private static void addGameOptionUI(SeasonSchedule seasonSchedule, SchoolList schoolList, ConferenceList conferenceList, School school) {
         if (school.getSchedule().size() < 12) {
             Scanner scanner = new Scanner(System.in);
             boolean exit = false;
@@ -299,7 +302,7 @@ class Application {
                 } else if (input.equals("3")) {
                     addRivalryGamesManuallyUI(seasonSchedule, school);
                 } else if (input.equals("4")) {
-                    School opponent = schoolSelectUI(schoolList);
+                    School opponent = schoolSelectUI(schoolList, conferenceList);
                     if (opponent!= null && !opponent.getName().equals("null")) {
                         addGameTwoSchoolsUI(seasonSchedule, school, opponent);
                     }
@@ -377,20 +380,19 @@ class Application {
         }
     }
 
-    private static void setPowerConferencesUI(SchoolList schoolList) {
+    private static void setPowerConferencesUI(SchoolList schoolList, ConferenceList conferenceList) {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
         while (!exit) {
             printTitle("Choose Conference to switch Power Conference flag");
             System.out.println("0. Back");
-            ArrayList<String> conferences = schoolList.getConferences();
-            for (int i = 0; i < conferences.size(); i++) {
-                System.out.print((i + 1) + ". " + conferences.get(i));
+            for (int i = 0; i < conferenceList.size(); i++) {
+                System.out.print((i + 1) + ". " + conferenceList.get(i));
                 boolean exit2 = false;
                 for (int j = 0; j < schoolList.size() && !exit2; j++) {
-                    if (schoolList.get(j).getConference().equals(conferences.get(i))) {
+                    if (schoolList.get(j).getConference().equals(conferenceList.get(i))) {
                         exit2 = true;
-                        if (schoolList.get(j).isPowerConf()) {
+                        if (schoolList.get(j).getConference().isPowerConf()) {
                             System.out.print("\t Power");
                         }
                         System.out.println();
@@ -400,15 +402,15 @@ class Application {
             int input = scanner.nextInt();
             if (input == 0) {
                 exit = true;
-            } else if (input > 0 && input <= conferences.size()) {
-                String selectedConf = conferences.get(input - 1);
+            } else if (input > 0 && input <= conferenceList.size()) {
+                String selectedConf = conferenceList.get(input - 1).getName();
                 for (int i = 0; i < schoolList.size(); i++) {
                     School school = schoolList.get(i);
                     if (school.getConference().equals(selectedConf)) {
-                        if (school.isPowerConf()) {
-                            school.setPowerConf(false);
+                        if (school.getConference().isPowerConf()) {
+                            school.getConference().setPowerConf(false);
                         } else {
-                            school.setPowerConf(true);
+                            school.getConference().setPowerConf(true);
                         }
                     }
                 }
@@ -553,7 +555,7 @@ class Application {
             for (int i = 0; i < allSchools.size(); i++) {
                 //go through all the schools
                 School s1 = allSchools.get(i);
-                if (s1.getDivision().equals("FBS") && j < s1.getRivals().size()) {
+                if (s1.getNcaaDivision().equals("FBS") && j < s1.getRivals().size()) {
                     School rival = s1.getRivals().get(j);
                     addRivalryGameTwoSchools(seasonSchedule, s1, rival, aggressive, j);
                 }
@@ -781,7 +783,7 @@ class Application {
                 if (randomSchool.getSchedule().size() < 12) {
                     if (s1.isPossibleOpponent(randomSchool) && !emptyWeeks.isEmpty()) {
                         //verify Alabama won't play Michigan to end the year. Instead they'll play LA Monroe
-                        if (emptyWeeks.get(0) < 11 || (s1.isPowerConf() ^ randomSchool.isPowerConf())) {
+                        if (emptyWeeks.get(0) < 11 || (s1.getConference().isPowerConf() ^ randomSchool.getConference().isPowerConf())) {
                             seasonSchedule.addGame(s1, randomSchool, emptyWeeks.get(0), 5);
                         }
                     }
@@ -815,7 +817,7 @@ class Application {
             for (int i = 0; i < needGames.size(); i++) {
                 School s1 = needGames.get(i);
                 for (int j = 0; j < allSchools.size() && s1.getSchedule().size() < 12; j++) {
-                    if (!allSchools.get(j).getDivision().equals("FBS")) {
+                    if (!allSchools.get(j).getNcaaDivision().equals("FBS")) {
                         School fcs = allSchools.get(j);
                         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, fcs);
                         if (!emptyWeeks.isEmpty()) {

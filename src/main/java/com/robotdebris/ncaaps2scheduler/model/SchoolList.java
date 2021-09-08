@@ -31,11 +31,11 @@ public class SchoolList extends LinkedList<School> {
      * @param conf the name of a a conference
      * @return all schools in a given conference conf
      */
-    public SchoolList conferenceSearch(String conf) {
+    public SchoolList getAllSchoolsInConference(String conf) {
         SchoolList conference = new SchoolList();
         for (int i = 0; i < this.size(); i++) {
             School school = this.get(i);
-            if (school.getConference().equalsIgnoreCase(conf)) {
+            if (school.getConference().getName().equalsIgnoreCase(conf)) {
                 conference.add(school);
             }
         }
@@ -46,16 +46,16 @@ public class SchoolList extends LinkedList<School> {
      *
      * @return ArrayList<String> a list of all conferences in the list
      */
-    public ArrayList<String> getConferences() {
-        ArrayList<String> conferences = new ArrayList();
-        for (int i = 0; i < this.size(); i++) {
-            School school = this.get(i);
-            if (!conferences.contains(school.getConference())) {
-                conferences.add(school.getConference());
-            }
-        }
-        return conferences;
-    }
+//    public ArrayList<String> getConferences() {
+//        ArrayList<String> conferences = new ArrayList();
+//        for (int i = 0; i < this.size(); i++) {
+//            School school = this.get(i);
+//            if (!conferences.contains(school.getConference())) {
+//                conferences.add(school.getConference());
+//            }
+//        }
+//        return conferences;
+//    }
 
     /**
      * @param tgid the tgid of the school you are searching for
@@ -96,7 +96,7 @@ public class SchoolList extends LinkedList<School> {
         SchoolList tooManyGames = new SchoolList();
         for (int i = 0; i < this.size(); i++) {
             School theSchool = this.get(i);
-            if (theSchool.getDivision().equals("FBS") && theSchool.getSchedule().size() > 12) {
+            if (theSchool.getNcaaDivision().equals("FBS") && theSchool.getSchedule().size() > 12) {
                 tooManyGames.add(theSchool);
             }
         }
@@ -110,7 +110,7 @@ public class SchoolList extends LinkedList<School> {
         SchoolList tooFewGames = new SchoolList();
         for (int i = 0; i < this.size(); i++) {
             School theSchool = this.get(i);
-            if (theSchool.getSchedule().size() < 12 && theSchool.getDivision().equals("FBS")) {
+            if (theSchool.getSchedule().size() < 12 && theSchool.getNcaaDivision().equals("FBS")) {
                 tooFewGames.add(theSchool);
             }
         }
