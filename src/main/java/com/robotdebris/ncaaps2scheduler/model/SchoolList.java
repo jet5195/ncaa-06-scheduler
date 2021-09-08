@@ -35,7 +35,7 @@ public class SchoolList extends LinkedList<School> {
         SchoolList conference = new SchoolList();
         for (int i = 0; i < this.size(); i++) {
             School school = this.get(i);
-            if (school.getConference().getName().equalsIgnoreCase(conf)) {
+            if (school.getConference() != null && school.getConference().getName().equalsIgnoreCase(conf)) {
                 conference.add(school);
             }
         }

@@ -131,4 +131,10 @@ public class ScheduleController {
 		Conference conference = scheduleService.searchConferenceByName(name);
 		return conference;
 	}
+	
+	@GetMapping(value = "/conference/{name}/schools")
+	public SchoolList getSchoolsByConference(@PathVariable String name) {
+		SchoolList schools = scheduleService.getSchoolsByConference(name);
+		return schools;
+	}
 }

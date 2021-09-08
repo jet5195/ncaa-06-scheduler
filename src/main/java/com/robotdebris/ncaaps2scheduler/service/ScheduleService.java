@@ -488,6 +488,13 @@ public class ScheduleService {
 	public ConferenceList getConferenceList() {
 		return conferenceList;
 	}
+
+	public SchoolList getSchoolsByConference(String name) {
+		if(name.equalsIgnoreCase("All")){
+			return schoolList;
+		}
+		return schoolList.getAllSchoolsInConference(name);
+	}
 }
 
 
