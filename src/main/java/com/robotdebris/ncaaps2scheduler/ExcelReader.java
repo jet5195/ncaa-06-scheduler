@@ -288,12 +288,12 @@ public class ExcelReader {
                     awaySchool = allSchools.schoolSearch(gatg);
                     homeSchool = allSchools.schoolSearch(ghtg);
                     if (awaySchool == null) {
-                        awaySchool = new School(gatg, "null", "null", "null", null, null, "FCS", "null", "null", "null");
+                        awaySchool = new School(gatg, "null", "null", "null", new Conference("null", false, null, null, null, null, null), null, "FCS", "null", "null", "null");
                         awaySchool.setRivals(new SchoolList());
                         allSchools.add(awaySchool);
                     }
                     if (homeSchool == null) {
-                        homeSchool = new School(ghtg, "null", "null", "null", null, null, "FCS", "null", "null", "null");
+                        homeSchool = new School(ghtg, "null", "null", "null", new Conference("null", false, null, null, null, null, null), null, "FCS", "null", "null", "null");
                         homeSchool.setRivals(new SchoolList());
                         allSchools.add(homeSchool);
                     }

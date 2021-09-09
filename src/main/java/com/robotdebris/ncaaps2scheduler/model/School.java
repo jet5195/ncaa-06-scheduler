@@ -170,7 +170,10 @@ public class School {
         if(this.getConference().equals("Independent")) {
             return false;
 
-        } else return this.getConference().getName().equalsIgnoreCase(school.getConference().getName());
+        } else if(school.getConference() == null){
+            return false;
+        }
+            else return this.getConference().getName().equalsIgnoreCase(school.getConference().getName());
     }
 
     /**

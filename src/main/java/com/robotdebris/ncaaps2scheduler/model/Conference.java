@@ -2,8 +2,6 @@ package com.robotdebris.ncaaps2scheduler.model;
 
 import java.util.ArrayList;
 
-import com.sun.tools.javac.util.List;
-
 public class Conference {
 	
 	//private int conferenceID;
