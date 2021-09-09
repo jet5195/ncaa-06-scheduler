@@ -22,8 +22,16 @@ public class ExcelReader {
         //workbook.close();
     }
     
-    public static ConferenceList getConferenceData(String path) throws IOException {
-    	Workbook workbook = readExcel(path);
+    private static Workbook readExcel(File file) throws IOException {
+
+        // Creating a Workbook from an Excel file (.xls or .xlsx)
+        return WorkbookFactory.create(file);
+        //workbook.close();
+    }
+    
+    public static ConferenceList getConferenceData(File file) throws IOException {
+    	//Workbook workbook = readExcel(path);
+    	Workbook workbook = readExcel(file);
     	Sheet sheet = workbook.getSheetAt(0);
     	DataFormatter dataFormatter = new DataFormatter();
     	ConferenceList conferenceList = new ConferenceList();
@@ -78,8 +86,8 @@ public class ExcelReader {
     	return conferenceList;
     }
     
-    public static void setAlignmentData(String path, SchoolList allSchools, ConferenceList conferenceList) throws IOException {
-    	Workbook workbook = readExcel(path);
+    public static void setAlignmentData(File file, SchoolList allSchools, ConferenceList conferenceList) throws IOException {
+    	Workbook workbook = readExcel(file);
     	Sheet sheet = workbook.getSheetAt(1);
     	DataFormatter dataFormatter = new DataFormatter();
     	
@@ -222,9 +230,9 @@ public class ExcelReader {
      * @return SeasonSchedule a list of all games in a season
      * @throws IOException
      */
-    public static SeasonSchedule getScheduleData(String path, SchoolList allSchools) throws IOException {
+    public static SeasonSchedule getScheduleData(File file, SchoolList allSchools) throws IOException {
         School bowlSchool = new School(511, "Bowl", "Bowl", "Bowl", "Bowl", "Bowl", "Bowl");
-        Workbook workbook = readExcel(path);
+        Workbook workbook = readExcel(file);
         // Getting the Sheet at index zero
         Sheet sheet = workbook.getSheetAt(0);
 

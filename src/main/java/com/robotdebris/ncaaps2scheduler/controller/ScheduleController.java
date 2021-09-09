@@ -1,11 +1,16 @@
 package com.robotdebris.ncaaps2scheduler.controller;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 
@@ -96,7 +101,7 @@ public class ScheduleController {
 	}
 	
 	@GetMapping(value = "school/{id}/suggestgame")
-	public Game getSuggestedGame(@PathVariable long id) {
+	public SuggestedGameResponse getSuggestedGame(@PathVariable int id) {
 		return scheduleService.getSuggestedGame(id);
 	}
 	
@@ -136,5 +141,15 @@ public class ScheduleController {
 	public SchoolList getSchoolsByConference(@PathVariable String name) {
 		SchoolList schools = scheduleService.getSchoolsByConference(name);
 		return schools;
+	}
+	
+	@PostMapping(value = "/setScheduleFile")
+	public void setScheduleFile(@RequestParam("file") MultipartFile scheduleFile) throws IOException {
+		scheduleService.setScheduleFile(scheduleFile);
+	}
+	
+	@PostMapping(value = "/setAlignmentFile")
+	public void setAlignmentFile(@RequestParam("file") MultipartFile alignmentFile) throws IOException {
+		scheduleService.setAlignmentFile(alignmentFile);
 	}
 }

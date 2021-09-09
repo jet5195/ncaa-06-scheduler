@@ -1,16 +1,14 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 import com.robotdebris.ncaaps2scheduler.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.multipart.MultipartFile;
 import com.robotdebris.ncaaps2scheduler.ExcelReader;
-import com.robotdebris.ncaaps2scheduler.FileChooser;
 
 @Service
 public class ScheduleService {
@@ -21,49 +19,37 @@ public class ScheduleService {
 
 	
 	static {
-		FileChooser fileChooser = new FileChooser();
-	    //final String schoolsFile = fileChooser.chooseFile("Select Custom Conferences Excel Document");
-		final String conferencesFile = "src/main/resources/My_Custom_Conferences.xlsx";
+		
 		final String schoolsFile = "src/main/resources/School_Data.xlsx";
-//	    if (schoolsFile == null){
-//	        System.out.println("No file selected, exiting program.");
-//	        System.exit(0);
-//	    }
-	    //final String schoolsFile = "src/main/resources/My_Custom_Conferences.xlsx";
-	    final String scheduleFile =  "src/main/resources/SCHED.xlsx";
-//	    final String scheduleFile =  fileChooser.chooseFile("Select Schedule Excel Document");
-//	    if (scheduleFile == null){
-//	        System.out.println("No file selected, exiting program.");
-//	        System.exit(0);
-//	    }
-	    //final String scheduleFile = "src/main/resources/SCHED.xlsx";
+//	    
 	    try {
 			schoolList = ExcelReader.getSchoolData(schoolsFile);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	    try {
-			conferenceList = ExcelReader.getConferenceData(conferencesFile);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    try {
-			ExcelReader.setAlignmentData(conferencesFile, schoolList, conferenceList);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    try {
-			seasonSchedule = ExcelReader.getScheduleData(scheduleFile, schoolList);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    //System.out.println("Welcome to the NCAA Football PS2 Scheduler");
 	}
 	
+	public static void setScheduleFile(MultipartFile scheduleFile) throws IOException {
+		File file = multipartFileToFile(scheduleFile);
+		try {
+			ExcelReader.getScheduleData(file, schoolList);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static File multipartFileToFile(MultipartFile multipartFile) throws IOException {
+		File file = new File(multipartFile.getOriginalFilename());
+		file.createNewFile();
+		FileOutputStream fos = new FileOutputStream(file);
+		fos.write(multipartFile.getBytes());
+		fos.close();
+		return file;
+	}
+	
+
 	public static SchoolList getSchoolList() {
 		return schoolList;
 	}
@@ -182,10 +168,39 @@ public class ScheduleService {
         return findEmptyWeeks(s1weeks, s2weeks);
     }
 
-	public Game getSuggestedGame(long id) {
-		// TODO Auto-generated method stub
-		return null;
+	public SuggestedGameResponse getSuggestedGame(int tgid) {
+		School thisSchool = schoolList.schoolSearch(tgid);
+		int homeGameCount = 0;
+		boolean isHomeGame = false;
+		for (Game game : thisSchool.getSchedule()) {
+			if(game.getHomeTeam().getTgid() == tgid) {
+				homeGameCount++;
+			}	
+		}
+
+		if(homeGameCount < 6) {
+			isHomeGame = true;
+		}
 		
+		for (School rival : thisSchool.getRivals()) {
+			if(thisSchool.isPossibleOpponent(rival)) {
+				ArrayList<Integer> emptyWeeks = findEmptyWeeks(thisSchool, rival);
+	            if (emptyWeeks.contains(12)) {
+	                return new SuggestedGameResponse(12, rival, isHomeGame);
+	                //week 13 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is referenced by 12
+	            } else if (emptyWeeks.contains(11)) {
+	            	return new SuggestedGameResponse(11, rival, isHomeGame);
+	                //week 12 is empty
+	            } else if (emptyWeeks.contains(13)) {
+	            	return new SuggestedGameResponse(13, rival, isHomeGame);
+	                //week 14 is empty
+	            } else if (!emptyWeeks.isEmpty()) {
+	            	return new SuggestedGameResponse(emptyWeeks.get(0), rival, isHomeGame);
+	                //add game at emptyWeeks.get(0);
+	            }
+			}
+		}
+		return null;
 	}
 
 	public void autoAddGames(boolean aggressive) {
@@ -494,6 +509,18 @@ public class ScheduleService {
 			return schoolList;
 		}
 		return schoolList.getAllSchoolsInConference(name);
+	}
+
+	public void setAlignmentFile(MultipartFile alignmentFile) throws IOException {
+		File file = multipartFileToFile(alignmentFile);
+		try {
+			conferenceList = ExcelReader.getConferenceData(file);
+			ExcelReader.setAlignmentData(file, schoolList, conferenceList);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 }
 
