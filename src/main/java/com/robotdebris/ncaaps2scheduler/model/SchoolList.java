@@ -116,4 +116,11 @@ public class SchoolList extends LinkedList<School> {
         }
         return tooFewGames;
     }
+
+	public void resetAllSchoolsSchedules() {
+		for (School school : this) {
+			school.setSchedule(new SchoolSchedule());
+		}
+		
+	}
 }

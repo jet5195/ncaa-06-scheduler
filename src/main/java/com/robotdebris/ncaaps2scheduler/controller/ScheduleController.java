@@ -1,13 +1,18 @@
 package com.robotdebris.ncaaps2scheduler.controller;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.model.*;
+
+import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -124,6 +129,19 @@ public class ScheduleController {
 	public void saveToFile() {
 		scheduleService.saveToFile();
 	}
+	
+	@GetMapping(value = "schedule/download")
+	public void downloadSchedule(HttpServletResponse response) throws IOException {
+		response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=new_sched.xlsx");
+        ByteArrayInputStream stream = scheduleService.downloadSchedule();
+        IOUtils.copy(stream, response.getOutputStream());
+	}
+	
+//	@GetMapping(value = "schedule/download")
+//	public FileOutputStream downloadSchedule() {
+//		return scheduleService.downloadSchedule();
+//	}
 	
 	@GetMapping(value = "allConferences")
 	public ConferenceList getAllConferences() {

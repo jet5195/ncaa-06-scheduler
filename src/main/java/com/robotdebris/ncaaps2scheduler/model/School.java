@@ -137,6 +137,10 @@ public class School {
     public SchoolSchedule getSchedule() {
         return schedule;
     }
+    
+    public void setSchedule(SchoolSchedule schedule) {
+        this.schedule = schedule;
+    }
 
     public String getDivision() {
         return division;

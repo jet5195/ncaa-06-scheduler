@@ -9,6 +9,8 @@ import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SchoolList;
 import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -231,6 +233,11 @@ public class ExcelReader {
      * @throws IOException
      */
     public static SeasonSchedule getScheduleData(File file, SchoolList allSchools) throws IOException {
+    	//if the first school has a schedule already, empty it.
+    	//eventually it may make sense to autowire seasonschedule and check it
+    	if(!allSchools.get(0).getSchedule().isEmpty()) {
+    		allSchools.resetAllSchoolsSchedules();
+    	}
         School bowlSchool = new School(511, "Bowl", "Bowl", "Bowl", "Bowl", "Bowl", "Bowl");
         Workbook workbook = readExcel(file);
         // Getting the Sheet at index zero
@@ -326,7 +333,7 @@ public class ExcelReader {
      * @param seasonSchedule the schedule to write to a new excel file
      * @throws IOException
      */
-    public static void write(SeasonSchedule seasonSchedule) throws IOException {
+    public static ByteArrayInputStream write(SeasonSchedule seasonSchedule) throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet();
         ArrayList<ArrayList> list = seasonSchedule.scheduleToList(true);
@@ -341,9 +348,11 @@ public class ExcelReader {
             i++;
         }
         sheet.getRow(0).createCell(14).setCellValue(String.valueOf(i - 1));
-        FileOutputStream fileOut = new FileOutputStream("output.xlsx");
-        workbook.write(fileOut);
-        fileOut.close();
+        
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        return new ByteArrayInputStream(outputStream.toByteArray());
+//        fileOut.close();
     }
 
     private static void addLine(Sheet sheet, ArrayList game, int r) {

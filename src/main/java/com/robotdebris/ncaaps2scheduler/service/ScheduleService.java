@@ -1,5 +1,6 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,7 +34,8 @@ public class ScheduleService {
 	public static void setScheduleFile(MultipartFile scheduleFile) throws IOException {
 		File file = multipartFileToFile(scheduleFile);
 		try {
-			ExcelReader.getScheduleData(file, schoolList);
+			seasonSchedule = ExcelReader.getScheduleData(file, schoolList);
+			//is this going to miss conference games since conferences aren't set yet?
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -521,6 +523,16 @@ public class ScheduleService {
 			e.printStackTrace();
 		}
 		
+	}
+
+	public ByteArrayInputStream downloadSchedule() {
+		try {
+			return ExcelReader.write(seasonSchedule);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
 
