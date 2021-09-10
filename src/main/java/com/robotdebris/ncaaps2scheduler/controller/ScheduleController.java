@@ -14,6 +14,7 @@ import com.robotdebris.ncaaps2scheduler.model.*;
 
 import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,106 +27,107 @@ public class ScheduleController {
 	@Autowired
 	private ScheduleService scheduleService;
 
-	@GetMapping(value = "/allschools")
+	@GetMapping(value = "/schools")
 	public SchoolList getAllSchools() {
 		SchoolList schoolList = scheduleService.getSchoolList();
 		return schoolList;
 	}
 
-	@GetMapping(value = "/searchSchoolByTgid/{tgid}")
+	@GetMapping(value = "/schools/{tgid}")
 	public School getSchoolByTgid(@PathVariable int tgid) {
 		School school = scheduleService.searchSchoolByTgid(tgid);
 		return school;
 	}
 	
-	@GetMapping(value = "/searchSchoolByName/{name}")
-	public School getSchoolByName(@PathVariable String name) {
-		School school = scheduleService.searchSchoolByName(name);
-		return school;
-	}
+//	@GetMapping(value = "/schools/{name}")
+//	public School getSchoolByName(@PathVariable String name) {
+//		School school = scheduleService.searchSchoolByName(name);
+//		return school;
+//	}
 
-	@GetMapping(value = "school/{id}/schedule")
-	public SchoolSchedule getSchoolSchedule(@PathVariable Integer id) {
-		School school = scheduleService.searchSchoolByTgid(id);
+	@GetMapping(value = "schools/{tgid}/schedule")
+	public SchoolSchedule getSchoolSchedule(@PathVariable Integer tgid) {
+		School school = scheduleService.searchSchoolByTgid(tgid);
 		return school.getSchedule();
 	}
 
-	@GetMapping(value = "school/{id}/rivals")
-	public SchoolList getSchoolRivals(@PathVariable int id) {
-		School school = scheduleService.searchSchoolByTgid(id);
+	@GetMapping(value = "schools/{tgid}/rivals")
+	public SchoolList getSchoolRivals(@PathVariable int tgid) {
+		School school = scheduleService.searchSchoolByTgid(tgid);
 		return school.getRivals();
 	}
 
-	@GetMapping(value = "school/{id}/availableOpponents/{week}")
-	public SchoolList getAvailableOpponents(@PathVariable int id, @PathVariable int week) {
-		SchoolList availableOpponents = scheduleService.getAvailableOpponents(id, week);
+	@GetMapping(value = "schools/{tgid}/week/{week}/available-opponents")
+	public SchoolList getAvailableOpponents(@PathVariable int tgid, @PathVariable int week) {
+		SchoolList availableOpponents = scheduleService.getAvailableOpponents(tgid, week);
 		return availableOpponents;
 	}
 
-	@GetMapping(value = "school/{id}/availableRivals/{week}")
-	public SchoolList getAvailableRivals(@PathVariable int id, @PathVariable int week) {
-		SchoolList availableRivals = scheduleService.getAvailableRivals(id, week);
+	@GetMapping(value = "schools/{tgid}/week/{week}/available-rivals")
+	public SchoolList getAvailableRivals(@PathVariable int tgid, @PathVariable int week) {
+		SchoolList availableRivals = scheduleService.getAvailableRivals(tgid, week);
 		return availableRivals;
 	}
 
-	@DeleteMapping(value = "school/{id}/removeGame/{week}")
-	public void removeGame(@PathVariable int id, @PathVariable int week){
-		scheduleService.removeGame(id, week);
+	@DeleteMapping(value = "schools/{tgid}/week/{week}/remove-game")
+	public void removeGame(@PathVariable int tgid, @PathVariable int week){
+		scheduleService.removeGame(tgid, week);
 	}
 
-	@DeleteMapping(value = "removeAllOocGames")
-	public void removeAllOocGames(){
-		scheduleService.removeAllOocGames();
+	@DeleteMapping(value = "schedule/remove-all-ooc-games")
+	public int removeAllOocGames(){
+		return scheduleService.removeAllOocGames();
 	}
 
-	@DeleteMapping(value = "removeAllOocNonRivalGames")
-	public void removeAllOocNonRivalGames(){
-		scheduleService.removeAllOocNonRivalGames();
+	@DeleteMapping(value = "schedule/remove-all-ooc-games-but-rivalry")
+	public int removeAllOocNonRivalGames(){
+		return scheduleService.removeAllOocNonRivalGames();
 	}
 
-	@DeleteMapping(value = "removeAllFcsGames")
-	public void removeAllFcsGames(){
-		scheduleService.removeAllFcsGames();
+	@DeleteMapping(value = "schedule/remove-all-fcs-games")
+	//return count of removed games
+	public int removeAllFcsGames(){
+		return scheduleService.removeAllFcsGames();
 	}
 
-	@GetMapping(value = "school/{id}/findemptyweeks")
-	public ArrayList<Integer> getEmptyWeeks(@PathVariable int id){
-		School school = scheduleService.searchSchoolByTgid(id);
+	@GetMapping(value = "schools/{tgid}/empty-weeks")
+	public ArrayList<Integer> getEmptyWeeks(@PathVariable int tgid){
+		School school = scheduleService.searchSchoolByTgid(tgid);
 		return scheduleService.findEmptyWeeks(school);
 	}
 
-	@GetMapping(value = "school/{id}/findemptyweeks/{id2}")
-	public ArrayList<Integer> getEmptyWeeks(@PathVariable int id, @PathVariable int id2){
-		return scheduleService.getEmptyWeeks(id, id2);
+	@GetMapping(value = "schools/{tgid}/empty-weeks/{tgid2}")
+	public ArrayList<Integer> getEmptyWeeks(@PathVariable int tgid, @PathVariable int tgid2){
+		return scheduleService.getEmptyWeeks(tgid, tgid2);
 	}
 
 	//Change this to use a RequestGame object that doesn't exist yet
-	@PostMapping(value = "addGame")
+	@PostMapping(value = "schedule/add-game")
 	public void addGame(@RequestBody AddGameRequest addGameRequest){
 		scheduleService.addGame(addGameRequest.getAwayId(), addGameRequest.getHomeId(), addGameRequest.getWeek());
 	}
 	
-	@GetMapping(value = "school/{id}/suggestgame")
+	@GetMapping(value = "schools/{id}/suggest-game")
 	public SuggestedGameResponse getSuggestedGame(@PathVariable int id) {
 		return scheduleService.getSuggestedGame(id);
 	}
 	
-	@PutMapping(value = "schedule/autoaddgames")
+	@PutMapping(value = "schedule/auto-add-games")
 	public void autoAddGames() {
 		scheduleService.autoAddGames(false);
 	}
 	
-	@PutMapping(value = "schedule/autoaddgamesaggressive")
+	@PutMapping(value = "schedule/auto-add-games-aggressive")
 	public void autoAddGamesAgressive() {
 		scheduleService.autoAddGames(true);
 	}
 	
-	@PutMapping(value = "schedule/fixschedule")
+	@PutMapping(value = "schedule/fix")
 	public void fixSchedule() {
 		scheduleService.fixSchedule();
 	}
 	
-	@PostMapping(value = "schedule/savetofile")
+	@PostMapping(value = "schedule/save-to-file")
 	public void saveToFile() {
 		scheduleService.saveToFile();
 	}
@@ -138,35 +140,31 @@ public class ScheduleController {
         IOUtils.copy(stream, response.getOutputStream());
 	}
 	
-//	@GetMapping(value = "schedule/download")
-//	public FileOutputStream downloadSchedule() {
-//		return scheduleService.downloadSchedule();
-//	}
-	
-	@GetMapping(value = "allConferences")
+	@GetMapping(value = "/conferences")
 	public ConferenceList getAllConferences() {
 		ConferenceList conferenceList = scheduleService.getConferenceList();
 		return conferenceList;
 	}
 	
-	@GetMapping(value = "/searchConferenceByName/{name}")
+	@GetMapping(value = "/conferences/{name}")
 	public Conference getConferenceByName(@PathVariable String name) {
 		Conference conference = scheduleService.searchConferenceByName(name);
 		return conference;
 	}
 	
-	@GetMapping(value = "/conference/{name}/schools")
+	@GetMapping(value = "/conferences/{name}/schools")
 	public SchoolList getSchoolsByConference(@PathVariable String name) {
 		SchoolList schools = scheduleService.getSchoolsByConference(name);
 		return schools;
 	}
 	
-	@PostMapping(value = "/setScheduleFile")
+	@PostMapping(value = "/schedule/set-by-file")
 	public void setScheduleFile(@RequestParam("file") MultipartFile scheduleFile) throws IOException {
 		scheduleService.setScheduleFile(scheduleFile);
+		
 	}
 	
-	@PostMapping(value = "/setAlignmentFile")
+	@PostMapping(value = "/conferences/set-by-file")
 	public void setAlignmentFile(@RequestParam("file") MultipartFile alignmentFile) throws IOException {
 		scheduleService.setAlignmentFile(alignmentFile);
 	}

@@ -139,9 +139,11 @@ public class SeasonSchedule extends SchoolSchedule {
     }
 
     /**
-     * Removes all FCS games from the schedule
+     * Removes all FCS games from the schedule, 
+     * @return count of removed games
      */
-    public void removeAllFcsGames() {
+    public int removeAllFcsGames() {
+    	int count = 0;
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
             if(game.getHomeTeam().getNcaaDivision() == null || game.getAwayTeam().getNcaaDivision() == null) {
@@ -149,28 +151,34 @@ public class SeasonSchedule extends SchoolSchedule {
             }
             if (game.getHomeTeam().getNcaaDivision().equalsIgnoreCase("FCS") || game.getAwayTeam().getNcaaDivision().equalsIgnoreCase("FCS")) {
                 this.removeGame(game);
+                count++;
                 i--;
             }
         }
+        return count;
     }
 
-    /**
+    /**@return count of removed games
      * Removes all non-conference games from schedule
      * @param removeRivals if true, all Non-Conference games will be removed. If false, then only non-conference games that aren't rivalry games will be removed
      */
-    public void removeAllNonConferenceGames(boolean removeRivals) {
+    public int removeAllNonConferenceGames(boolean removeRivals) {
+    	int count = 0;
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
             if (!game.getHomeTeam().getConference().getName().equalsIgnoreCase(game.getAwayTeam().getConference().getName())) {
                 if (removeRivals) {
                     this.removeGame(game);
+                    count++;
                     i--;
                 } else if (!game.isRivalryGame()) {
                     this.removeGame(game);
+                    count++;
                     i--;
                 }
             }
         }
+        return count;
     }
 
     /**

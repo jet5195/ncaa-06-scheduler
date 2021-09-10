@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import com.robotdebris.ncaaps2scheduler.model.*;
 import org.springframework.stereotype.Service;
@@ -25,13 +26,14 @@ public class ScheduleService {
 //	    
 	    try {
 			schoolList = ExcelReader.getSchoolData(schoolsFile);
+			Collections.sort(schoolList);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public static void setScheduleFile(MultipartFile scheduleFile) throws IOException {
+	public void setScheduleFile(MultipartFile scheduleFile) throws IOException {
 		File file = multipartFileToFile(scheduleFile);
 		try {
 			seasonSchedule = ExcelReader.getScheduleData(file, schoolList);
@@ -42,7 +44,7 @@ public class ScheduleService {
 		}
 	}
 	
-	public static File multipartFileToFile(MultipartFile multipartFile) throws IOException {
+	public File multipartFileToFile(MultipartFile multipartFile) throws IOException {
 		File file = new File(multipartFile.getOriginalFilename());
 		file.createNewFile();
 		FileOutputStream fos = new FileOutputStream(file);
@@ -52,31 +54,31 @@ public class ScheduleService {
 	}
 	
 
-	public static SchoolList getSchoolList() {
+	public SchoolList getSchoolList() {
 		return schoolList;
 	}
 	
-	public static School getSchool(int schoolId) {
+	public School getSchool(int schoolId) {
 		return schoolList.get(schoolId);
 	}
 	
-	public static SchoolSchedule getSchoolSchedule(int schoolId) {
+	public SchoolSchedule getSchoolSchedule(int schoolId) {
 		return schoolList.get(schoolId).getSchedule();
 	}
 	
-	public static SchoolList getSchoolRivals(int schoolId) {
+	public SchoolList getSchoolRivals(int schoolId) {
 		return schoolList.get(schoolId).getRivals();
 	}
 	
-	public static School searchSchoolByTgid(int tgid) {
+	public School searchSchoolByTgid(int tgid) {
 		return schoolList.schoolSearch(tgid);
     }
 	
-	public static School searchSchoolByName(String name) {
+	public School searchSchoolByName(String name) {
 		return schoolList.schoolSearch(name);
     }
 
-    public static SchoolList getAvailableOpponents(int tgid, int week){
+    public SchoolList getAvailableOpponents(int tgid, int week){
 		School input = schoolList.schoolSearch(tgid);
 		SchoolList availableOpponents = new SchoolList();
 		for (School school: schoolList) {
@@ -91,7 +93,7 @@ public class ScheduleService {
 		return availableOpponents;
 	}
 
-	public static SchoolList getAvailableRivals(int tgid, int week){
+	public SchoolList getAvailableRivals(int tgid, int week){
 		School input = schoolList.schoolSearch(tgid);
 		SchoolList availableOpponents = new SchoolList();
 		for (School school: input.getRivals()) {
@@ -106,16 +108,16 @@ public class ScheduleService {
 		return availableOpponents;
 	}
 
-	public void removeAllOocNonRivalGames() {
-		seasonSchedule.removeAllNonConferenceGames(false);
+	public int removeAllOocNonRivalGames() {
+		return seasonSchedule.removeAllNonConferenceGames(false);
 	}
 
-	public void removeAllOocGames() {
-		seasonSchedule.removeAllNonConferenceGames(true);
+	public int removeAllOocGames() {
+		return seasonSchedule.removeAllNonConferenceGames(true);
 	}
 
-	public void removeAllFcsGames() {
-		seasonSchedule.removeAllFcsGames();
+	public int removeAllFcsGames() {
+		return seasonSchedule.removeAllFcsGames();
 	}
 
 	public void removeGame(int tgid, int week){
@@ -125,22 +127,22 @@ public class ScheduleService {
 	}
 
 	public void addGame(int awayId, int homeId, int week){
-		School home = ScheduleService.searchSchoolByTgid(homeId);
-		School away = ScheduleService.searchSchoolByTgid(awayId);
+		School home = searchSchoolByTgid(homeId);
+		School away = searchSchoolByTgid(awayId);
 		int day = 5;
 		seasonSchedule.addGameSpecificHomeTeam(away, home, week, day);
 	}
 
 	public ArrayList<Integer> getEmptyWeeks(int id, int id2) {
-		School s1 = ScheduleService.searchSchoolByTgid(id);
-		School s2 = ScheduleService.searchSchoolByTgid(id2);
+		School s1 = searchSchoolByTgid(id);
+		School s2 = searchSchoolByTgid(id2);
 		ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
 		ArrayList<Integer> s2weeks = findEmptyWeeks(s2);
 		return findEmptyWeeks(s1weeks, s2weeks);
 	}
 
 	//finds empty weeks for one school
-	public static ArrayList<Integer> findEmptyWeeks(School s) {
+	public ArrayList<Integer> findEmptyWeeks(School s) {
 		ArrayList<Integer> freeWeeks = new ArrayList<Integer>();
 		ArrayList<Integer> usedWeeks = new ArrayList<Integer>();
 		for (int i = 0; i < s.getSchedule().size(); i++) {
@@ -154,7 +156,7 @@ public class ScheduleService {
 		return freeWeeks;
 	}
 
-	private static ArrayList<Integer> findEmptyWeeks(ArrayList<Integer> s1weeks, ArrayList<Integer> s2weeks) {
+	private ArrayList<Integer> findEmptyWeeks(ArrayList<Integer> s1weeks, ArrayList<Integer> s2weeks) {
 		ArrayList<Integer> freeWeeks = new ArrayList<Integer>();
 		for (int i = 0; i < s1weeks.size(); i++) {
 			if (s2weeks.contains(s1weeks.get(i))) {
@@ -164,7 +166,7 @@ public class ScheduleService {
 		return freeWeeks;
 	}
 	
-	private static ArrayList<Integer> findEmptyWeeks(School s1, School s2) {//returns list of empty weeks between 2 schools
+	private ArrayList<Integer> findEmptyWeeks(School s1, School s2) {//returns list of empty weeks between 2 schools
         ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
         ArrayList<Integer> s2weeks = findEmptyWeeks(s2);
         return findEmptyWeeks(s1weeks, s2weeks);
@@ -212,13 +214,13 @@ public class ScheduleService {
 		
 	}
 	
-	private static void fillOpenGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+	private void fillOpenGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
         SchoolList tooFewGames = schoolList.findTooFewGames();
         addRivalryGamesAll(seasonSchedule, tooFewGames, false);
         addRandomGames(seasonSchedule, schoolList, tooFewGames);
     }
 	
-	private static void removeExtraGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+	private void removeExtraGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
         SchoolList tooManyGames = schoolList.findTooManyGames();
         for (int i = 0; i < tooManyGames.size(); i++) {
             School school = tooManyGames.get(i);
@@ -242,7 +244,7 @@ public class ScheduleService {
         }
     }
 	
-	private static Game findGame(School s1, School s2) {
+	private Game findGame(School s1, School s2) {
         for (int i = 0; i < s1.getSchedule().size(); i++) {
             Game game = s1.getSchedule().get(i);
             if (game.getHomeTeam().getTgid() == s2.getTgid() ||
@@ -252,7 +254,7 @@ public class ScheduleService {
         return null;
     }
 	
-	private static void addRivalryGamesAll(SeasonSchedule seasonSchedule, SchoolList allSchools, boolean aggressive) {
+	private void addRivalryGamesAll(SeasonSchedule seasonSchedule, SchoolList allSchools, boolean aggressive) {
         for (int j = 0; j <= 8; j++) {
             for (int i = 0; i < allSchools.size(); i++) {
                 //go through all the schools
@@ -265,7 +267,7 @@ public class ScheduleService {
         }
     }
 	
-	private static void addRivalryGameTwoSchools(SeasonSchedule seasonSchedule, School school, School rival, boolean aggressive, int rivalRank) {
+	private void addRivalryGameTwoSchools(SeasonSchedule seasonSchedule, School school, School rival, boolean aggressive, int rivalRank) {
         //School rival = school.getRivals().get(j);
         if (school.isPossibleOpponent(rival)) {
             if (aggressive && rivalRank < 2) {
@@ -280,7 +282,7 @@ public class ScheduleService {
         }
     }
 	
-	private static void addRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival, int rivalRank) {
+	private void addRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival, int rivalRank) {
         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
         if (rivalRank < 2) {
             if (emptyWeeks.contains(12)) {
@@ -301,7 +303,7 @@ public class ScheduleService {
         }
     }
 	
-	private static void aggressiveAddRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival) {
+	private void aggressiveAddRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival) {
         ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
         ArrayList<Integer> rweeks = findEmptyWeeks(rival);
         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1weeks, rweeks);
@@ -415,7 +417,7 @@ public class ScheduleService {
         }
     }
 	
-	private static void addRandomGames(SeasonSchedule seasonSchedule, SchoolList allSchools, SchoolList needGames) {
+	private void addRandomGames(SeasonSchedule seasonSchedule, SchoolList allSchools, SchoolList needGames) {
         for (int i = 0; i < needGames.size(); i++) {
             School s1 = needGames.get(i);
             SchoolList myOptions = new SchoolList();
@@ -518,6 +520,7 @@ public class ScheduleService {
 		try {
 			conferenceList = ExcelReader.getConferenceData(file);
 			ExcelReader.setAlignmentData(file, schoolList, conferenceList);
+			Collections.sort(schoolList);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

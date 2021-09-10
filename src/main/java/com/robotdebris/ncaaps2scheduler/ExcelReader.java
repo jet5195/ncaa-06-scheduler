@@ -97,7 +97,6 @@ public class ExcelReader {
         for (Row row : sheet) {
             if (r > 0) {//disregard the headers
                 int tgid = 0;
-                String university = "";
                 String conf = "";
                 String div = "";
                 String ncaaDiv = "";
@@ -232,7 +231,7 @@ public class ExcelReader {
      * @return SeasonSchedule a list of all games in a season
      * @throws IOException
      */
-    public static SeasonSchedule getScheduleData(File file, SchoolList allSchools) throws IOException {
+    public static SeasonSchedule getScheduleData(File file, SchoolList allSchools) throws IOException, NumberFormatException {
     	//if the first school has a schedule already, empty it.
     	//eventually it may make sense to autowire seasonschedule and check it
     	if(!allSchools.get(0).getSchedule().isEmpty()) {
