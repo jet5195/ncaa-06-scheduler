@@ -10,7 +10,7 @@ public class Game implements Comparable {
     private int day;//gdat 5 sat.. etc
     private int conferenceGame; // gmfx 0 if out of conference, 1 if conference
     private int week; //sewn & sewt
-    private int userGame; //gffu & gfhu
+	private int userGame; //gffu & gfhu
     private int gameNumber; //sgnm, must be unique per week, highest num I've seen is 55
 
     public Game(int time, School awayTeam, School homeTeam, int gameNumber, int week, int day, int userGame, int conferenceGame) {

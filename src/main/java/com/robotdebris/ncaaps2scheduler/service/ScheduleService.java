@@ -219,6 +219,8 @@ public class ScheduleService {
 		int count = 0;
         SchoolList tooFewGames = schoolList.findTooFewGames();
         count += addRivalryGamesAll(seasonSchedule, tooFewGames, false);
+        //shouldn't this recalculate tooFewGames?
+        tooFewGames = schoolList.findTooFewGames();
         count += addRandomGames(seasonSchedule, schoolList, tooFewGames);
         return count;
     }
@@ -248,7 +250,7 @@ public class ScheduleService {
                 }
             }
         }
-        return count;
+        return count/2;//it's returning 1 removed game as removed for both schools
     }
 	
 	private Game findGame(School s1, School s2) {
@@ -512,7 +514,7 @@ public class ScheduleService {
 	public int fixSchedule() {
 		int count = 0;
 		count += removeExtraGames(seasonSchedule, schoolList);
-        count += fillOpenGames(seasonSchedule, schoolList);
+        //count += fillOpenGames(seasonSchedule, schoolList);
         return count;
 	}
 
@@ -561,6 +563,19 @@ public class ScheduleService {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public int autoAddRivalries() {
+		int count = 0;
+		count += addRivalryGamesAll(seasonSchedule, schoolList, false);
+		return count;
+	}
+	
+	public int autoAddRandomly() {
+		int count = 0;
+		SchoolList tooFewGames = schoolList.findTooFewGames();
+		count += addRandomGames(seasonSchedule, schoolList, tooFewGames);
+		return count;
 	}
 }
 

@@ -122,6 +122,16 @@ public class ScheduleController {
 		return scheduleService.autoAddGames(true);
 	}
 	
+	@PutMapping(value = "schedule/auto-add-games-rivals")
+	public int autoAddRivalries() {
+		return scheduleService.autoAddRivalries();
+	}
+	
+	@PutMapping(value = "schedule/auto-add-games-random")
+	public int autoAddGamesRandomly() {
+		return scheduleService.autoAddRandomly();
+	}
+	
 	@PutMapping(value = "schedule/fix")
 	public int fixSchedule() {
 		return scheduleService.fixSchedule();

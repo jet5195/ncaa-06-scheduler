@@ -15,67 +15,67 @@ class Application {
 
     public static void main(String[] args) throws IOException {
         PropertyConfigurator.configure("src/main/resources/log4j.properties");
-        commandLineUI();
+        //commandLineUI();
     }
 
-    private static void commandLineUI() throws IOException {
-        FileChooser fileChooser = new FileChooser();
-        final String schoolsFile = "src/main/resources/School_Data.xlsx";
-        final String conferencesFile = fileChooser.chooseFile("Select Custom Conferences Excel Document");
-        if (conferencesFile == null){
-            System.out.println("No file selected, exiting program.");
-            System.exit(0);
-        }
-        //final String schoolsFile = "src/main/resources/My_Custom_Conferences.xlsx";
-        final String scheduleFile =  fileChooser.chooseFile("Select Schedule Excel Document");
-        if (scheduleFile == null){
-            System.out.println("No file selected, exiting program.");
-            System.exit(0);
-        }
-        //final String scheduleFile = "src/main/resources/SCHED.xlsx";
-        SchoolList schoolList = ExcelReader.getSchoolData(schoolsFile);
-        ConferenceList conferenceList = ExcelReader.getConferenceData(conferencesFile);
-        ExcelReader.setAlignmentData(conferencesFile, schoolList, conferenceList);
-        SeasonSchedule seasonSchedule = ExcelReader.getScheduleData(scheduleFile, schoolList);
-        System.out.println("Welcome to the NCAA Football PS2 Scheduler");
-        Scanner scanner = new Scanner(System.in);
-        boolean exit = false;
-        while (!exit) {
-            printTitle("Home");
-            System.out.println("0. Exit");
-            System.out.println("1. Automatically add rivalry games (Conservative)");
-            System.out.println("2. Automatically add rivalry games (Aggressive)");
-            System.out.println("3. Add Games Randomly");
-            System.out.println("4. Remove Non-Conference Games");
-            System.out.println("5. Manual Schedule Editing");
-            System.out.println("6. Validate Schedule");
-            System.out.println("7. Options");
-            System.out.println("8. Save to Excel Sheet");
-            String input = scanner.next();
-            if (input.equals("0")) {
-                exit = true;
-            } else if (input.equals("1")) {
-                addRivalryGamesOption(seasonSchedule, schoolList, false);
-            } else if (input.equals("2")) {
-                addRivalryGamesOption(seasonSchedule, schoolList, true);
-            } else if (input.equals("3")) {
-                addRandomGames(seasonSchedule, schoolList, schoolList.findTooFewGames());
-            } else if (input.equals("4")) {
-                removeNonConferenceGamesUI(seasonSchedule);
-            } else if (input.equals("5")) {
-                manualOptionUI(seasonSchedule, schoolList, conferenceList);
-            } else if (input.equals("6")) {
-                validateSchedule(seasonSchedule, schoolList);
-            } else if (input.equals("7")) {
-                optionsOptionUI(seasonSchedule, schoolList, conferenceList);
-            } else if (input.equals("8")) {
-                ExcelReader.write(seasonSchedule);
-            } else {
-                System.out.println("Please choose an option.");
-            }
-        }
-        System.exit(0);
-    }
+//    private static void commandLineUI() throws IOException {
+//        FileChooser fileChooser = new FileChooser();
+//        final String schoolsFile = "src/main/resources/School_Data.xlsx";
+//        final String conferencesFile = fileChooser.chooseFile("Select Custom Conferences Excel Document");
+//        if (conferencesFile == null){
+//            System.out.println("No file selected, exiting program.");
+//            System.exit(0);
+//        }
+//        //final String schoolsFile = "src/main/resources/My_Custom_Conferences.xlsx";
+//        final String scheduleFile =  fileChooser.chooseFile("Select Schedule Excel Document");
+//        if (scheduleFile == null){
+//            System.out.println("No file selected, exiting program.");
+//            System.exit(0);
+//        }
+//        //final String scheduleFile = "src/main/resources/SCHED.xlsx";
+//        SchoolList schoolList = ExcelReader.getSchoolData(schoolsFile);
+//        ConferenceList conferenceList = ExcelReader.getConferenceData(conferencesFile);
+//        ExcelReader.setAlignmentData(conferencesFile, schoolList, conferenceList);
+//        SeasonSchedule seasonSchedule = ExcelReader.getScheduleData(scheduleFile, schoolList);
+//        System.out.println("Welcome to the NCAA Football PS2 Scheduler");
+//        Scanner scanner = new Scanner(System.in);
+//        boolean exit = false;
+//        while (!exit) {
+//            printTitle("Home");
+//            System.out.println("0. Exit");
+//            System.out.println("1. Automatically add rivalry games (Conservative)");
+//            System.out.println("2. Automatically add rivalry games (Aggressive)");
+//            System.out.println("3. Add Games Randomly");
+//            System.out.println("4. Remove Non-Conference Games");
+//            System.out.println("5. Manual Schedule Editing");
+//            System.out.println("6. Validate Schedule");
+//            System.out.println("7. Options");
+//            System.out.println("8. Save to Excel Sheet");
+//            String input = scanner.next();
+//            if (input.equals("0")) {
+//                exit = true;
+//            } else if (input.equals("1")) {
+//                addRivalryGamesOption(seasonSchedule, schoolList, false);
+//            } else if (input.equals("2")) {
+//                addRivalryGamesOption(seasonSchedule, schoolList, true);
+//            } else if (input.equals("3")) {
+//                addRandomGames(seasonSchedule, schoolList, schoolList.findTooFewGames());
+//            } else if (input.equals("4")) {
+//                removeNonConferenceGamesUI(seasonSchedule);
+//            } else if (input.equals("5")) {
+//                manualOptionUI(seasonSchedule, schoolList, conferenceList);
+//            } else if (input.equals("6")) {
+//                validateSchedule(seasonSchedule, schoolList);
+//            } else if (input.equals("7")) {
+//                optionsOptionUI(seasonSchedule, schoolList, conferenceList);
+//            } else if (input.equals("8")) {
+//                ExcelReader.write(seasonSchedule);
+//            } else {
+//                System.out.println("Please choose an option.");
+//            }
+//        }
+//        System.exit(0);
+//    }
 
     private static void removeNonConferenceGamesUI(SeasonSchedule seasonSchedule) {
         Scanner scanner = new Scanner(System.in);
