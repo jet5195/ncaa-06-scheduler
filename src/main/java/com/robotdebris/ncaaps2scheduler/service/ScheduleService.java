@@ -207,20 +207,24 @@ public class ScheduleService {
 		return null;
 	}
 
-	public void autoAddGames(boolean aggressive) {
-        addRivalryGamesAll(seasonSchedule, schoolList, aggressive);
-        removeExtraGames(seasonSchedule, schoolList);
-        fillOpenGames(seasonSchedule, schoolList);
-		
+	public int autoAddGames(boolean aggressive) {
+		int count = 0;
+        count += addRivalryGamesAll(seasonSchedule, schoolList, aggressive);
+        count -= removeExtraGames(seasonSchedule, schoolList);
+        count += fillOpenGames(seasonSchedule, schoolList);
+        return count;		
 	}
 	
-	private void fillOpenGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+	private int fillOpenGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+		int count = 0;
         SchoolList tooFewGames = schoolList.findTooFewGames();
-        addRivalryGamesAll(seasonSchedule, tooFewGames, false);
-        addRandomGames(seasonSchedule, schoolList, tooFewGames);
+        count += addRivalryGamesAll(seasonSchedule, tooFewGames, false);
+        count += addRandomGames(seasonSchedule, schoolList, tooFewGames);
+        return count;
     }
 	
-	private void removeExtraGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+	private int removeExtraGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+		int count = 0;
         SchoolList tooManyGames = schoolList.findTooManyGames();
         for (int i = 0; i < tooManyGames.size(); i++) {
             School school = tooManyGames.get(i);
@@ -228,6 +232,7 @@ public class ScheduleService {
                 Game removeMe = school.findRemovableGame();
                 if (removeMe != null) {
                     seasonSchedule.removeGame(removeMe);
+                    count++;
                 } else {
                     //remove extra rivalry games
                     for (int j = school.getRivals().size() - 1; school.getSchedule().size() > 12; j--) {
@@ -236,12 +241,14 @@ public class ScheduleService {
                             removeMe = findGame(school, rival);
                             if (removeMe.getConferenceGame() == 0) {
                                 seasonSchedule.removeGame(removeMe);
+                                count++;
                             }
                         }
                     }
                 }
             }
         }
+        return count;
     }
 	
 	private Game findGame(School s1, School s2) {
@@ -254,71 +261,81 @@ public class ScheduleService {
         return null;
     }
 	
-	private void addRivalryGamesAll(SeasonSchedule seasonSchedule, SchoolList allSchools, boolean aggressive) {
-        for (int j = 0; j <= 8; j++) {
+	private int addRivalryGamesAll(SeasonSchedule seasonSchedule, SchoolList allSchools, boolean aggressive) {
+        int count = 0;
+		for (int j = 0; j <= 8; j++) {
             for (int i = 0; i < allSchools.size(); i++) {
                 //go through all the schools
                 School s1 = allSchools.get(i);
                 if (s1.getNcaaDivision().equals("FBS") && j < s1.getRivals().size()) {
                     School rival = s1.getRivals().get(j);
-                    addRivalryGameTwoSchools(seasonSchedule, s1, rival, aggressive, j);
+                    count += addRivalryGameTwoSchools(seasonSchedule, s1, rival, aggressive, j);
                 }
             }
         }
+		return count;
     }
 	
-	private void addRivalryGameTwoSchools(SeasonSchedule seasonSchedule, School school, School rival, boolean aggressive, int rivalRank) {
+	private int addRivalryGameTwoSchools(SeasonSchedule seasonSchedule, School school, School rival, boolean aggressive, int rivalRank) {
         //School rival = school.getRivals().get(j);
+		int count = 0;
         if (school.isPossibleOpponent(rival)) {
             if (aggressive && rivalRank < 2) {
-                aggressiveAddRivalryGameHelper(seasonSchedule, school, rival);
+                count += aggressiveAddRivalryGameHelper(seasonSchedule, school, rival);
             }
             //if they don't play and aren't in the same conference
             //go through all the rivals for a team
             else if (rival.getSchedule().size() < 12 && school.getSchedule().size() < 12) {
                 //and stop if the seasonSchedule is full
-                addRivalryGameHelper(seasonSchedule, school, rival, rivalRank);
+                count += addRivalryGameHelper(seasonSchedule, school, rival, rivalRank);
             }
         }
+        return count;
     }
 	
-	private void addRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival, int rivalRank) {
-        ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
+	private int addRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival, int rivalRank) {
+		ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
         if (rivalRank < 2) {
             if (emptyWeeks.contains(12)) {
                 seasonSchedule.addGame(s1, rival, 12, 5);
+                return 1;
                 //week 13 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is referenced by 12
             } else if (emptyWeeks.contains(11)) {
                 seasonSchedule.addGame(s1, rival, 11, 5);
+                return 1;
                 //week 12 is empty
             } else if (emptyWeeks.contains(13)) {
                 seasonSchedule.addGame(s1, rival, 13, 5);
+                return 1;
                 //week 14 is empty
             } else if (!emptyWeeks.isEmpty()) {
                 seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5);
+                return 1;
                 //add game at emptyWeeks.get(0);
             }
         } else if (!emptyWeeks.isEmpty()) {
             seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5);
+            return 1;
         }
+        return 0;
     }
 	
-	private void aggressiveAddRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival) {
-        ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
+	private int aggressiveAddRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival) {
+		ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
         ArrayList<Integer> rweeks = findEmptyWeeks(rival);
         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1weeks, rweeks);
         if (emptyWeeks.contains(12)) {
             seasonSchedule.addGame(s1, rival, 12, 5);
-            return;
+            return 1;
             //week 13 is empty
         } else if (emptyWeeks.contains(11)) {
             seasonSchedule.addGame(s1, rival, 11, 5);
-            return;
+            return 1;
             //week 12 is empty
         }
         if (emptyWeeks.contains(13)) {
             seasonSchedule.addGame(s1, rival, 13, 5);
-            return;
+            return 1;
             //week 14 is empty
         }
         if (s1weeks.contains(12)) {
@@ -328,7 +345,7 @@ public class ScheduleService {
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
                 seasonSchedule.replaceGame(game, s1, rival);
-                return;
+                return 1;//or should this be a 0?
             }
         }
         if (s1weeks.contains(11)) {
@@ -338,7 +355,7 @@ public class ScheduleService {
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
                 seasonSchedule.replaceGame(game, s1, rival);
-                return;
+                return 1;
             }
         }
         if (s1weeks.contains(13)) {
@@ -348,7 +365,7 @@ public class ScheduleService {
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
                 seasonSchedule.replaceGame(game, s1, rival);
-                return;
+                return 1;
             }
         }
         if (rweeks.contains(12)) {
@@ -358,7 +375,7 @@ public class ScheduleService {
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
                 seasonSchedule.replaceGame(game, s1, rival);
-                return;
+                return 1;
             }
         }
         if (rweeks.contains(11)) {
@@ -368,7 +385,7 @@ public class ScheduleService {
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
                 seasonSchedule.replaceGame(game, s1, rival);
-                return;
+                return 1;
             }
         }
         if (rweeks.contains(13)) {
@@ -378,7 +395,7 @@ public class ScheduleService {
             if (game.isRemovableGame()) {
                 //if the game that is blocking a game being added isn't required..
                 seasonSchedule.replaceGame(game, s1, rival);
-                return;
+                return 1;
             }
         }
         if (!s1weeks.contains(12) && !rweeks.contains(12)) {
@@ -387,7 +404,7 @@ public class ScheduleService {
             if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
                 seasonSchedule.removeGame(s1game);
                 seasonSchedule.replaceGame(rgame, s1, rival);
-                return;
+                return 1; //should this still return a 1? I guess so. Just counting added games
                 //remove both games and replace with this one...
             }
         }
@@ -397,7 +414,7 @@ public class ScheduleService {
             if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
                 seasonSchedule.removeGame(s1game);
                 seasonSchedule.replaceGame(rgame, s1, rival);
-                return;
+                return 1;
                 //remove both games and replace with this one...
             }
         }
@@ -407,17 +424,20 @@ public class ScheduleService {
             if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
                 seasonSchedule.removeGame(s1game);
                 seasonSchedule.replaceGame(rgame, s1, rival);
-                return;
+                return 1;
                 //remove both games and replace with this one...
             }
         }
         if (!emptyWeeks.isEmpty()) {
             seasonSchedule.addGame(s1, rival, emptyWeeks.get(0), 5);
+            return 1;
             //add game at emptyWeeks.get(0);
         }
+        return 0;
     }
 	
-	private void addRandomGames(SeasonSchedule seasonSchedule, SchoolList allSchools, SchoolList needGames) {
+	private int addRandomGames(SeasonSchedule seasonSchedule, SchoolList allSchools, SchoolList needGames) {
+		int count = 0;
         for (int i = 0; i < needGames.size(); i++) {
             School s1 = needGames.get(i);
             SchoolList myOptions = new SchoolList();
@@ -437,6 +457,7 @@ public class ScheduleService {
                         //verify Alabama won't play Michigan to end the year. Instead they'll play LA Monroe
                         if (emptyWeeks.get(0) < 11 || (s1.getConference().isPowerConf() ^ randomSchool.getConference().isPowerConf())) {
                             seasonSchedule.addGame(s1, randomSchool, emptyWeeks.get(0), 5);
+                            count++;
                         }
                     }
                     myOptions.remove(randomSchool);
@@ -474,6 +495,7 @@ public class ScheduleService {
                         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, fcs);
                         if (!emptyWeeks.isEmpty()) {
                             seasonSchedule.addGame(s1, fcs, emptyWeeks.get(0), 5);
+                            count++;
                         }
                     }
                 }
@@ -484,11 +506,14 @@ public class ScheduleService {
                 needGames.remove(i);
             }
         }
+        return count;
     }
 	
-	public void fixSchedule() {
-		removeExtraGames(seasonSchedule, schoolList);
-        fillOpenGames(seasonSchedule, schoolList);
+	public int fixSchedule() {
+		int count = 0;
+		count += removeExtraGames(seasonSchedule, schoolList);
+        count += fillOpenGames(seasonSchedule, schoolList);
+        return count;
 	}
 
 	public void saveToFile() {

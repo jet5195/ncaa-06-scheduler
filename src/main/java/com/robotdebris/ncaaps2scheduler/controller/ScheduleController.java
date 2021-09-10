@@ -113,18 +113,18 @@ public class ScheduleController {
 	}
 	
 	@PutMapping(value = "schedule/auto-add-games")
-	public void autoAddGames() {
-		scheduleService.autoAddGames(false);
+	public int autoAddGames() {
+		return scheduleService.autoAddGames(false);
 	}
 	
 	@PutMapping(value = "schedule/auto-add-games-aggressive")
-	public void autoAddGamesAgressive() {
-		scheduleService.autoAddGames(true);
+	public int autoAddGamesAgressive() {
+		return scheduleService.autoAddGames(true);
 	}
 	
 	@PutMapping(value = "schedule/fix")
-	public void fixSchedule() {
-		scheduleService.fixSchedule();
+	public int fixSchedule() {
+		return scheduleService.fixSchedule();
 	}
 	
 	@PostMapping(value = "schedule/save-to-file")
