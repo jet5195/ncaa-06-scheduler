@@ -8,12 +8,11 @@ public class Conference {
 	private String name;
 	private ArrayList<String> divisions;
 	private boolean powerConf;
-	private String color;
-	private String altColor;
+//	private String color;
+//	private String altColor;
 	private String logo;
 	
-	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String color, String altColor,
-			String logo) {
+	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo) {
 		this.name = conferenceName;
 		this.powerConf = powerConf;
 		if(division1 != null && !division1.trim().isEmpty()) {
@@ -21,8 +20,8 @@ public class Conference {
 			divisions.add(division1);
 			divisions.add(division2);
 		}
-		this.color = color;
-		this.altColor = altColor;
+//		this.color = color;
+//		this.altColor = altColor;
 		this.logo = logo;
 	}
 	public String getName() {
@@ -43,18 +42,18 @@ public class Conference {
 	public void setPowerConf(boolean powerConf) {
 		this.powerConf = powerConf;
 	}
-	public String getColor() {
-		return color;
-	}
-	public void setColor(String color) {
-		this.color = color;
-	}
-	public String getAltColor() {
-		return altColor;
-	}
-	public void setAltColor(String altColor) {
-		this.altColor = altColor;
-	}
+//	public String getColor() {
+//		return color;
+//	}
+//	public void setColor(String color) {
+//		this.color = color;
+//	}
+//	public String getAltColor() {
+//		return altColor;
+//	}
+//	public void setAltColor(String altColor) {
+//		this.altColor = altColor;
+//	}
 	public String getLogo() {
 		return logo;
 	}

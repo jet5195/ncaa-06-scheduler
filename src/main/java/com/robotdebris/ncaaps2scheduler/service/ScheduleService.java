@@ -188,20 +188,23 @@ public class ScheduleService {
 		
 		for (School rival : thisSchool.getRivals()) {
 			if(thisSchool.isPossibleOpponent(rival)) {
-				ArrayList<Integer> emptyWeeks = findEmptyWeeks(thisSchool, rival);
-	            if (emptyWeeks.contains(12)) {
-	                return new SuggestedGameResponse(12, rival, isHomeGame);
-	                //week 13 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is referenced by 12
-	            } else if (emptyWeeks.contains(11)) {
-	            	return new SuggestedGameResponse(11, rival, isHomeGame);
-	                //week 12 is empty
-	            } else if (emptyWeeks.contains(13)) {
-	            	return new SuggestedGameResponse(13, rival, isHomeGame);
-	                //week 14 is empty
-	            } else if (!emptyWeeks.isEmpty()) {
-	            	return new SuggestedGameResponse(emptyWeeks.get(0), rival, isHomeGame);
-	                //add game at emptyWeeks.get(0);
-	            }
+			    //should isPossibleOpponent check this instead?
+                if (rival.getSchedule().size()<12) {
+                    ArrayList<Integer> emptyWeeks = findEmptyWeeks(thisSchool, rival);
+                    if (emptyWeeks.contains(12)) {
+                        return new SuggestedGameResponse(12, rival, isHomeGame);
+                        //week 13 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is referenced by 12
+                    } else if (emptyWeeks.contains(11)) {
+                        return new SuggestedGameResponse(11, rival, isHomeGame);
+                        //week 12 is empty
+                    } else if (emptyWeeks.contains(13)) {
+                        return new SuggestedGameResponse(13, rival, isHomeGame);
+                        //week 14 is empty
+                    } else if (!emptyWeeks.isEmpty()) {
+                        return new SuggestedGameResponse(emptyWeeks.get(0), rival, isHomeGame);
+                        //add game at emptyWeeks.get(0);
+                    }
+                }
 			}
 		}
 		return null;

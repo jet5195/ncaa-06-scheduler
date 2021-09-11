@@ -43,8 +43,6 @@ public class ExcelReader {
                 boolean powerConf = false;
                 String division1 = "";
                 String division2 = "";
-                String color = "";
-                String altColor = "";
                 String logo = "";
                 int c = 0;
                 if (dataFormatter.formatCellValue(row.getCell(0)) != "") {
@@ -56,29 +54,25 @@ public class ExcelReader {
                             	conferenceName = cellValue;
                                 break;
                             case 1:
+                                logo = cellValue;
+                                break;
+                            case 2:
                             	if(cellValue != null) {
                             		powerConf = Boolean.parseBoolean(cellValue);
                             	}
                                 break;
-                            case 2:
+                            case 3:
                                 division1 = cellValue;
                                 break;
-                            case 3:
+                            case 4:
                                 division2 = cellValue;
                                 break;
-                            case 4:
-                                color = cellValue;
-                                break;
-                            case 5:
-                                altColor = cellValue;
-                            case 6:
-                                logo = cellValue;
                             default:
                                 break;
                         }//end of switch
                         c++;
                     }//end col iterator
-                    conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, color, altColor, logo));
+                    conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, logo));
                     //System.out.println();
                 }//end of if not null
             }//end of row iterator
@@ -225,7 +219,7 @@ public class ExcelReader {
 
     /**
      * Populates the season's schedule as well as all school's schedules. Also adds FCS schools to the school list as they are found.
-     * @param path the path of the Schedule excel file
+     * @param file the path of the Schedule excel file
      * @param allSchools the list of all schools
      * @return SeasonSchedule a list of all games in a season
      * @throws IOException
@@ -301,12 +295,12 @@ public class ExcelReader {
                     awaySchool = allSchools.schoolSearch(gatg);
                     homeSchool = allSchools.schoolSearch(ghtg);
                     if (awaySchool == null) {
-                        awaySchool = new School(gatg, "null", "null", "null", new Conference("null", false, null, null, null, null, null), null, "FCS", "null", "null", "null");
+                        awaySchool = new School(gatg, "null", "null", "null", new Conference("null", false, null, null, null), null, "FCS", "null", "null", "null");
                         awaySchool.setRivals(new SchoolList());
                         allSchools.add(awaySchool);
                     }
                     if (homeSchool == null) {
-                        homeSchool = new School(ghtg, "null", "null", "null", new Conference("null", false, null, null, null, null, null), null, "FCS", "null", "null", "null");
+                        homeSchool = new School(ghtg, "null", "null", "null", new Conference("null", false, null, null, null), null, "FCS", "null", "null", "null");
                         homeSchool.setRivals(new SchoolList());
                         allSchools.add(homeSchool);
                     }
