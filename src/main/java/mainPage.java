@@ -1,5 +1,7 @@
 import javax.swing.*;
 
+import com.robotdebris.ncaaps2scheduler.model.SchoolList;
+
 class mainPage {
     private JComboBox schoolSelect;
 
