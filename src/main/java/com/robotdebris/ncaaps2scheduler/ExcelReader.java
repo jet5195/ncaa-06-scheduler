@@ -1,6 +1,8 @@
 package com.robotdebris.ncaaps2scheduler;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.ConferenceList;
@@ -15,27 +17,36 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+@Component
 public class ExcelReader {
-    private static Workbook readExcel(String path) throws IOException {
+	
+	@Autowired
+	ConferenceList conferenceList;
+	@Autowired
+	SchoolList schoolList;
+	@Autowired
+	SeasonSchedule seasonSchedule;
+	
+    private Workbook readExcel(String path) throws IOException {
 
         // Creating a Workbook from an Excel file (.xls or .xlsx)
         return WorkbookFactory.create(new File(path));
         //workbook.close();
     }
     
-    private static Workbook readExcel(File file) throws IOException {
+    private Workbook readExcel(File file) throws IOException {
 
         // Creating a Workbook from an Excel file (.xls or .xlsx)
         return WorkbookFactory.create(file);
         //workbook.close();
     }
     
-    public static ConferenceList getConferenceData(File file) throws IOException {
+    public ConferenceList getConferenceData(File file) throws IOException {
     	//Workbook workbook = readExcel(path);
     	Workbook workbook = readExcel(file);
     	Sheet sheet = workbook.getSheetAt(0);
     	DataFormatter dataFormatter = new DataFormatter();
-    	ConferenceList conferenceList = new ConferenceList();
+    	//ConferenceList conferenceList = new ConferenceList();
     	int r = 0;
         for (Row row : sheet) {
             if (r > 0) {//disregard the headers
@@ -81,7 +92,7 @@ public class ExcelReader {
     	return conferenceList;
     }
     
-    public static void setAlignmentData(File file, SchoolList allSchools, ConferenceList conferenceList) throws IOException {
+    public void setAlignmentData(File file, SchoolList allSchools, ConferenceList conferenceList) throws IOException {
     	Workbook workbook = readExcel(file);
     	Sheet sheet = workbook.getSheetAt(1);
     	DataFormatter dataFormatter = new DataFormatter();
@@ -132,7 +143,7 @@ public class ExcelReader {
      * @return SchoolList of all schools in your excel file
      * @throws IOException
      */
-    public static SchoolList getSchoolData(String path) throws IOException {
+    public SchoolList getSchoolData(String path) throws IOException {
         Workbook workbook = readExcel(path);
         // Getting the Sheet at index zero
         Sheet sheet = workbook.getSheetAt(0);
@@ -141,7 +152,7 @@ public class ExcelReader {
         DataFormatter dataFormatter = new DataFormatter();
         //LinkedList<School> schools = new LinkedList<School>();
         // 2. Or you can use a for-each loop to iterate over the rows and columns
-        SchoolList allSchools = new SchoolList();
+        //SchoolList schoolList = new SchoolList();
         int r = 0;
         for (Row row : sheet) {
             if (r > 0) {//disregard the headers
@@ -184,7 +195,7 @@ public class ExcelReader {
                         }//end of switch
                         c++;
                     }//end col iterator
-                    allSchools.add(new School(tgid, university, nickname, state, color, altColor, logo));
+                    schoolList.add(new School(tgid, university, nickname, state, color, altColor, logo));
                     //System.out.println();
                 }//end of if not null
             }//end of row iterator
@@ -203,18 +214,18 @@ public class ExcelReader {
                 	}
                     if (i >= 6 && dataFormatter.formatCellValue(cell) != "") {
                         String cellValue = dataFormatter.formatCellValue(cell);
-                        School rival = allSchools.schoolSearch(cellValue);
+                        School rival = schoolList.schoolSearch(cellValue);
                         if (rival != null) {
                             rivals.add(rival);
                         }
                     }
                     i++;
                 }
-                allSchools.schoolSearch(tgid).setRivals(rivals);
+                schoolList.schoolSearch(tgid).setRivals(rivals);
             }
             iterator++;
         }
-        return allSchools;
+        return schoolList;
     }
 
     /**
@@ -224,7 +235,7 @@ public class ExcelReader {
      * @return SeasonSchedule a list of all games in a season
      * @throws IOException
      */
-    public static SeasonSchedule getScheduleData(File file, SchoolList allSchools) throws IOException, NumberFormatException {
+    public SeasonSchedule getScheduleData(File file, SchoolList allSchools) throws IOException, NumberFormatException {
     	//if the first school has a schedule already, empty it.
     	//eventually it may make sense to autowire seasonschedule and check it
     	if(!allSchools.get(0).getSchedule().isEmpty()) {
@@ -240,7 +251,7 @@ public class ExcelReader {
         //LinkedList<School> schools = new LinkedList<School>();
         // 2. Or you can use a for-each loop to iterate over the rows and columns
         /*System.out.println("\n\nIterating over Rows and Columns using for-each loop\n");*/
-        SeasonSchedule seasonSchedule = new SeasonSchedule();
+        //SeasonSchedule seasonSchedule = new SeasonSchedule();
         SeasonSchedule bowlSchedule = new SeasonSchedule();
         int r = 0;
         for (Row row : sheet) {
@@ -325,7 +336,7 @@ public class ExcelReader {
      * @param seasonSchedule the schedule to write to a new excel file
      * @throws IOException
      */
-    public static ByteArrayInputStream write(SeasonSchedule seasonSchedule) throws IOException {
+    public ByteArrayInputStream write(SeasonSchedule seasonSchedule) throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet();
         ArrayList<ArrayList> list = seasonSchedule.scheduleToList(true);
@@ -347,7 +358,7 @@ public class ExcelReader {
 //        fileOut.close();
     }
 
-    private static void addLine(Sheet sheet, ArrayList game, int r) {
+    private void addLine(Sheet sheet, ArrayList game, int r) {
         Row row = sheet.createRow(r);
         for (int c = 0; c < game.size(); c++) {
             if (r == 0) {

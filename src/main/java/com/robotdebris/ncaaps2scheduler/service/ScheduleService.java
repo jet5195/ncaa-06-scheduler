@@ -7,7 +7,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import javax.annotation.PostConstruct;
+
 import com.robotdebris.ncaaps2scheduler.model.*;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.robotdebris.ncaaps2scheduler.ExcelReader;
@@ -15,17 +19,22 @@ import com.robotdebris.ncaaps2scheduler.ExcelReader;
 @Service
 public class ScheduleService {
 
-	private static SchoolList schoolList = new SchoolList();
-	private static ConferenceList conferenceList = new ConferenceList();
-	private static SeasonSchedule seasonSchedule;
+	@Autowired
+	SchoolList schoolList;
+	@Autowired
+	ConferenceList conferenceList;
+	@Autowired
+	SeasonSchedule seasonSchedule;
+	@Autowired
+	ExcelReader excelReader;
 
-	
-	static {
+	@PostConstruct
+	public void init() {
 		
 		final String schoolsFile = "src/main/resources/School_Data.xlsx";
 //	    
 	    try {
-			schoolList = ExcelReader.getSchoolData(schoolsFile);
+			schoolList = excelReader.getSchoolData(schoolsFile);
 			Collections.sort(schoolList);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -36,7 +45,7 @@ public class ScheduleService {
 	public void setScheduleFile(MultipartFile scheduleFile) throws IOException {
 		File file = multipartFileToFile(scheduleFile);
 		try {
-			seasonSchedule = ExcelReader.getScheduleData(file, schoolList);
+			seasonSchedule = excelReader.getScheduleData(file, schoolList);
 			//is this going to miss conference games since conferences aren't set yet?
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -523,7 +532,7 @@ public class ScheduleService {
 
 	public void saveToFile() {
 		try {
-			ExcelReader.write(seasonSchedule);
+			excelReader.write(seasonSchedule);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -548,8 +557,9 @@ public class ScheduleService {
 	public void setAlignmentFile(MultipartFile alignmentFile) throws IOException {
 		File file = multipartFileToFile(alignmentFile);
 		try {
-			conferenceList = ExcelReader.getConferenceData(file);
-			ExcelReader.setAlignmentData(file, schoolList, conferenceList);
+			conferenceList = excelReader.getConferenceData(file);
+			excelReader.setAlignmentData(file, schoolList, conferenceList);
+			conferenceList.setConferencesSchoolList(schoolList);
 			Collections.sort(schoolList);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -560,7 +570,7 @@ public class ScheduleService {
 
 	public ByteArrayInputStream downloadSchedule() {
 		try {
-			return ExcelReader.write(seasonSchedule);
+			return excelReader.write(seasonSchedule);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

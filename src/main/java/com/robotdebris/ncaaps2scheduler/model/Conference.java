@@ -2,15 +2,19 @@ package com.robotdebris.ncaaps2scheduler.model;
 
 import java.util.ArrayList;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Conference {
 	
-	//private int conferenceID;
+//	private int conferenceID;
 	private String name;
 	private ArrayList<String> divisions;
 	private boolean powerConf;
 //	private String color;
 //	private String altColor;
 	private String logo;
+	@JsonIgnore
+	private SchoolList schools;
 	
 	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo) {
 		this.name = conferenceName;
@@ -24,6 +28,18 @@ public class Conference {
 //		this.altColor = altColor;
 		this.logo = logo;
 	}
+	
+	
+//	public int getConferenceID() {
+//		return conferenceID;
+//	}
+//
+//
+//	public void setConferenceID(int conferenceID) {
+//		this.conferenceID = conferenceID;
+//	}
+
+
 	public String getName() {
 		return name;
 	}
@@ -63,5 +79,16 @@ public class Conference {
 	public void setDivisions(ArrayList<String> divisions) {
 		this.divisions = divisions;
 	}
+
+	public SchoolList getSchools() {
+		return schools;
+	}
+
+
+	public void setSchools(SchoolList schools) {
+		this.schools = schools;
+	}
+	
+	
 
 }
