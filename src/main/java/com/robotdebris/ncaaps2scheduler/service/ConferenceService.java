@@ -39,6 +39,9 @@ public class ConferenceService {
 			s2.setNcaaDivision(tempNcaaDiv);
 			
 			//need to add schedule stuff here
+			//need to reset the conferenceList, it isn't updating
+			//in the future, optimize this by making it only set the updated confs instead of all
+			conferenceList.setConferencesSchoolList(schoolList);
 			
 			swaplist.add(new Swap(s1, s2));
 		}

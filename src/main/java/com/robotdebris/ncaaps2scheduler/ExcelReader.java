@@ -42,6 +42,7 @@ public class ExcelReader {
     }
     
     public ConferenceList getConferenceData(File file) throws IOException {
+    	conferenceList.clear();
     	//Workbook workbook = readExcel(path);
     	Workbook workbook = readExcel(file);
     	Sheet sheet = workbook.getSheetAt(0);
