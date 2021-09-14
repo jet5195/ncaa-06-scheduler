@@ -88,6 +88,17 @@ public class Conference {
 	public void setSchools(SchoolList schools) {
 		this.schools = schools;
 	}
+
+
+	public SchoolList getSchoolsByDivision(String division) {
+		SchoolList divSchools = new SchoolList();
+		for (School school : this.getSchools()) {
+			if(school.getDivision().equalsIgnoreCase(division)) {
+				divSchools.add(school);
+			}
+		}
+		return divSchools;
+	}
 	
 	
 

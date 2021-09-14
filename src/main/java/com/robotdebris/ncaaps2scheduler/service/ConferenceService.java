@@ -106,4 +106,9 @@ public class ConferenceService {
 		swapSchools(s1, s2);
 		
 	}
+
+	public SchoolList getSchoolsByDivision(String name, String division) {
+		Conference conf = conferenceList.conferenceSearch(name);
+		return conf.getSchoolsByDivision(division);
+	}
 }

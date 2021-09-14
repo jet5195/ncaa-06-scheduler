@@ -61,6 +61,12 @@ public class ConferenceController {
 		return conferenceService.getSwapList();
 	}
 	
+	@GetMapping(value = "/conferences/{name}/division/{division}/schools")
+	public SchoolList getSchoolsByDivision(@PathVariable String name, @PathVariable String division) {
+		SchoolList schools = conferenceService.getSchoolsByDivision(name, division);
+		return schools;
+	}
+	
 	
 	//should these be moved here?
 //	@GetMapping(value = "/conferences")
