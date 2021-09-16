@@ -1,10 +1,12 @@
 package com.robotdebris.ncaaps2scheduler.model;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+@Component
 public class ConferenceList extends LinkedList<Conference> {
     static {
         PropertyConfigurator.configure("src/main/resources/log4j.properties");
@@ -14,15 +16,21 @@ public class ConferenceList extends LinkedList<Conference> {
 
     /**
      * @param conference the String name of the Conference you are searching for
-     * @return Conference with the same name as the the parameter inputted
+     * @return Conference with the same name as the the parameter inputed
      */
     public Conference conferenceSearch(String conference) {
-        for (Conference theConference : this) {
-            if (theConference.getName().equalsIgnoreCase(conference)) {
-                return theConference;
+        for (Conference conf : this) {
+            if (conf.getName().equalsIgnoreCase(conference)) {
+                return conf;
             }
         }
         LOGGER.warn(conference + " could not be found, please check your spelling and try again.");
         return null;
     }
+    
+    public void setConferencesSchoolList(SchoolList schoolList) {
+		for (Conference conf : this) {
+			conf.setSchools(schoolList.getAllSchoolsInConference(conf.getName()));
+		}
+	}
 }

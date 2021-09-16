@@ -2,7 +2,9 @@ package com.robotdebris.ncaaps2scheduler.model;
 import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SeasonSchedule extends SchoolSchedule {
 
     private SeasonSchedule bowlSchedule;

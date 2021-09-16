@@ -14,7 +14,9 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>ncaa-ps2-scheduler</name>
 	<description>NCAA Football PS2 Schedule Editor</description>
+	<packaging>jar</packaging>
 	<properties>
+		<start-class>com.robotdebris.ncaaps2scheduler.NcaaPs2SchedulerApplication</start-class>
 		<java.version>11</java.version>
 	</properties>
 	<dependencies>
@@ -89,6 +91,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+                    <fork>true</fork>
+                    <mainClass>${start-class}</mainClass>
+                </configuration>
+                  <executions>
+                    <execution>
+                      <goals>
+                        <goal>repackage</goal>
+                      </goals>
+                    </execution>
+                </executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
