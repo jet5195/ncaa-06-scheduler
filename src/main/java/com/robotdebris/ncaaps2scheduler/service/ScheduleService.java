@@ -31,7 +31,8 @@ public class ScheduleService {
 	@PostConstruct
 	public void init() {
 		
-		final String schoolsFile = "src/main/resources/School_Data.xlsx";
+		//final String schoolsFile = "src/main/resources/School_Data.xlsx";
+		final String schoolsFile = "resources/app/School_Data.xlsx";
 //	    
 	    try {
 			schoolList = excelReader.getSchoolData(schoolsFile);

@@ -2,6 +2,7 @@ package com.robotdebris.ncaaps2scheduler;
 import com.robotdebris.ncaaps2scheduler.model.*;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,6 +10,9 @@ import java.util.Collections;
 import java.util.Scanner;
 
 class Application {
+	
+	@Autowired
+	private ExcelReader excelReader;
     private static final School nullSchool = new School(999, "null", "null", "null", new Conference("null", false, null, null, null), null, "null", "null", "null", "null");
 
     private final Logger LOGGER = Logger.getLogger(Application.class.getName());
@@ -101,7 +105,7 @@ class Application {
         }
     }
 
-    private static void manualOptionUI(SeasonSchedule seasonSchedule, SchoolList schoolList, ConferenceList conferenceList) throws IOException {
+    private void manualOptionUI(SeasonSchedule seasonSchedule, SchoolList schoolList, ConferenceList conferenceList) throws IOException {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
         while (!exit) {
@@ -121,7 +125,7 @@ class Application {
             } else if (input.equals("2")) {
                 optionsOptionUI(seasonSchedule, schoolList, conferenceList);
             } else if (input.equals("3")) {
-                ExcelReader.write(seasonSchedule);
+                excelReader.write(seasonSchedule);
             } else {
                 System.out.println("Please choose an option.");
             }
