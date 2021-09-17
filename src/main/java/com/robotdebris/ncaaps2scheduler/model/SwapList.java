@@ -2,8 +2,6 @@ package com.robotdebris.ncaaps2scheduler.model;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 @Component

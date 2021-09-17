@@ -533,7 +533,7 @@ public class ScheduleService {
 
 	public void saveToFile() {
 		try {
-			excelReader.write(seasonSchedule);
+			excelReader.writeSchedule(seasonSchedule);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -571,7 +571,7 @@ public class ScheduleService {
 
 	public ByteArrayInputStream downloadSchedule() {
 		try {
-			return excelReader.write(seasonSchedule);
+			return excelReader.writeSchedule(seasonSchedule);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -1,8 +1,12 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.ConferenceList;
 import com.robotdebris.ncaaps2scheduler.model.School;
@@ -15,12 +19,12 @@ public class ConferenceService {
 	
 	@Autowired
 	ConferenceList conferenceList;
-	
 	@Autowired
 	SwapList swaplist;
-	
 	@Autowired
 	SchoolList schoolList;
+	@Autowired
+	ExcelReader excelReader;
 	
 	public void swapSchools(School s1, School s2) {
 		//if the conferences & divisions aren't already the same...
@@ -114,4 +118,14 @@ public class ConferenceService {
 		Conference conf = conferenceList.conferenceSearch(name);
 		return conf.getSchoolsByDivision(division);
 	}
+	
+	public ByteArrayInputStream downloadSwapFile() {
+		try {
+			return excelReader.writeSwapList();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+		}
 }

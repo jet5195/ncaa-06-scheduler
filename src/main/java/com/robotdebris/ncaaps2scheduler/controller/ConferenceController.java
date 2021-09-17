@@ -1,32 +1,19 @@
 package com.robotdebris.ncaaps2scheduler.controller;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
-
-import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.model.*;
 
 import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.robotdebris.ncaaps2scheduler.service.ConferenceService;
-import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 
 @CrossOrigin(origins = "*")
 @RestController
 public class ConferenceController {
-
-	@Autowired
-	private ScheduleService scheduleService;
 	
 	@Autowired
 	private ConferenceService conferenceService;
@@ -51,11 +38,6 @@ public class ConferenceController {
 		conferenceService.renameDivision(name, divisionName, newName);
 	}
 	
-//	@PutMapping(value = "/conferences/swap-conferences/{name1}/{name2}")
-//	private void swapSchools(@PathVariable String name1, @PathVariable String name2) {
-//		conferenceService.swapConferences(name1, name2);
-//	}
-	
 	@GetMapping(value = "/conferences/get-swap")
 	private SwapList getSwapList() {
 		return conferenceService.getSwapList();
@@ -67,28 +49,12 @@ public class ConferenceController {
 		return schools;
 	}
 	
+	@GetMapping(value = "conferences/download")
+	public void downloadSwapList(HttpServletResponse response) throws IOException {
+		response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=swap_list.xlsx");
+        ByteArrayInputStream stream = conferenceService.downloadSwapFile();
+        IOUtils.copy(stream, response.getOutputStream());
+	}
 	
-	//should these be moved here?
-//	@GetMapping(value = "/conferences")
-//	public ConferenceList getAllConferences() {
-//		ConferenceList conferenceList = scheduleService.getConferenceList();
-//		return conferenceList;
-//	}
-//	
-//	@GetMapping(value = "/conferences/{name}")
-//	public Conference getConferenceByName(@PathVariable String name) {
-//		Conference conference = scheduleService.searchConferenceByName(name);
-//		return conference;
-//	}
-//	
-//	@GetMapping(value = "/conferences/{name}/schools")
-//	public SchoolList getSchoolsByConference(@PathVariable String name) {
-//		SchoolList schools = scheduleService.getSchoolsByConference(name);
-//		return schools;
-//	}
-//	
-//	@PostMapping(value = "/conferences/set-by-file")
-//	public void setAlignmentFile(@RequestParam("file") MultipartFile alignmentFile) throws IOException {
-//		scheduleService.setAlignmentFile(alignmentFile);
-//	}
 }

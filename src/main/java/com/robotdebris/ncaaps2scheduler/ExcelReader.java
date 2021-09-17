@@ -10,6 +10,7 @@ import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SchoolList;
 import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
+import com.robotdebris.ncaaps2scheduler.model.SwapList;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,6 +27,8 @@ public class ExcelReader {
 	SchoolList schoolList;
 	@Autowired
 	SeasonSchedule seasonSchedule;
+	@Autowired
+	SwapList swaplist;
 	
     private Workbook readExcel(String path) throws IOException {
 
@@ -43,11 +46,9 @@ public class ExcelReader {
     
     public ConferenceList getConferenceData(File file) throws IOException {
     	conferenceList.clear();
-    	//Workbook workbook = readExcel(path);
     	Workbook workbook = readExcel(file);
     	Sheet sheet = workbook.getSheetAt(0);
     	DataFormatter dataFormatter = new DataFormatter();
-    	//ConferenceList conferenceList = new ConferenceList();
     	int r = 0;
         for (Row row : sheet) {
             if (r > 0) {//disregard the headers
@@ -85,7 +86,6 @@ public class ExcelReader {
                         c++;
                     }//end col iterator
                     conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, logo));
-                    //System.out.println();
                 }//end of if not null
             }//end of row iterator
             r++;
@@ -131,7 +131,6 @@ public class ExcelReader {
                     School school = allSchools.schoolSearch(tgid);
                     Conference conference = conferenceList.conferenceSearch(conf);
                     school.updateAlignment(conference, div, ncaaDiv);
-                    //System.out.println();
                 }//end of if not null
             }//end of row iterator
             r++;
@@ -337,7 +336,7 @@ public class ExcelReader {
      * @param seasonSchedule the schedule to write to a new excel file
      * @throws IOException
      */
-    public ByteArrayInputStream write(SeasonSchedule seasonSchedule) throws IOException {
+    public ByteArrayInputStream writeSchedule(SeasonSchedule seasonSchedule) throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet();
         ArrayList<ArrayList> list = seasonSchedule.scheduleToList(true);
@@ -355,8 +354,31 @@ public class ExcelReader {
         
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         workbook.write(outputStream);
+        workbook.close();
         return new ByteArrayInputStream(outputStream.toByteArray());
 //        fileOut.close();
+    }
+    
+    /**
+     * Writes swap to a new excel file
+     * @throws IOException
+     */
+    public ByteArrayInputStream writeSwapList() throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet();
+        int i = 0;
+        while (i < swaplist.size()) {
+        	Row row = sheet.createRow(i);
+        	row.createCell(0).setCellValue(i);;
+        	row.createCell(1).setCellValue(swaplist.get(i).getSchool1().getTgid());
+        	row.createCell(2).setCellValue(swaplist.get(i).getSchool2().getTgid());
+            i++;
+        }
+        
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close(); //remove this if it doesn't work
+        return new ByteArrayInputStream(outputStream.toByteArray()); 
     }
 
     private void addLine(Sheet sheet, ArrayList game, int r) {

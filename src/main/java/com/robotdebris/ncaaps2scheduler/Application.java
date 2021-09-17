@@ -125,7 +125,7 @@ class Application {
             } else if (input.equals("2")) {
                 optionsOptionUI(seasonSchedule, schoolList, conferenceList);
             } else if (input.equals("3")) {
-                excelReader.write(seasonSchedule);
+                excelReader.writeSchedule(seasonSchedule);
             } else {
                 System.out.println("Please choose an option.");
             }
