@@ -46,6 +46,7 @@ public class ExcelReader {
     
     public ConferenceList getConferenceData(File file) throws IOException {
     	conferenceList.clear();
+    	swaplist.clear();
     	Workbook workbook = readExcel(file);
     	Sheet sheet = workbook.getSheetAt(0);
     	DataFormatter dataFormatter = new DataFormatter();
@@ -364,14 +365,20 @@ public class ExcelReader {
      * @throws IOException
      */
     public ByteArrayInputStream writeSwapList() throws IOException {
+    	//simplifySwapList();
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet();
+        Row row = sheet.createRow(0);
+        row.createCell(0).setCellValue("TGID");
+        row.createCell(1).setCellValue("TIDR");
+        row.createCell(2).setCellValue("SWOR");
         int i = 0;
+        
         while (i < swaplist.size()) {
-        	Row row = sheet.createRow(i);
-        	row.createCell(0).setCellValue(i);;
-        	row.createCell(1).setCellValue(swaplist.get(i).getSchool1().getTgid());
-        	row.createCell(2).setCellValue(swaplist.get(i).getSchool2().getTgid());
+        	row = sheet.createRow(i+1);      	
+        	row.createCell(0).setCellValue(swaplist.get(i).getSchool1().getTgid());
+        	row.createCell(1).setCellValue(swaplist.get(i).getSchool2().getTgid());
+        	row.createCell(2).setCellValue(i);
             i++;
         }
         
@@ -381,7 +388,12 @@ public class ExcelReader {
         return new ByteArrayInputStream(outputStream.toByteArray()); 
     }
 
-    private void addLine(Sheet sheet, ArrayList game, int r) {
+    private void simplifySwapList() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void addLine(Sheet sheet, ArrayList game, int r) {
         Row row = sheet.createRow(r);
         for (int c = 0; c < game.size(); c++) {
             if (r == 0) {
