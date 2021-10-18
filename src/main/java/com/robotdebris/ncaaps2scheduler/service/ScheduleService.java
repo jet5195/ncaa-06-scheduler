@@ -27,6 +27,8 @@ public class ScheduleService {
 	SeasonSchedule seasonSchedule;
 	@Autowired
 	ExcelReader excelReader;
+//	@Autowired
+//	int year;
 
 	@PostConstruct
 	public void init() {
@@ -128,6 +130,10 @@ public class ScheduleService {
 
 	public int removeAllFcsGames() {
 		return seasonSchedule.removeAllFcsGames();
+	}
+	
+	public int removeAllGames() {
+		return seasonSchedule.removeAllGames();
 	}
 
 	public void removeGame(int tgid, int week){
@@ -590,6 +596,158 @@ public class ScheduleService {
 		SchoolList tooFewGames = schoolList.findTooFewGames();
 		count += addRandomGames(seasonSchedule, schoolList, tooFewGames);
 		return count;
+	}
+
+	public int autoAddConferenceGames(String name) {
+		Conference conf = conferenceList.conferenceSearch(name);
+		setAllYearlyGames();
+		if(conf.getSchools().size() <= 10) {
+			scheduleConferenceGamesUnder10Teams(conf);
+		}
+		return 0;
+	}
+	
+	public void scheduleConferenceGamesUnder10Teams(Conference conf) {
+		int year = 2021;
+		int numOfSchools = conf.getSchools().size();
+		for (School school : conf.getSchools()) {
+			if(school.getSchedule().getNumOfConferenceGames() < numOfSchools -1) {
+				for (School opponent : conf.getSchools()) {
+					if(!school.equals(opponent) && !school.isOpponent(opponent)){
+						int week = randomizeWeek(school, opponent);
+						addYearlySeriesHelper(school, opponent, week, 5, year);
+					}
+				}
+			}
+		}
+	}
+	
+	private int randomizeWeek(School school, School opponent) {
+		ArrayList<Integer> emptyWeeks = findEmptyWeeks(school, opponent);
+		int max = emptyWeeks.size() - 1;
+        int min = 0;
+        int range = max - min + 1;
+        int randomNum = (int) (Math.random() * range) + min;
+		return emptyWeeks.get(randomNum);
+	}
+
+	public void setAllYearlyGames() {
+		/*		 
+		 
+		 week 14
+		 army navy (only game of the week)
+		 
+		 week 13
+		 Ole Miss Miss St
+		 UNC NC St?
+		 USF UCF
+		 EMU CMU
+		 WSU Wash
+		 UGA GT (Sat)
+		 OU OKST
+		 Bama Auburn
+		 PSU MSU
+		 OSU Oregon
+		 ND Stanford?
+		 UK UL
+		 LSU A&M/Ark?
+		 Pitt Cuse
+		 IU Purdue
+		 FSU Florida
+		 Clem USC
+		 Vandy UT
+		 ILL NW
+		 Wisc Minn
+		 Mich OSU
+		 ULM ULL
+		 Cal UCLA
+		 Zona ASU
+		 WKU Marshall?
+		 Col Utah?
+		 VT UVA
+		 Mizzou Kansas
+		 OU Nebraska
+		 UT Vandy
+		 Duke Wake
+		 Cuse BC
+		 
+		 
+		 week 10
+		 LSU Bama ?
+		 UK UT
+		 
+		 week 9
+		 Mich MSU?
+		 FSU Clem?
+		 UGA UF
+		 
+		 Week 8
+		 Bama UT
+		 LSU Ole Miss? probs not
+		 
+		 Week 7
+		 SDSU SJSU?
+		 Pitt VT?
+		 
+		 Week 6
+		 OU Texas
+		 UGA Auburn? probs not
+		  
+		 
+		 */
+		int year = 2021;
+		//week 6
+		addYearlySeriesHelper("Oklahoma", "Texas", 6, 5, year);
+		
+		//week 8
+		addYearlySeriesHelper("Alabama", "Tennessee", 8, 5, year);
+		
+		//week 9
+		addYearlySeriesHelper("Georgia", "Florida", 9, 5, year);
+		
+		//week 12
+		addYearlySeriesHelper("Tennessee", "Kentucky", 12, 5, year);
+		
+		//week 13 (rivalry week)
+		addYearlySeriesHelper("Virginia", "Virginia Tech", 13, 5, year);
+		addYearlySeriesHelper("North Carolina", "North Carolina State", 13, 5, year);
+		for (School school : schoolList) {
+			if(!school.getNcaaDivision().equalsIgnoreCase("FCS")) {
+				boolean endLoop = false;
+				int i = 0;
+				while(!endLoop) {
+					if(school.getRivals().size()>i) {
+						School rival = school.getRivals().get(i);
+						endLoop = addYearlySeriesHelper(school, rival, 13, 5, year);
+						i++;
+					}
+					else {
+						endLoop = true;
+					}
+				}
+			}
+		}
+		
+		//week 14
+		addYearlySeriesHelper("Navy", "Army", 14, 5, year);
+		
+		
+	}
+	
+	public boolean addYearlySeriesHelper(String s1, String s2, int week, int day, int year) {
+		School school1 = schoolList.schoolSearch(s1);
+		School school2 = schoolList.schoolSearch(s2);
+		return addYearlySeriesHelper(school1, school2, week, day, year);
+	}
+	
+	public boolean addYearlySeriesHelper(School school1, School school2, int week, int day, int year) {
+		if(!school1.isOpponent(school2) && school1.getSchedule().size()<12 && school2.getSchedule().size() < 12 &&
+				school1.getSchedule().getGame(week) == null && school2.getSchedule().getGame(week) == null ) {
+			//check if out of division conf opponent here?
+			seasonSchedule.addGameYearlySeries(school1, school2, week, 5, year);
+			return true;
+		}
+		return false;
 	}
 }
 

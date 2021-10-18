@@ -124,6 +124,18 @@ public class ScheduleController {
 		return scheduleService.autoAddRandomly();
 	}
 	
+	@PutMapping(value = "schedule/remove-all-games")
+	public int removeAllGames() {
+		return scheduleService.removeAllGames();
+	}
+	
+	@PutMapping(value = "schedule/conference/{name}/set-schedule")
+	public int autoAddConferenceGames(@PathVariable String name) {
+		return scheduleService.autoAddConferenceGames(name);
+		//scheduleService.setAllYearlyGames();
+		//return 0;
+	}
+	
 	@PutMapping(value = "schedule/fix")
 	public int fixSchedule() {
 		return scheduleService.fixSchedule();

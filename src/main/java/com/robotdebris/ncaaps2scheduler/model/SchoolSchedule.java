@@ -33,4 +33,14 @@ public class SchoolSchedule extends LinkedList<Game> {
     public boolean isFull() {
         return this.size() >= 12;
     }
+
+	public int getNumOfConferenceGames() {
+		int confGames = 0;
+		for (Game game : this) {
+			if(game.getHomeTeam().isInConference(game.getAwayTeam())) {
+				confGames++;
+			}
+		}
+		return confGames;
+	}
 }

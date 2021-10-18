@@ -25,6 +25,8 @@ public class ConferenceService {
 	SchoolList schoolList;
 	@Autowired
 	ExcelReader excelReader;
+//	@Autowired
+//	int year;
 	
 	public void swapSchools(School s1, School s2) {
 		//if the conferences & divisions aren't already the same...

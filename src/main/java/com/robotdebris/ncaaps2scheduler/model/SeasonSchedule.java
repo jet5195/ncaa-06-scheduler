@@ -47,6 +47,16 @@ public class SeasonSchedule extends SchoolSchedule {
     public void addGameSpecificHomeTeam(School away, School home, int week, int day) {
         addGame(away, home, week, day, findGameNumber(week));
     }
+    
+    public void addGameYearlySeries(School s1, School s2, int week, int day, int year) {
+    	//logic to decide home or away team here?
+    	if(year%2 == 0) {
+    		addGame(s1, s2, week, day, findGameNumber(week));
+    	}
+    	else {
+    		addGame(s2, s1, week, day, findGameNumber(week));
+    	}
+    }
 
     /**
      * Adds game to schedule after the home team is selected, either randomly or via addGameSpecificHomeTeam method
@@ -181,6 +191,17 @@ public class SeasonSchedule extends SchoolSchedule {
             }
         }
         return count;
+    }
+    
+    public int removeAllGames() {
+    	int count = 0;
+    	for (int i = 0; i < this.size(); i++) {
+    		Game game = this.get(i);
+    		this.removeGame(game);
+    		count++;
+    		i--;
+    	}
+    	return count;
     }
 
     /**
