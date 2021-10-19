@@ -14,6 +14,7 @@ public class Conference {
 //	private String altColor;
 	private String logo;
 	private int numOfConfGames;
+	private int confGamesStartWeek;
 	@JsonIgnore
 	private SchoolList schools;
 
@@ -112,4 +113,25 @@ public class Conference {
 	public void setNumOfConfGames(int numOfConfGames) {
 		this.numOfConfGames = numOfConfGames;
 	}
+
+	//big 10 1
+	//pac-12 2
+	//sec 2
+	//acc 3
+	//big 12 3
+	//c-usa 3
+	//mwc 3
+	//mac 4
+	//sun belt 4
+	//aac 4
+	
+	public int getConfGamesStartWeek() {
+		return confGamesStartWeek;
+	}
+
+	public void setConfGamesStartWeek(int confGamesStartWeek) {
+		this.confGamesStartWeek = confGamesStartWeek;
+	}
+	
+	
 }
