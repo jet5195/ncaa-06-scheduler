@@ -679,6 +679,28 @@ public class ScheduleService {
 					otherDiv.add(opponent);
 				}
 			}
+			//int s1Index = 0;
+			int s2Index = 0;
+			for (int s1Index = 0; s1Index < div.size(); s1Index++) {
+				School s1 = div.get(s1Index);
+				int count = 0;
+				while(s1.getNumOfConferenceGames() < numOfConfGames) {
+					School s2 = otherDiv.get(s2Index);
+					//alternate home/away
+					boolean added = false;
+					if(count%2==0) {
+						added = addYearlySeriesHelper(s1, s2, randomizeWeek(s1, s2), numOfSchoolsInConf, year);
+					}
+					else {
+						added = addYearlySeriesHelper(s2, s1, randomizeWeek(s2, s1), numOfSchoolsInConf, year);
+					}
+					if(!added) {
+						System.out.println("The game was not added! Error!! Oh no the sky is falling");
+					}
+					s2Index++;
+					count++;
+				}
+			}
 			/*
 			year 1
 			0 6
