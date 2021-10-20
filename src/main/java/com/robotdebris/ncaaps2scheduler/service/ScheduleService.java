@@ -672,14 +672,50 @@ public class ScheduleService {
 				}
 			}
 			int numOfConfGames = 9;
+
 			SchoolList otherDiv =  new SchoolList();
 			for (School opponent : conf.getSchools()) {
 				if(!school.getDivision().equalsIgnoreCase(opponent.getDivision())) {
 					otherDiv.add(opponent);
 				}
 			}
+			/*
+			year 1
+			0 6
+			7 0
+			0 8
+			9 0
+
+			6   1
+			1   7
+			10  1
+			1  11
+
+			2   8
+			9   2
+			2  10
+			11  2
+
+			8 3
+			3 9
+			6 3
+			3 7
+
+			4 10
+			11 4
+			4 6
+			7 4
+
+			10 5
+			5 11
+			8 5
+			5 9
+			 */
+
+
+
 			// this should work for 
-			while (school.getNumOfConferenceGames() < numOfConfGames) {
+//			while (school.getNumOfConferenceGames() < numOfConfGames) {
 				if (year % 2 == 0 && year % 4 == 0) {// 2020
 					School opponent = otherDiv.getFirst();
 					int week = randomizeWeek(school, opponent);
@@ -716,7 +752,7 @@ public class ScheduleService {
 					week = randomizeWeek(school, opponent);
 					addYearlySeriesHelper(school, opponent, week, 5, year);
 				}
-			}
+//			}
 			// schedule out of division games here
 
 		}
