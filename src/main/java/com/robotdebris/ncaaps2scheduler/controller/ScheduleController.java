@@ -19,6 +19,16 @@ public class ScheduleController {
 	@Autowired
 	private ScheduleService scheduleService;
 
+	@GetMapping(value = "schedule/year")
+	public int getYear() {
+		return scheduleService.getYear();
+	}
+
+	@PutMapping(value = "schedule/year/{year}")
+	public void setYear(@PathVariable int year) {
+		scheduleService.setYear(year);
+	}
+
 	@GetMapping(value = "/schools")
 	public SchoolList getAllSchools() {
 		SchoolList schoolList = scheduleService.getSchoolList();
@@ -131,7 +141,7 @@ public class ScheduleController {
 	
 	@PutMapping(value = "schedule/conference/{name}/set-schedule")
 	public int autoAddConferenceGames(@PathVariable String name) {
-		return scheduleService.autoAddConferenceGames(name);
+		return scheduleService.autoAddConferenceGames(name, 0);
 		//scheduleService.setAllYearlyGames();
 		//return 0;
 	}

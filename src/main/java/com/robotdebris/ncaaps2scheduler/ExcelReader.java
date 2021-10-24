@@ -58,6 +58,8 @@ public class ExcelReader {
                 String division1 = "";
                 String division2 = "";
                 String logo = "";
+                int confGames = 0;
+                int startWeek = 0;
                 int c = 0;
                 if (dataFormatter.formatCellValue(row.getCell(0)) != "") {
                     for (Cell cell : row) {
@@ -76,9 +78,17 @@ public class ExcelReader {
                             	}
                                 break;
                             case 3:
+                                if(cellValue != null) {
+                                    confGames = Integer.parseInt(cellValue);
+                                }
+                            case 4:
+                                if(cellValue != null) {
+                                    startWeek = Integer.parseInt(cellValue);
+                                }
+                            case 5:
                                 division1 = cellValue;
                                 break;
-                            case 4:
+                            case 6:
                                 division2 = cellValue;
                                 break;
                             default:
@@ -86,7 +96,7 @@ public class ExcelReader {
                         }//end of switch
                         c++;
                     }//end col iterator
-                    conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, logo));
+                    conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, logo, confGames, startWeek));
                 }//end of if not null
             }//end of row iterator
             r++;
@@ -105,6 +115,7 @@ public class ExcelReader {
                 int tgid = 0;
                 String conf = "";
                 String div = "";
+                String xDivRival = "";
                 String ncaaDiv = "";
                 int c = 0;
                 if (dataFormatter.formatCellValue(row.getCell(0)) != "") {
@@ -122,6 +133,9 @@ public class ExcelReader {
                                 div = cellValue;
                                 break;
                             case 4:
+                                xDivRival = cellValue;
+                                break;
+                            case 5:
                                 ncaaDiv = cellValue;
                                 break;
                             default:
@@ -130,8 +144,9 @@ public class ExcelReader {
                         c++;
                     }//end col iterator
                     School school = allSchools.schoolSearch(tgid);
+                    School xDivRivalSchool = allSchools.schoolSearch(xDivRival);
                     Conference conference = conferenceList.conferenceSearch(conf);
-                    school.updateAlignment(conference, div, ncaaDiv);
+                    school.updateAlignment(conference, div, ncaaDiv, xDivRivalSchool);
                 }//end of if not null
             }//end of row iterator
             r++;
@@ -307,12 +322,12 @@ public class ExcelReader {
                     awaySchool = allSchools.schoolSearch(gatg);
                     homeSchool = allSchools.schoolSearch(ghtg);
                     if (awaySchool == null) {
-                        awaySchool = new School(gatg, "null", "null", "null", new Conference("null", false, null, null, null), null, "FCS", "null", "null", "null");
+                        awaySchool = new School(gatg, "null", "null", "null", new Conference("null", false, null, null, null, 0,0), null, "FCS", "null", "null", "null");
                         awaySchool.setRivals(new SchoolList());
                         allSchools.add(awaySchool);
                     }
                     if (homeSchool == null) {
-                        homeSchool = new School(ghtg, "null", "null", "null", new Conference("null", false, null, null, null), null, "FCS", "null", "null", "null");
+                        homeSchool = new School(ghtg, "null", "null", "null", new Conference("null", false, null, null, null, 0, 0), null, "FCS", "null", "null", "null");
                         homeSchool.setRivals(new SchoolList());
                         allSchools.add(homeSchool);
                     }

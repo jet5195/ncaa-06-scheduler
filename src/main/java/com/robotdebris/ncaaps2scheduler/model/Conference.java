@@ -18,7 +18,7 @@ public class Conference {
 	@JsonIgnore
 	private SchoolList schools;
 
-	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo) {
+	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo, int numOfConfGames, int confGamesStartWeek) {
 		this.name = conferenceName;
 		this.powerConf = powerConf;
 		if (division1 != null && !division1.trim().isEmpty()) {
@@ -29,6 +29,8 @@ public class Conference {
 //		this.color = color;
 //		this.altColor = altColor;
 		this.logo = logo;
+		this.numOfConfGames = numOfConfGames;
+		this.confGamesStartWeek = confGamesStartWeek;
 	}
 
 //	public int getConferenceID() {

@@ -18,6 +18,8 @@ public class School implements Comparable<School> {
 	private boolean userTeam;
 	@JsonIgnore
 	private SchoolSchedule schedule = new SchoolSchedule();
+	@JsonIgnore
+	private School xDivRival;
 
 	public School(int tgid, String name, String nickname, String state, Conference conference, String division,
 			String ncaaDivision, String color, String altColor, String logo) {
@@ -149,6 +151,14 @@ public class School implements Comparable<School> {
 
 	public void setDivision(String division) {
 		this.division = division;
+	}
+
+	public School getxDivRival() {
+		return xDivRival;
+	}
+
+	public void setxDivRival(School xDivRival) {
+		this.xDivRival = xDivRival;
 	}
 
 	/**
@@ -312,10 +322,11 @@ public class School implements Comparable<School> {
 		return this.getName();
 	}
 
-	public void updateAlignment(Conference conference, String division, String ncaaDivision) {
+	public void updateAlignment(Conference conference, String division, String ncaaDivision, School xDivRival) {
 		this.conference = conference;
 		this.division = division;
 		this.ncaaDivision = ncaaDivision;
+		this.xDivRival =xDivRival;
 
 	}
 

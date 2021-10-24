@@ -13,7 +13,7 @@ class Application {
 	
 	@Autowired
 	private ExcelReader excelReader;
-    private static final School nullSchool = new School(999, "null", "null", "null", new Conference("null", false, null, null, null), null, "null", "null", "null", "null");
+    private static final School nullSchool = new School(999, "null", "null", "null", new Conference("null", false, null, null, null, 0, 0), null, "null", "null", "null", "null");
 
     private final Logger LOGGER = Logger.getLogger(Application.class.getName());
 
