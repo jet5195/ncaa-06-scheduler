@@ -640,13 +640,17 @@ public class ScheduleService {
                 for (School opponent : list) {
                     if (!school.equals(opponent) && !school.isOpponent(opponent)) {
                         int week = randomizeConfGameWeek(school, opponent, confGamesStartDate);
-                        if (school.getNumOfHomeConferenceGames() >= numOfSchools / 2) {
+                        if ((school.getNumOfAwayConferenceGames() >= numOfSchools / 2)
+                                || opponent.getNumOfHomeConferenceGames() >= numOfSchools / 2) {
+                           //add a home game for school
                             if (seasonSchedule.getYear() % 2 == 0) {
                                 addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), false);
                             } else {
                                 addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), false);
                             }
-                        } else if (school.getNumOfAwayConferenceGames() >= numOfSchools / 2) {
+                        } else if ((school.getNumOfHomeConferenceGames() >= numOfSchools / 2)
+                                || opponent.getNumOfAwayConferenceGames() >= numOfSchools / 2) {
+                            //add an away game for school
                             if (seasonSchedule.getYear() % 2 == 0) {
                                 addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), false);
                             } else {
@@ -745,8 +749,8 @@ public class ScheduleService {
         }
         try {
             for (School school : div1) {
+//                int numOfConfGames = conf.getNumOfConfGames();
                 int numOfConfGames = 9;
-
 
                 if(numOfConfGames == 8) {
                     if(school.getxDivRival() != null) {
@@ -754,7 +758,57 @@ public class ScheduleService {
                         int week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
                         addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), false);
                     }
-                    
+                    if (index == 0) {
+                        School opponent = div2.get(0);
+                        int week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
+
+                        opponent = div2.get(1);
+                        week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
+                    }
+                    else if (index == 1) {
+                        School opponent = div2.get(1);
+                        int week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
+
+                        opponent = div2.get(2);
+                        week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
+                    } else if (index == 2) {
+                        School opponent = div2.get(2);
+                        int week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
+
+                        opponent = div2.get(3);
+                        week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
+                    } else if (index == 3) {
+                        School opponent = div2.get(3);
+                        int week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
+
+                        opponent = div2.get(4);
+                        week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
+                    } else if (index == 4) {
+                        School opponent = div2.get(4);
+                        int week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
+
+                        opponent = div2.get(5);
+                        week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
+                    } else if (index == 5) {
+                        School opponent = div2.get(5);
+                        int week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
+
+                        opponent = div2.get(0);
+                        week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                        addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
+                    }
+
                 }
                 //populate div2
                 // 0 1 2 3
