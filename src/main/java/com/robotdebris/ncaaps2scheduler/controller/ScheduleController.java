@@ -192,4 +192,14 @@ public class ScheduleController {
 	public void setAlignmentFile(@RequestParam("file") MultipartFile alignmentFile) throws IOException {
 		scheduleService.setAlignmentFile(alignmentFile);
 	}
+
+	@GetMapping(value = "schedule/week/{week}")
+	public ArrayList<Game> getScheduleByWeek(@PathVariable("week") int week) {
+		return scheduleService.getScheduleByWeek(week);
+	}
+
+	@GetMapping(value = "schedule/bowl-games")
+	public SeasonSchedule getBowlGames() {
+		return scheduleService.getBowlGames();
+	}
 }

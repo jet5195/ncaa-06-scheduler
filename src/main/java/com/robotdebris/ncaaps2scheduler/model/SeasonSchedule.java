@@ -260,4 +260,14 @@ public class SeasonSchedule extends SchoolSchedule {
     public void setYear(int year) {
         this.year = year;
     }
+
+    public ArrayList<Game> getScheduleByWeek(int week) {
+        ArrayList<Game> weeklySchedule = new ArrayList<>();
+        for (Game game : this) {
+            if (game.getWeek() == week) {
+                weeklySchedule.add(game);
+            }
+        }
+        return weeklySchedule;
+    }
 }

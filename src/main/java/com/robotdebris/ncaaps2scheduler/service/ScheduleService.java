@@ -1160,4 +1160,12 @@ public class ScheduleService {
         }
         return false;
     }
+
+    public ArrayList<Game> getScheduleByWeek(int week) {
+        return seasonSchedule.getScheduleByWeek(week);
+    }
+
+    public SeasonSchedule getBowlGames() {
+        return seasonSchedule.getBowlSchedule();
+    }
 }
