@@ -611,28 +611,29 @@ public class ScheduleService {
     public int autoAddConferenceGames(String name, int attempts) {
         Conference conf = conferenceList.conferenceSearch(name);
         //setAllYearlyGames();
-        if (conf.getSchools().size() <= 10) {
-            scheduleConferenceGamesUnder10Teams(conf);
-        } else if (conf.getSchools().size() >= 12) {
-            try {
+
+        try {
+            if (conf.getSchools().size() <= 10) {
+                scheduleConferenceGamesUnder10Teams(conf);
+            } else if (conf.getSchools().size() >= 12) {
                 scheduleConferenceGamesDivisions(conf);
-            } catch (IndexOutOfBoundsException e) {
-                if (attempts < 25) {
-                    seasonSchedule.removeAllConferenceGames(conf);
-                    autoAddConferenceGames(name, ++attempts);
-                } else {
-                    throw e;
-                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            if (attempts < 25) {
+                seasonSchedule.removeAllConferenceGames(conf);
+                autoAddConferenceGames(name, ++attempts);
+            } else {
+                throw e;
             }
         }
         return 0;
     }
 
-    public void scheduleConferenceGamesUnder10Teams(Conference conf) {
+    public void scheduleConferenceGamesUnder10Teams(Conference conf) throws IndexOutOfBoundsException  {
         scheduleConferenceGamesUnder10Teams(conf.getSchools(), conf.getConfGamesStartWeek());
     }
 
-    public void scheduleConferenceGamesUnder10Teams(SchoolList list, int confGamesStartDate) {
+    public void scheduleConferenceGamesUnder10Teams(SchoolList list, int confGamesStartDate) throws IndexOutOfBoundsException  {
         int numOfSchools = list.size();
         for (School school : list) {
             if (school.getNumOfConferenceGames() < numOfSchools - 1) {
