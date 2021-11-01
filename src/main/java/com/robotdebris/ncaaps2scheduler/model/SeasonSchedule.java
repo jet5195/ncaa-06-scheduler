@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 public class SeasonSchedule extends SchoolSchedule {
 
     private SeasonSchedule bowlSchedule;
+    private int year;
     private final Logger LOGGER = Logger.getLogger(SeasonSchedule.class.getName());
 
     /**
@@ -46,6 +47,16 @@ public class SeasonSchedule extends SchoolSchedule {
      */
     public void addGameSpecificHomeTeam(School away, School home, int week, int day) {
         addGame(away, home, week, day, findGameNumber(week));
+    }
+    
+    public void addGameYearlySeries(School s1, School s2, int week, int day, int year) {
+    	//logic to decide home or away team here?
+    	if(year%2 == 0) {
+    		addGame(s1, s2, week, day, findGameNumber(week));
+    	}
+    	else {
+    		addGame(s2, s1, week, day, findGameNumber(week));
+    	}
     }
 
     /**
@@ -160,6 +171,25 @@ public class SeasonSchedule extends SchoolSchedule {
         return count;
     }
 
+    /**
+     * Removes all conference games from the schedule for a given conference,
+     * @param conf to remove games from
+     * @return count of removed games
+     */
+    public int removeAllConferenceGames(Conference conf) {
+        int count = 0;
+        for(School school : conf.getSchools()) {
+            for (int i = 0; i < school.getSchedule().size(); i++) {
+                Game game = school.getSchedule().get(i);
+                if (game.getConferenceGame() == 1){
+                    this.removeGame(game);
+                    i--;
+                }
+            }
+        }
+        return count;
+    }
+
     /**@return count of removed games
      * Removes all non-conference games from schedule
      * @param removeRivals if true, all Non-Conference games will be removed. If false, then only non-conference games that aren't rivalry games will be removed
@@ -181,6 +211,17 @@ public class SeasonSchedule extends SchoolSchedule {
             }
         }
         return count;
+    }
+    
+    public int removeAllGames() {
+    	int count = 0;
+    	for (int i = 0; i < this.size(); i++) {
+    		Game game = this.get(i);
+    		this.removeGame(game);
+    		count++;
+    		i--;
+    	}
+    	return count;
     }
 
     /**
@@ -210,5 +251,23 @@ public class SeasonSchedule extends SchoolSchedule {
             list.add(game.gameToList());
         }
         return list;
+    }
+
+    public int getYear() {
+        return this.year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public ArrayList<Game> getScheduleByWeek(int week) {
+        ArrayList<Game> weeklySchedule = new ArrayList<>();
+        for (Game game : this) {
+            if (game.getWeek() == week) {
+                weeklySchedule.add(game);
+            }
+        }
+        return weeklySchedule;
     }
 }

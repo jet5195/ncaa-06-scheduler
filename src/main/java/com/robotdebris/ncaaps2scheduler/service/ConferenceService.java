@@ -25,6 +25,8 @@ public class ConferenceService {
 	SchoolList schoolList;
 	@Autowired
 	ExcelReader excelReader;
+//	@Autowired
+//	int year;
 	
 	public void swapSchools(School s1, School s2) {
 		//if the conferences & divisions aren't already the same...
@@ -128,4 +130,11 @@ public class ConferenceService {
 		}
 		return null;
 		}
+
+	public void addSchool(String name, School s1) {
+		Conference newConference = conferenceList.conferenceSearch(name);
+		Conference oldConference = s1.getConference();
+		oldConference.getSchools().remove(s1);
+		newConference.getSchools().add(s1);
+	}
 }

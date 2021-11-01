@@ -27,6 +27,11 @@ public class ConferenceController {
 	private void swapSchools(@PathVariable int tgid1, @PathVariable int tgid2) {
 		conferenceService.swapSchools(tgid1, tgid2);
 	}
+
+	@PutMapping(value = "/conferences/{name}/add-school")
+	private void addSchool(@PathVariable String name, @RequestBody School s1) {
+		conferenceService.addSchool(name, s1);
+	}
 	
 	@PutMapping(value = "/conferences/{name}/rename/{newName}")
 	private void renameConference(@PathVariable String name, @PathVariable String newName) {

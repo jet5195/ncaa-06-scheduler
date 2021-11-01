@@ -19,6 +19,16 @@ public class ScheduleController {
 	@Autowired
 	private ScheduleService scheduleService;
 
+	@GetMapping(value = "schedule/year")
+	public int getYear() {
+		return scheduleService.getYear();
+	}
+
+	@PutMapping(value = "schedule/year/{year}")
+	public void setYear(@PathVariable int year) {
+		scheduleService.setYear(year);
+	}
+
 	@GetMapping(value = "/schools")
 	public SchoolList getAllSchools() {
 		SchoolList schoolList = scheduleService.getSchoolList();
@@ -124,6 +134,21 @@ public class ScheduleController {
 		return scheduleService.autoAddRandomly();
 	}
 	
+	@PutMapping(value = "schedule/remove-all-games")
+	public int removeAllGames() {
+		return scheduleService.removeAllGames();
+	}
+	
+	@PutMapping(value = "conferences/{name}/add-games")
+	public int autoAddConferenceGames(@PathVariable String name) {
+		return scheduleService.autoAddConferenceGames(name, 0);
+	}
+
+	@PutMapping(value = "conferences/{name}/remove-games")
+	public int removeConferenceGames(@PathVariable String name) {
+		return scheduleService.removeConferenceGames(name);
+	}
+	
 	@PutMapping(value = "schedule/fix")
 	public int fixSchedule() {
 		return scheduleService.fixSchedule();
@@ -169,5 +194,15 @@ public class ScheduleController {
 	@PostMapping(value = "/conferences/set-by-file")
 	public void setAlignmentFile(@RequestParam("file") MultipartFile alignmentFile) throws IOException {
 		scheduleService.setAlignmentFile(alignmentFile);
+	}
+
+	@GetMapping(value = "schedule/week/{week}")
+	public ArrayList<Game> getScheduleByWeek(@PathVariable("week") int week) {
+		return scheduleService.getScheduleByWeek(week);
+	}
+
+	@GetMapping(value = "schedule/bowl-games")
+	public SeasonSchedule getBowlGames() {
+		return scheduleService.getBowlGames();
 	}
 }

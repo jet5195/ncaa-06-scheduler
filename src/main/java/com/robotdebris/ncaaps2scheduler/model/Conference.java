@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Conference {
-	
+
 //	private int conferenceID;
 	private String name;
 	private ArrayList<String> divisions;
@@ -13,13 +13,15 @@ public class Conference {
 //	private String color;
 //	private String altColor;
 	private String logo;
+	private int numOfConfGames;
+	private int confGamesStartWeek;
 	@JsonIgnore
 	private SchoolList schools;
-	
-	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo) {
+
+	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo, int numOfConfGames, int confGamesStartWeek) {
 		this.name = conferenceName;
 		this.powerConf = powerConf;
-		if(division1 != null && !division1.trim().isEmpty()) {
+		if (division1 != null && !division1.trim().isEmpty()) {
 			divisions = new ArrayList<>();
 			divisions.add(division1);
 			divisions.add(division2);
@@ -27,9 +29,10 @@ public class Conference {
 //		this.color = color;
 //		this.altColor = altColor;
 		this.logo = logo;
+		this.numOfConfGames = numOfConfGames;
+		this.confGamesStartWeek = confGamesStartWeek;
 	}
-	
-	
+
 //	public int getConferenceID() {
 //		return conferenceID;
 //	}
@@ -39,25 +42,30 @@ public class Conference {
 //		this.conferenceID = conferenceID;
 //	}
 
-
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public ArrayList<String> getDivisions() {
 		return divisions;
 	}
+
 	public void setDivision(ArrayList<String> divisions) {
 		this.divisions = divisions;
 	}
+
 	public boolean isPowerConf() {
 		return powerConf;
 	}
+
 	public void setPowerConf(boolean powerConf) {
 		this.powerConf = powerConf;
 	}
+
 //	public String getColor() {
 //		return color;
 //	}
@@ -73,9 +81,11 @@ public class Conference {
 	public String getLogo() {
 		return logo;
 	}
+
 	public void setLogo(String logo) {
 		this.logo = logo;
 	}
+
 	public void setDivisions(ArrayList<String> divisions) {
 		this.divisions = divisions;
 	}
@@ -84,22 +94,46 @@ public class Conference {
 		return schools;
 	}
 
-
 	public void setSchools(SchoolList schools) {
 		this.schools = schools;
 	}
 
-
 	public SchoolList getSchoolsByDivision(String division) {
 		SchoolList divSchools = new SchoolList();
 		for (School school : this.getSchools()) {
-			if(school.getDivision().equalsIgnoreCase(division)) {
+			if (school.getDivision().equalsIgnoreCase(division)) {
 				divSchools.add(school);
 			}
 		}
 		return divSchools;
 	}
-	
-	
 
+	public int getNumOfConfGames() {
+		return numOfConfGames;
+	}
+
+	public void setNumOfConfGames(int numOfConfGames) {
+		this.numOfConfGames = numOfConfGames;
+	}
+
+	//big 10 1
+	//pac-12 2
+	//sec 2
+	//acc 3
+	//big 12 3
+	//c-usa 3
+	//mwc 3
+	//mac 4
+	//sun belt 4
+	//aac 4
+	
+	public int getConfGamesStartWeek() {
+		return confGamesStartWeek;
+	}
+
+	public void setConfGamesStartWeek(int confGamesStartWeek) {
+		this.confGamesStartWeek = confGamesStartWeek;
+	}
+	
+	
 }
