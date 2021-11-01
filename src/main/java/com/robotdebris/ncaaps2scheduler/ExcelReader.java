@@ -81,10 +81,12 @@ public class ExcelReader {
                                 if(cellValue != null) {
                                     confGames = Integer.parseInt(cellValue);
                                 }
+                                break;
                             case 4:
                                 if(cellValue != null) {
                                     startWeek = Integer.parseInt(cellValue);
                                 }
+                                break;
                             case 5:
                                 division1 = cellValue;
                                 break;

@@ -139,11 +139,14 @@ public class ScheduleController {
 		return scheduleService.removeAllGames();
 	}
 	
-	@PutMapping(value = "schedule/conference/{name}/set-schedule")
+	@PutMapping(value = "conferences/{name}/add-games")
 	public int autoAddConferenceGames(@PathVariable String name) {
 		return scheduleService.autoAddConferenceGames(name, 0);
-		//scheduleService.setAllYearlyGames();
-		//return 0;
+	}
+
+	@PutMapping(value = "conferences/{name}/remove-games")
+	public int removeConferenceGames(@PathVariable String name) {
+		return scheduleService.removeConferenceGames(name);
 	}
 	
 	@PutMapping(value = "schedule/fix")
