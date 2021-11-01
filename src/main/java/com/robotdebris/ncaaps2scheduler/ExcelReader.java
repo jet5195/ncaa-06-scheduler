@@ -73,17 +73,17 @@ public class ExcelReader {
                                 logo = cellValue;
                                 break;
                             case 2:
-                            	if(cellValue != null) {
+                            	if(!isStringBlank(cellValue)) {
                             		powerConf = Boolean.parseBoolean(cellValue);
                             	}
                                 break;
                             case 3:
-                                if(cellValue != null) {
+                                if(!isStringBlank(cellValue)) {
                                     confGames = Integer.parseInt(cellValue);
                                 }
                                 break;
                             case 4:
-                                if(cellValue != null) {
+                                if(!isStringBlank(cellValue)) {
                                     startWeek = Integer.parseInt(cellValue);
                                 }
                                 break;
@@ -106,6 +106,14 @@ public class ExcelReader {
     	return conferenceList;
     }
     
+    //String.isBlank doesn't work on older versions of java?
+    private boolean isStringBlank(String string) {
+    	if(string == null || string.equals("") || string.equals(" ")) {
+    		return true;
+    	}
+    	else return false;
+    }
+    
     public void setAlignmentData(File file, SchoolList allSchools, ConferenceList conferenceList) throws IOException {
     	Workbook workbook = readExcel(file);
     	Sheet sheet = workbook.getSheetAt(1);
@@ -115,6 +123,7 @@ public class ExcelReader {
         for (Row row : sheet) {
             if (r > 0) {//disregard the headers
                 int tgid = 0;
+                String schoolName = "";
                 String conf = "";
                 String div = "";
                 String xDivRival = "";
@@ -128,6 +137,9 @@ public class ExcelReader {
                             case 0:
                                 tgid = Integer.parseInt(cellValue);
                                 break;
+                            case 1:
+                            	schoolName = cellValue;
+                            	break;
                             case 2:
                                 conf = cellValue;
                                 break;
@@ -146,9 +158,13 @@ public class ExcelReader {
                         c++;
                     }//end col iterator
                     School school = allSchools.schoolSearch(tgid);
-                    School xDivRivalSchool = allSchools.schoolSearch(xDivRival);
-                    Conference conference = conferenceList.conferenceSearch(conf);
-                    school.updateAlignment(conference, div, ncaaDiv, xDivRivalSchool);
+                    if(school != null) {
+	                    School xDivRivalSchool = allSchools.schoolSearch(xDivRival);
+	                    Conference conference = conferenceList.conferenceSearch(conf);
+	                    school.updateAlignment(conference, div, ncaaDiv, xDivRivalSchool);
+                    } else {
+                    	System.out.println("Failed at schoolName = " + schoolName + ". TGID " + tgid + " was not found.");
+                    }
                 }//end of if not null
             }//end of row iterator
             r++;
