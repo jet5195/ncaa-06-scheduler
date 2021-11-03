@@ -1142,4 +1142,23 @@ public class ScheduleService {
         Conference conf = conferenceList.conferenceSearch(name);
         return seasonSchedule.removeAllConferenceGames(conf);
     }
+
+	public Game getGame(int week, int gameId) {
+		ArrayList<Game> weeklyGames = seasonSchedule.getScheduleByWeek(week);
+		for (Game game : weeklyGames) {
+			if(game.getGameNumber() == gameId) {
+				return game;
+			}
+		}
+		return null;
+	}
+
+	public void saveGame(Game updatedGame) {
+		ArrayList<Game> weeklyGames = seasonSchedule.getScheduleByWeek(updatedGame.getWeek());
+		for (Game game : weeklyGames) {
+			if(game.getGameNumber() == updatedGame.getGameNumber()) {
+				game = updatedGame;
+			}
+		}
+	}
 }

@@ -205,4 +205,14 @@ public class ScheduleController {
 	public SeasonSchedule getBowlGames() {
 		return scheduleService.getBowlGames();
 	}
+	
+	@GetMapping(value = "schedule/week/{week}/{gameNumber}")
+	public Game getGame(@PathVariable("week") int week, @PathVariable("gameNumber") int gameNumber) {
+		return scheduleService.getGame(week, gameNumber);
+	}
+	
+	@PostMapping(value = "schedule/game")
+	public void saveGame(@RequestBody Game game) {
+		scheduleService.saveGame(game);
+	}
 }
