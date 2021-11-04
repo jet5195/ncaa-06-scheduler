@@ -326,28 +326,21 @@ public class School implements Comparable<School> {
 		this.conference = conference;
 		this.division = division;
 		this.ncaaDivision = ncaaDivision;
-		this.xDivRival =xDivRival;
+		this.xDivRival = xDivRival;
 
 	}
 
 	@Override
 	public int compareTo(School o) {
-		if (this.ncaaDivision == null && o.getNcaaDivision() == null) {
-			return this.getName().compareTo(o.getName());
-		}
-		if (this.ncaaDivision == null) {
-			return 1;
-		}
-		if (o.getNcaaDivision() == null) {
-			return -1;
-		}
-		if (this.ncaaDivision.equals(o.getNcaaDivision())) {
-			return this.getName().compareTo(o.getName());
-		} else if (this.ncaaDivision.equals("FBS")) {
-			return -1;
-		} else if (this.ncaaDivision.equals("FCS")) {
-			return 1;
-		}
-		return 0;
+		return this.name.compareTo(o.name);
 	}
+
+//	@Override
+//	public boolean equals(School o) {
+//		if(this.name.equals(o.name)) {
+//			return true;
+//		} else {
+//			return false;
+//		}
+//	}
 }
