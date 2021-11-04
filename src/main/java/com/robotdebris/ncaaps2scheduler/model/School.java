@@ -185,7 +185,7 @@ public class School implements Comparable<School> {
 	 * @return true if in the same conference, false if else
 	 */
 	public boolean isInConference(School school) {
-		if (this.getConference().getName().equalsIgnoreCase("Independent")) {
+		if (this.getConference() == null || this.getConference().getName().equalsIgnoreCase("Independent")) {
 			return false;
 
 		} else if (school.getConference() == null) {

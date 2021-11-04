@@ -169,6 +169,12 @@ public class ExcelReader {
             }//end of row iterator
             r++;
         }
+        Conference blankConference = new Conference("null", false, null, null, null, 0, 0);
+        for (School school: schoolList) {
+            if(school.getConference() == null ) {
+                school.updateAlignment(blankConference, null, "fcs", null);
+            }
+        }
     }
 
     /**

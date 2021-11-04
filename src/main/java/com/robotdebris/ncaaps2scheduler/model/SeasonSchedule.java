@@ -198,7 +198,7 @@ public class SeasonSchedule extends SchoolSchedule {
     	int count = 0;
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
-            if (!game.getHomeTeam().getConference().getName().equalsIgnoreCase(game.getAwayTeam().getConference().getName())) {
+            if (game.getHomeTeam().getConference() != null && game.getAwayTeam().getConference() != null && !game.getHomeTeam().getConference().getName().equalsIgnoreCase(game.getAwayTeam().getConference().getName())) {
                 if (removeRivals) {
                     this.removeGame(game);
                     count++;
