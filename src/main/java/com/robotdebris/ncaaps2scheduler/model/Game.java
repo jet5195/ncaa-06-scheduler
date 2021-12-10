@@ -18,6 +18,10 @@ public class Game implements Comparable {
     private int weight; // sewt (usually = sewn, but not for bowls) if it's a bowlGame, it's week+12
 	private int userGame; //gffu & gfhu
     private int gameNumber; //sgnm, must be unique per week, highest num I've seen is 55
+    
+    public Game() {
+    	
+    }
 
     public Game(GameResult gameResult,int time, School awayTeam, School homeTeam, int gameNumber, int week, int day, int userGame, int conferenceGame) {
         this.gameResult = gameResult;
@@ -52,6 +56,28 @@ public class Game implements Comparable {
                 this.time = 1080;
             }
         }
+        this.gameResult = new GameResult(0, 0, 0);
+        if (awayTeam.isUserTeam() || homeTeam.isUserTeam()) {
+            this.userGame = 1;
+        } else {
+            this.userGame = 0;
+        }
+        if (awayTeam.getConference().equals(homeTeam.getConference())) {
+            this.conferenceGame = 1;
+        } else {
+            this.conferenceGame = 0;
+        }
+    }
+    
+    public Game(School awayTeam, School homeTeam, int gameNumber, int week, int day, int time, GameResult gameResult) {
+        this.awayTeam = awayTeam;
+        this.homeTeam = homeTeam;
+        this.gameNumber = gameNumber;
+        this.week = week;
+        this.day = day;
+        // 750 = 12:30 pm, 930 = 3:30 pm, 1080 = 6:00 pm, 1200 = 8:00 pm,
+        this.time = time;
+        this.gameResult = gameResult;
         if (awayTeam.isUserTeam() || homeTeam.isUserTeam()) {
             this.userGame = 1;
         } else {

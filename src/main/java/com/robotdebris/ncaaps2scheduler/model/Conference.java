@@ -17,6 +17,10 @@ public class Conference {
 	private int confGamesStartWeek;
 	@JsonIgnore
 	private SchoolList schools;
+	
+	public Conference() {
+		
+	}
 
 	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo, int numOfConfGames, int confGamesStartWeek) {
 		this.name = conferenceName;

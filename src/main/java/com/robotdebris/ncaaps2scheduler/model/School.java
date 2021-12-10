@@ -20,6 +20,10 @@ public class School implements Comparable<School> {
 	private SchoolSchedule schedule = new SchoolSchedule();
 	@JsonIgnore
 	private School xDivRival;
+	
+	public School() {
+		
+	}
 
 	public School(int tgid, String name, String nickname, String state, Conference conference, String division,
 			String ncaaDivision, String color, String altColor, String logo) {
@@ -259,12 +263,12 @@ public class School implements Comparable<School> {
 	 * @return true if opponent is a rival, false if else
 	 */
 	public boolean isRival(School opponent) {
-		for (int i = 0; i < this.getRivals().size(); i++) {
+		for (int i = 0; this.getRivals() != null && i < this.getRivals().size(); i++) {
 			if (this.getRivals().get(i).getName().equals(opponent.getName())) {
 				return true;
 			}
 		}
-		for (int i = 0; i < opponent.getRivals().size(); i++) {
+		for (int i = 0; this.getRivals() != null && i < opponent.getRivals().size(); i++) {
 			if (opponent.getRivals().get(i).getName().equals(this.getName())) {
 				return true;
 			}

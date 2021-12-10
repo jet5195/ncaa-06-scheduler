@@ -1157,7 +1157,24 @@ public class ScheduleService {
 		ArrayList<Game> weeklyGames = seasonSchedule.getScheduleByWeek(updatedGame.getWeek());
 		for (Game game : weeklyGames) {
 			if(game.getGameNumber() == updatedGame.getGameNumber()) {
-				game = updatedGame;
+				
+				seasonSchedule.removeGame(game);
+				
+//				School oldHomeTeam = game.getHomeTeam();
+//				School oldAwayTeam = game.getAwayTeam();
+//				
+//				game.setHomeTeam(updatedGame.getHomeTeam());
+//				game.setAwayTeam(updatedGame.getAwayTeam());
+//				game.setDay(updatedGame.getDay());
+//				game.setTime(updatedGame.getTime());
+//				game.setGameResult(updatedGame.getGameResult());
+//				game.setConferenceGame(updatedGame.getHomeTeam().getConference().getName().equalsIgnoreCase(updatedGame.getAwayTeam().getConference().getName()) ? 1 : 0);
+//				
+				School home = schoolList.schoolSearch(updatedGame.getHomeTeam().getTgid());
+				School away = schoolList.schoolSearch(updatedGame.getAwayTeam().getTgid());
+				
+				seasonSchedule.addGameSpecificHomeTeam(away, home, updatedGame.getWeek(), updatedGame.getDay(), updatedGame.getTime(), updatedGame.getGameResult());
+				
 			}
 		}
 	}

@@ -6,6 +6,10 @@ public class GameResult {
 	int homeScore = 0;
 	int ot = 0;
 	
+	public GameResult() {
+		
+	}
+	
 	public GameResult(int awayScore, int homeScore, int ot) {
 		this.awayScore = awayScore;
 		this.homeScore = homeScore;
