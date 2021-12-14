@@ -1153,12 +1153,39 @@ public class ScheduleService {
 		return null;
 	}
 
-	public void saveGame(Game updatedGame) {
-		ArrayList<Game> weeklyGames = seasonSchedule.getScheduleByWeek(updatedGame.getWeek());
-		for (Game game : weeklyGames) {
-			if(game.getGameNumber() == updatedGame.getGameNumber()) {
-				game = updatedGame;
-			}
+//	public void saveGame(Game updatedGame) {
+//		ArrayList<Game> weeklyGames = seasonSchedule.getScheduleByWeek(updatedGame.getWeek());
+//		for (Game game : weeklyGames) {
+//			if(game.getGameNumber() == updatedGame.getGameNumber()) {
+//				
+//				seasonSchedule.removeGame(game);
+//				
+////				School oldHomeTeam = game.getHomeTeam();
+////				School oldAwayTeam = game.getAwayTeam();
+////				
+////				game.setHomeTeam(updatedGame.getHomeTeam());
+////				game.setAwayTeam(updatedGame.getAwayTeam());
+////				game.setDay(updatedGame.getDay());
+////				game.setTime(updatedGame.getTime());
+////				game.setGameResult(updatedGame.getGameResult());
+////				game.setConferenceGame(updatedGame.getHomeTeam().getConference().getName().equalsIgnoreCase(updatedGame.getAwayTeam().getConference().getName()) ? 1 : 0);
+////				
+//				
+//				
+//				seasonSchedule.addGameSpecificHomeTeam(away, home, updatedGame.getWeek(), updatedGame.getDay(), updatedGame.getTime(), updatedGame.getGameResult());
+//				
+//			}
+//		}
+//	}
+
+	public void addGame(AddGameRequest addGameRequest) {
+		if(addGameRequest.getGameResult() == null ) {
+			addGame(addGameRequest.getAwayId(), addGameRequest.getHomeId(), addGameRequest.getWeek());
+		} else {
+			School home = schoolList.schoolSearch(addGameRequest.getHomeId());
+			School away = schoolList.schoolSearch(addGameRequest.getAwayId());
+			seasonSchedule.addGameSpecificHomeTeam(away, home, addGameRequest.getWeek(), addGameRequest.getDay(), addGameRequest.getTime(), addGameRequest.getGameResult());
 		}
+		
 	}
 }

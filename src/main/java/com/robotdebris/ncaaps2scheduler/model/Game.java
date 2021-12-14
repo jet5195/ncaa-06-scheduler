@@ -4,17 +4,28 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 
 public class Game implements Comparable {
+	private School awayTeam;//gatg
     private School homeTeam;//ghtg
-    private School awayTeam;//gatg
+    private GameResult gameResult;
+//    private int awayScore = 0;//gasc
+//    private int homeScore = 0;//ghsc
+    //private GameTime gameTime;//gtod, gdat
     private int time;//gtod 750 = 12:30 pm, 930 = 3:30 pm, 1080 = 6:00 pm, 1200 = 8:00 pm,
     private int day;//gdat 5 sat.. etc
     private int conferenceGame; // gmfx 0 if out of conference, 1 if conference
     private int week; //sewn & sewt
+//    private int ot; //gfot
+    private int weight; // sewt (usually = sewn, but not for bowls) if it's a bowlGame, it's week+12
 	private int userGame; //gffu & gfhu
     private int gameNumber; //sgnm, must be unique per week, highest num I've seen is 55
+    
+    public Game() {
+    	
+    }
 
-    public Game(int time, School awayTeam, School homeTeam, int gameNumber, int week, int day, int userGame, int conferenceGame) {
-        this.time = time;
+    public Game(GameResult gameResult,int time, School awayTeam, School homeTeam, int gameNumber, int week, int day, int userGame, int conferenceGame) {
+        this.gameResult = gameResult;
+    	this.time = time;
         this.awayTeam = awayTeam;
         this.homeTeam = homeTeam;
         this.gameNumber = gameNumber;
@@ -45,6 +56,28 @@ public class Game implements Comparable {
                 this.time = 1080;
             }
         }
+        this.gameResult = new GameResult(0, 0, 0);
+        if (awayTeam.isUserTeam() || homeTeam.isUserTeam()) {
+            this.userGame = 1;
+        } else {
+            this.userGame = 0;
+        }
+        if (awayTeam.getConference().equals(homeTeam.getConference())) {
+            this.conferenceGame = 1;
+        } else {
+            this.conferenceGame = 0;
+        }
+    }
+    
+    public Game(School awayTeam, School homeTeam, int gameNumber, int week, int day, int time, GameResult gameResult) {
+        this.awayTeam = awayTeam;
+        this.homeTeam = homeTeam;
+        this.gameNumber = gameNumber;
+        this.week = week;
+        this.day = day;
+        // 750 = 12:30 pm, 930 = 3:30 pm, 1080 = 6:00 pm, 1200 = 8:00 pm,
+        this.time = time;
+        this.gameResult = gameResult;
         if (awayTeam.isUserTeam() || homeTeam.isUserTeam()) {
             this.userGame = 1;
         } else {
@@ -121,7 +154,23 @@ public class Game implements Comparable {
         this.gameNumber = gameNumber;
     }
 
-    /**
+	public GameResult getGameResult() {
+		return gameResult;
+	}
+
+	public void setGameResult(GameResult gameResult) {
+		this.gameResult = gameResult;
+	}
+
+	public int getWeight() {
+		return weight;
+	}
+
+	public void setWeight(int weight) {
+		this.weight = weight;
+	}
+
+	/**
      * Returns true if game is a rivalry game
      * @return true if game is a rivalry game, false if else
      */

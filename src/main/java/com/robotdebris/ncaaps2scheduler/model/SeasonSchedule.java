@@ -49,6 +49,10 @@ public class SeasonSchedule extends SchoolSchedule {
         addGame(away, home, week, day, findGameNumber(week));
     }
     
+    public void addGameSpecificHomeTeam(School away, School home, int week, int day, int time, GameResult gameResult) {
+        addGame(away, home, week, day, findGameNumber(week), time, gameResult);
+    }
+    
     public void addGameYearlySeries(School s1, School s2, int week, int day, int year) {
     	//logic to decide home or away team here?
     	if(year%2 == 0) {
@@ -68,13 +72,29 @@ public class SeasonSchedule extends SchoolSchedule {
      * @param gameNumber the game of the week
      */
     private void addGame(School away, School home, int week, int day, int gameNumber) {
-        //this if statement is so rivalry games switch back and forth from year to year
         Game newGame = new Game(away, home, gameNumber, week, day);
-        away.addGame(newGame);
-        home.addGame(newGame);
-        this.add(newGame);//decide if this is actually how you want to add games.. if doing it like this I will just have to go through and remake the schedule in the end. Best solution is to make a addGame method.. NO make schedule its own new object that extends a list and change the add method.. or add to it
-        LOGGER.info("Adding game " + away.getName() + " at " + home.getName());
+		away.addGame(newGame);
+		home.addGame(newGame);
+		this.add(newGame);
+        LOGGER.info("Adding game " + newGame.getAwayTeam().getName() + " at " + newGame.getHomeTeam().getName());
     }
+    
+    /**
+     * Adds game to schedule after the home team is selected, either randomly or via addGameSpecificHomeTeam method
+     * @param away the away school
+     * @param home the home school
+     * @param week the week of the game
+     * @param day the day of the game
+     * @param gameNumber the game of the week
+     */
+    private void addGame(School away, School home, int week, int day, int gameNumber, int time, GameResult gameResult) {
+        Game newGame = new Game(away, home, gameNumber, week, day, time, gameResult);
+		away.addGame(newGame);
+		home.addGame(newGame);
+		this.add(newGame);
+        LOGGER.info("Adding game " + newGame.getAwayTeam().getName() + " at " + newGame.getHomeTeam().getName());
+    }
+    
 
     /**
      * Removes a game from the schedule and updates all affected game numbers

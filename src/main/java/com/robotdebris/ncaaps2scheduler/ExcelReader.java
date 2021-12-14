@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.ConferenceList;
 import com.robotdebris.ncaaps2scheduler.model.Game;
+import com.robotdebris.ncaaps2scheduler.model.GameResult;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SchoolList;
 import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
@@ -295,14 +296,18 @@ public class ExcelReader {
         SeasonSchedule bowlSchedule = new SeasonSchedule();
         int r = 0;
         for (Row row : sheet) {
+        	int gasc = 0;//away score 1
+        	int ghsc = 0;//home score 2
             int gtod = 0;//time of day 3
             int gatg = 0;//away team tgid 4
             School awaySchool;
             int ghtg = 0;//home team tgid 5
             School homeSchool;
             int sgnm = 0;//game of week number 6
-            int sewn = 0;//week number, also sewt 7 10
+            int sewn = 0;//week number 7, sometimes sewt
             int gdat = 0;//day of week 8
+            int gfot = 0;//game went into OT? 9
+            int sewt = 0;//game weight?? 10
             int gffu = 0;//user game 11 12
             int gmfx = 0;//conference game 13
 
@@ -312,6 +317,13 @@ public class ExcelReader {
                     String cellValue = dataFormatter.formatCellValue(cell);
                     //System.out.print(cellValue + "\t");
                     switch (c) {
+                    
+                    	case 1:
+                    		gasc = Integer.parseInt(cellValue);
+                    		break;
+                    	case 2:
+                    		ghsc = Integer.parseInt(cellValue);
+                    		break;
                         case 3:
                             gtod = Integer.parseInt(cellValue);
                             break;
@@ -330,6 +342,12 @@ public class ExcelReader {
                         case 8:
                             gdat = Integer.parseInt(cellValue);
                             break;
+                        case 9:
+                        	gfot = Integer.parseInt(cellValue);
+                        	break;
+                        case 10:
+                        	sewt = Integer.parseInt(cellValue);
+                        	break;
                         case 11:
                             gffu = Integer.parseInt(cellValue);
                             break;
@@ -355,12 +373,14 @@ public class ExcelReader {
                         homeSchool.setRivals(new SchoolList());
                         allSchools.add(homeSchool);
                     }
-                    Game newGame = new Game(gtod, awaySchool, homeSchool, sgnm, sewn, gdat, gffu, gmfx);
+                    GameResult gameResult = new GameResult(gasc, ghsc, gfot);
+                    Game newGame = new Game(gameResult, gtod, awaySchool, homeSchool, sgnm, sewn, gdat, gffu, gmfx);
                     awaySchool.addGame(newGame);
                     homeSchool.addGame(newGame);
                     seasonSchedule.add(newGame);
                 } else {
-                    bowlSchedule.add(new Game(gtod, bowlSchool, bowlSchool, sgnm, sewn, gdat, gffu, gmfx));
+                	GameResult gameResult = new GameResult(gasc, ghsc, gfot);
+                    bowlSchedule.add(new Game(gameResult, gtod, bowlSchool, bowlSchool, sgnm, sewn, gdat, gffu, gmfx));
                 }
             }
             r++;

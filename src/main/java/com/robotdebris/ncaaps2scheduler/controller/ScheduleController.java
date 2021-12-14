@@ -49,7 +49,7 @@ public class ScheduleController {
 	//Change this to use a RequestGame object that doesn't exist yet
 	@PostMapping(value = "add-game")
 	public void addGame(@RequestBody AddGameRequest addGameRequest){
-		scheduleService.addGame(addGameRequest.getAwayId(), addGameRequest.getHomeId(), addGameRequest.getWeek());
+		scheduleService.addGame(addGameRequest);
 	}
 	
 	@PostMapping(value = "auto-add-games")
@@ -116,8 +116,8 @@ public class ScheduleController {
 		return scheduleService.getGame(week, gameNumber);
 	}
 	
-	@PostMapping(value = "game")
-	public void saveGame(@RequestBody Game game) {
-		scheduleService.saveGame(game);
-	}
+//	@PostMapping(value = "game")
+//	public void saveGame(@RequestBody Game game) {
+//		scheduleService.saveGame(game);
+//	}
 }

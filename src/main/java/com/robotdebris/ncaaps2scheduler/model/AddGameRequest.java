@@ -7,6 +7,12 @@ public class AddGameRequest {
     private int homeId;
 
     private int week;
+    
+    private int time;
+    
+    private int day;
+    
+    private GameResult gameResult;
 
     public int getAwayId() {
         return awayId;
@@ -31,4 +37,29 @@ public class AddGameRequest {
     public void setWeek(int week) {
         this.week = week;
     }
+
+	public int getTime() {
+		return time;
+	}
+
+	public void setTime(int time) {
+		this.time = time;
+	}
+
+	public GameResult getGameResult() {
+		return gameResult;
+	}
+
+	public void setGameResult(GameResult gameResult) {
+		this.gameResult = gameResult;
+	}
+
+	public int getDay() {
+		return day;
+	}
+
+	public void setDay(int day) {
+		this.day = day;
+	}
+    
 }
