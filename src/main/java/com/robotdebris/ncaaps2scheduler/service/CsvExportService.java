@@ -1,0 +1,55 @@
+package com.robotdebris.ncaaps2scheduler.service;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+
+import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
+
+public class CsvExportService {
+	
+    /**
+     * Writes schedule to a new csv file
+     * @param seasonSchedule the schedule to write to a new csv file
+     * @throws IOException
+     */
+    public void writeSchedule(Writer writer, SeasonSchedule seasonSchedule) throws IOException {
+
+    	CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+
+        ArrayList<ArrayList> list = seasonSchedule.scheduleToList(true);
+        ArrayList<ArrayList> bowlList = seasonSchedule.getBowlSchedule().scheduleToList(false);
+        int i = 0;
+        while (i < list.size()) {
+            addLineCsv(csvPrinter, list.get(i), i);
+            if (i == 0) {
+    			csvPrinter.print(list.size()+ bowlList.size() -1);
+    		}
+            csvPrinter.println();
+            i++;
+        }
+        
+        for (int j = 0; j < bowlList.size(); j++) {
+            addLineCsv(csvPrinter, bowlList.get(j), i);
+            csvPrinter.println();
+            i++;
+        }
+        
+    }
+
+	
+	private void addLineCsv(CSVPrinter csvPrinter, ArrayList game, int r) throws IOException {
+        for (int c = 0; c < game.size(); c++) {
+        	if (r == 0) {
+        		csvPrinter.print(game.get(c));
+        	} else {
+        		csvPrinter.print(game.get(c));
+            }
+        }
+        
+    }
+
+}

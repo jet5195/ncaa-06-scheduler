@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.robotdebris.ncaaps2scheduler.service.CsvExportService;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 
 @CrossOrigin(origins = "*")
@@ -84,15 +85,14 @@ public class ScheduleController {
 	
 	@PostMapping(value = "save-to-file")
 	public void saveToFile() {
-		scheduleService.saveToFile();
+		//scheduleService.saveToFile();
 	}
 	
 	@GetMapping(value = "download")
 	public void downloadSchedule(HttpServletResponse response) throws IOException {
-		response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment; filename=new_sched.xlsx");
-        ByteArrayInputStream stream = scheduleService.downloadSchedule();
-        IOUtils.copy(stream, response.getOutputStream());
+		response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=new_sched.csv");
+        scheduleService.downloadSchedule(response.getWriter());
 	}
 	
 	@PostMapping(value = "set-by-file")

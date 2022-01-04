@@ -1,5 +1,10 @@
 package com.robotdebris.ncaaps2scheduler;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.util.IOUtils;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,10 +18,17 @@ import com.robotdebris.ncaaps2scheduler.model.SchoolList;
 import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
 import com.robotdebris.ncaaps2scheduler.model.SwapList;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 @Component
@@ -39,10 +51,43 @@ public class ExcelReader {
     }
     
     private Workbook readExcel(File file) throws IOException {
+    	
+    	if(file.toString().endsWith("csv")) {
+    		return csvToXLSX(file);
+    	}
 
         // Creating a Workbook from an Excel file (.xls or .xlsx)
         return WorkbookFactory.create(file);
         //workbook.close();
+    }
+    
+    public Workbook csvToXLSX(File file) {
+        try {
+            String csvFileAddress = file.getPath(); //csv file address
+            String xlsxFileAddress = file.getPath() + ".xlsx"; //xlsx file address
+            XSSFWorkbook workBook = new XSSFWorkbook();
+            XSSFSheet sheet = workBook.createSheet("sheet1");
+            String currentLine=null;
+            int rowNum=0;
+            BufferedReader br = new BufferedReader(new FileReader(csvFileAddress));
+            while ((currentLine = br.readLine()) != null) {
+                String str[] = currentLine.split(",");
+                rowNum++;
+                XSSFRow currentRow=sheet.createRow(rowNum);
+                for(int i=0;i<str.length;i++){
+                    currentRow.createCell(i).setCellValue(str[i]);
+                }
+            }
+
+            FileOutputStream fileOutputStream =  new FileOutputStream(xlsxFileAddress);
+            workBook.write(fileOutputStream);
+            fileOutputStream.close();
+            br.close();
+            return workBook;
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage()+"Exception in try");
+            return null;
+        }
     }
     
     public ConferenceList getConferenceData(File file) throws IOException {
@@ -390,13 +435,14 @@ public class ExcelReader {
         seasonSchedule.setBowlSchedule(bowlSchedule);
         return seasonSchedule;
     }
+    
 
     /**
      * Writes schedule to a new excel file
      * @param seasonSchedule the schedule to write to a new excel file
      * @throws IOException
      */
-    public ByteArrayInputStream writeSchedule(SeasonSchedule seasonSchedule) throws IOException {
+    public ByteArrayInputStream writeScheduleOld(SeasonSchedule seasonSchedule) throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet();
         ArrayList<ArrayList> list = seasonSchedule.scheduleToList(true);
@@ -413,6 +459,7 @@ public class ExcelReader {
         sheet.getRow(0).createCell(14).setCellValue(String.valueOf(i - 1));
         
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
         workbook.write(outputStream);
         workbook.close();
         return new ByteArrayInputStream(outputStream.toByteArray());
@@ -455,7 +502,7 @@ public class ExcelReader {
 	private void addLine(Sheet sheet, ArrayList game, int r) {
         Row row = sheet.createRow(r);
         for (int c = 0; c < game.size(); c++) {
-            if (r == 0) {
+        	if (r == 0) {
                 row.createCell(c).setCellValue((String) game.get(c));
             } else {
                 row.createCell(c).setCellValue((Integer) game.get(c));
@@ -463,4 +510,6 @@ public class ExcelReader {
 
         }
     }
+	
+
 }
