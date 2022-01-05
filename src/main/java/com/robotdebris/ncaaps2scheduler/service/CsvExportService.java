@@ -1,13 +1,20 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
+import com.robotdebris.ncaaps2scheduler.model.SwapList;
 
 public class CsvExportService {
 	
@@ -24,7 +31,7 @@ public class CsvExportService {
         ArrayList<ArrayList> bowlList = seasonSchedule.getBowlSchedule().scheduleToList(false);
         int i = 0;
         while (i < list.size()) {
-            addLineCsv(csvPrinter, list.get(i), i);
+        	addGameToCSV(csvPrinter, list.get(i), i);
             if (i == 0) {
     			csvPrinter.print(list.size()+ bowlList.size() -1);
     		}
@@ -33,15 +40,36 @@ public class CsvExportService {
         }
         
         for (int j = 0; j < bowlList.size(); j++) {
-            addLineCsv(csvPrinter, bowlList.get(j), i);
+            addGameToCSV(csvPrinter, bowlList.get(j), i);
             csvPrinter.println();
             i++;
         }
+    }
+    
+    /**
+     * Writes swap to a new excel file
+     * @throws IOException
+     */
+    public void writeSwapList(Writer writer, SwapList swaplist) throws IOException {
+    	
+    	CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
         
+        csvPrinter.print("TGID");
+        csvPrinter.print("TIDR");
+        csvPrinter.print("SWOR");
+        
+        int i = 0;
+        while (i < swaplist.size()) {     
+        	csvPrinter.println();
+        	csvPrinter.print(swaplist.get(i).getSchool1().getTgid());
+        	csvPrinter.print(swaplist.get(i).getSchool2().getTgid());
+        	csvPrinter.print(i);
+        	i++;
+        }
     }
 
 	
-	private void addLineCsv(CSVPrinter csvPrinter, ArrayList game, int r) throws IOException {
+	private void addGameToCSV(CSVPrinter csvPrinter, ArrayList game, int r) throws IOException {
         for (int c = 0; c < game.size(); c++) {
         	if (r == 0) {
         		csvPrinter.print(game.get(c));

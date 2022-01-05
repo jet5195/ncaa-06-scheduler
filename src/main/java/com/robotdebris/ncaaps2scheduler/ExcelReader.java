@@ -436,69 +436,6 @@ public class ExcelReader {
         return seasonSchedule;
     }
     
-
-    /**
-     * Writes schedule to a new excel file
-     * @param seasonSchedule the schedule to write to a new excel file
-     * @throws IOException
-     */
-    public ByteArrayInputStream writeScheduleOld(SeasonSchedule seasonSchedule) throws IOException {
-        Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet();
-        ArrayList<ArrayList> list = seasonSchedule.scheduleToList(true);
-        int i = 0;
-        while (i < list.size()) {
-            addLine(sheet, list.get(i), i);
-            i++;
-        }
-        ArrayList<ArrayList> bowlList = seasonSchedule.getBowlSchedule().scheduleToList(false);
-        for (int j = 0; j < bowlList.size(); j++) {
-            addLine(sheet, bowlList.get(j), i);
-            i++;
-        }
-        sheet.getRow(0).createCell(14).setCellValue(String.valueOf(i - 1));
-        
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        workbook.write(outputStream);
-        workbook.close();
-        return new ByteArrayInputStream(outputStream.toByteArray());
-//        fileOut.close();
-    }
-    
-    /**
-     * Writes swap to a new excel file
-     * @throws IOException
-     */
-    public ByteArrayInputStream writeSwapList() throws IOException {
-    	//simplifySwapList();
-        Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet();
-        Row row = sheet.createRow(0);
-        row.createCell(0).setCellValue("TGID");
-        row.createCell(1).setCellValue("TIDR");
-        row.createCell(2).setCellValue("SWOR");
-        int i = 0;
-        
-        while (i < swaplist.size()) {
-        	row = sheet.createRow(i+1);      	
-        	row.createCell(0).setCellValue(swaplist.get(i).getSchool1().getTgid());
-        	row.createCell(1).setCellValue(swaplist.get(i).getSchool2().getTgid());
-        	row.createCell(2).setCellValue(i);
-            i++;
-        }
-        
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        workbook.write(outputStream);
-        workbook.close(); //remove this if it doesn't work
-        return new ByteArrayInputStream(outputStream.toByteArray()); 
-    }
-
-    private void simplifySwapList() {
-		// TODO Auto-generated method stub
-		
-	}
-
 	private void addLine(Sheet sheet, ArrayList game, int r) {
         Row row = sheet.createRow(r);
         for (int c = 0; c < game.size(); c++) {

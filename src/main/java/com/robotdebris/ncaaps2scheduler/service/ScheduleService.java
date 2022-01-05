@@ -548,15 +548,6 @@ public class ScheduleService {
         return count;
     }
 
-//    public void saveToFile() {
-//        try {
-//            excelReader.writeSchedule(seasonSchedule);
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//    }
-
     public Conference searchConferenceByName(String name) {
         return conferenceList.conferenceSearch(name);
     }

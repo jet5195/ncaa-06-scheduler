@@ -83,11 +83,6 @@ public class ScheduleController {
 		return scheduleService.fixSchedule();
 	}
 	
-	@PostMapping(value = "save-to-file")
-	public void saveToFile() {
-		//scheduleService.saveToFile();
-	}
-	
 	@GetMapping(value = "download")
 	public void downloadSchedule(HttpServletResponse response) throws IOException {
 		response.setContentType("text/csv");
