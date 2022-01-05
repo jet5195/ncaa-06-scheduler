@@ -2,6 +2,7 @@ package com.robotdebris.ncaaps2scheduler.service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Writer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -121,14 +122,14 @@ public class ConferenceService {
 		return conf.getSchoolsByDivision(division);
 	}
 	
-	public ByteArrayInputStream downloadSwapFile() {
+	public void downloadSwapFile(Writer writer) {
 		try {
-			return excelReader.writeSwapList();
+			CsvExportService csvExportService = new CsvExportService();
+            csvExportService.writeSwapList(writer, swaplist);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
 		}
 
 	public void addSchool(String name, School s1) {
