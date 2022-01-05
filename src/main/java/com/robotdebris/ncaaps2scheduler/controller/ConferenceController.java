@@ -79,10 +79,9 @@ public class ConferenceController {
 	
 	@GetMapping(value = "download")
 	public void downloadSwapList(HttpServletResponse response) throws IOException {
-		response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment; filename=swap_list.xlsx");
-        ByteArrayInputStream stream = conferenceService.downloadSwapFile();
-        IOUtils.copy(stream, response.getOutputStream());
+		response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=swaplist.csv");
+        conferenceService.downloadSwapFile(response.getWriter());
 	}
 	
 	@PostMapping(value = "{name}/add-games")
