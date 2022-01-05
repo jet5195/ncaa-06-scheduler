@@ -77,6 +77,7 @@ public class SeasonSchedule extends SchoolSchedule {
 		home.addGame(newGame);
 		this.add(newGame);
         LOGGER.info("Adding game " + newGame.getAwayTeam().getName() + " at " + newGame.getHomeTeam().getName());
+        System.out.println("Adding game " + newGame.getAwayTeam().getName() + " at " + newGame.getHomeTeam().getName());
     }
     
     /**
@@ -111,6 +112,7 @@ public class SeasonSchedule extends SchoolSchedule {
         s2.getSchedule().remove(theGame);
         updateGameNumbers(gameNumber, weekNumber);
         LOGGER.info("Removing game " + s1 + " at " + s2);
+        System.out.println("Removing game " + s1 + " at " + s2);
     }
 
     /**
