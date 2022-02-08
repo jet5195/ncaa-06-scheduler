@@ -637,9 +637,9 @@ public class ScheduleService {
 		// setAllYearlyGames();
 
 		try {
-			if (conf.getSchools().size() <= 10) {
-				scheduleConferenceGamesUnder10Teams(conf);
-			} else if (conf.getSchools().size() >= 12) {
+			if (conf.getDivisions() == null) {
+				scheduleConferenceGamesNoDivisions(conf);
+			} else {
 				scheduleConferenceGamesDivisions(conf);
 			}
 		} catch (IndexOutOfBoundsException e) {
@@ -653,13 +653,14 @@ public class ScheduleService {
 		return 0;
 	}
 
-	public void scheduleConferenceGamesUnder10Teams(Conference conf) throws IndexOutOfBoundsException {
-		scheduleConferenceGamesUnder10Teams(conf.getSchools(), conf.getConfGamesStartWeek());
+	public void scheduleConferenceGamesNoDivisions(Conference conf) throws IndexOutOfBoundsException {
+		scheduleConferenceGamesNoDivisions(conf.getSchools(), conf.getConfGamesStartWeek());
 	}
 
-	public void scheduleConferenceGamesUnder10Teams(SchoolList list, int confGamesStartDate)
+	public void scheduleConferenceGamesNoDivisions(SchoolList list, int confGamesStartDate)
 			throws IndexOutOfBoundsException {
 		int numOfSchools = list.size();
+		if(numOfSchools <= 10) {
 		for (School school : list) {
 			if (school.getNumOfConferenceGames() < numOfSchools - 1) {
 				for (School opponent : list) {
@@ -688,6 +689,23 @@ public class ScheduleService {
 				}
 			}
 		}
+		} else {
+			scheduleConferenceGamesNoDivisionsOverTenTeams(list, confGamesStartDate, 9);
+		}
+	}
+	
+	public void scheduleConferenceGamesNoDivisionsOverTenTeams(SchoolList list, int confGamesStartDate, int numOfConfGames) {
+		/*
+		 * 
+		 */
+		for(int i = 0; i < list.size(); i++) {
+			School s1 = list.get(i);
+			while(s1.getNumOfConferenceGames() < numOfConfGames) {
+				for(int j = i+1; j < list.size(); j++) {
+				School s2 = list.get(j);
+				}
+			}
+		}
 	}
 
 	public void scheduleConferenceGamesDivisions(Conference conf) throws IndexOutOfBoundsException {
@@ -699,8 +717,8 @@ public class ScheduleService {
 			SchoolList div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
 
 			// schedule inner division games
-			scheduleConferenceGamesUnder10Teams(div1, conf.getConfGamesStartWeek());
-			scheduleConferenceGamesUnder10Teams(div2, conf.getConfGamesStartWeek());
+			scheduleConferenceGamesNoDivisions(div1, conf.getConfGamesStartWeek());
+			scheduleConferenceGamesNoDivisions(div2, conf.getConfGamesStartWeek());
 
 			// order by cross div rivals
 			boolean xDivRivals = div1.getFirst().getxDivRival() != null;
