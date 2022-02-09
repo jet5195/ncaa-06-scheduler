@@ -660,49 +660,57 @@ public class ScheduleService {
 	public void scheduleConferenceGamesNoDivisions(SchoolList list, int confGamesStartDate)
 			throws IndexOutOfBoundsException {
 		int numOfSchools = list.size();
-		if(numOfSchools <= 10) {
-		for (School school : list) {
-			if (school.getNumOfConferenceGames() < numOfSchools - 1) {
-				for (School opponent : list) {
-					if (!school.equals(opponent) && !school.isOpponent(opponent)) {
-						int week = randomizeConfGameWeek(school, opponent, confGamesStartDate);
-						if ((school.getNumOfAwayConferenceGames() >= numOfSchools / 2)
-								|| opponent.getNumOfHomeConferenceGames() >= numOfSchools / 2) {
-							// add a home game for school
-							if (seasonSchedule.getYear() % 2 == 0) {
-								addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), false);
+		if (numOfSchools <= 10) {
+			for (School school : list) {
+				if (school.getNumOfConferenceGames() < numOfSchools - 1) {
+					for (School opponent : list) {
+						if (!school.equals(opponent) && !school.isOpponent(opponent)) {
+							int week = randomizeConfGameWeek(school, opponent, confGamesStartDate);
+							if ((school.getNumOfAwayConferenceGames() >= numOfSchools / 2)
+									|| opponent.getNumOfHomeConferenceGames() >= numOfSchools / 2) {
+								// add a home game for school
+								if (seasonSchedule.getYear() % 2 == 0) {
+									addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), false);
+								} else {
+									addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), false);
+								}
+							} else if ((school.getNumOfHomeConferenceGames() >= numOfSchools / 2)
+									|| opponent.getNumOfAwayConferenceGames() >= numOfSchools / 2) {
+								// add an away game for school
+								if (seasonSchedule.getYear() % 2 == 0) {
+									addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), false);
+								} else {
+									addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), false);
+								}
 							} else {
 								addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), false);
 							}
-						} else if ((school.getNumOfHomeConferenceGames() >= numOfSchools / 2)
-								|| opponent.getNumOfAwayConferenceGames() >= numOfSchools / 2) {
-							// add an away game for school
-							if (seasonSchedule.getYear() % 2 == 0) {
-								addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), false);
-							} else {
-								addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), false);
-							}
-						} else {
-							addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), false);
 						}
 					}
 				}
 			}
-		}
 		} else {
 			scheduleConferenceGamesNoDivisionsOverTenTeams(list, confGamesStartDate, 9);
 		}
 	}
-	
-	public void scheduleConferenceGamesNoDivisionsOverTenTeams(SchoolList list, int confGamesStartDate, int numOfConfGames) {
+
+	public void scheduleConferenceGamesNoDivisionsOverTenTeams(SchoolList list, int confGamesStartDate,
+			int numOfConfGames) {
 		/*
 		 * 
 		 */
-		for(int i = 0; i < list.size(); i++) {
-			School s1 = list.get(i);
-			while(s1.getNumOfConferenceGames() < numOfConfGames) {
-				for(int j = i+1; j < list.size(); j++) {
-				School s2 = list.get(j);
+
+		while (!list.isEmpty()) {
+			School s1 = list.pop();
+			
+			// this might be breaking it. You may need to create a new list!
+			while (s1.getNumOfConferenceGames() < numOfConfGames) {
+				for (int j = 0; j < list.size(); j++) {
+					School s2 = list.get(j);
+					if (s2.getNumOfConferenceGames() < numOfConfGames) {
+						int week = randomizeConfGameWeek(s1, s2, confGamesStartDate);
+						addYearlySeriesHelper(s1, s2, week, 5, seasonSchedule.getYear(), false);
+					}
 				}
 			}
 		}
