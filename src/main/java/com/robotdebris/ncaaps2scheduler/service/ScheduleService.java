@@ -1,6 +1,5 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -643,7 +642,7 @@ public class ScheduleService {
 				scheduleConferenceGamesDivisions(conf);
 			}
 		} catch (IndexOutOfBoundsException e) {
-			if (attempts < 25) {
+			if (attempts < 1000) {
 				seasonSchedule.removeAllConferenceGames(conf);
 				autoAddConferenceGames(name, ++attempts);
 			} else {
@@ -699,20 +698,46 @@ public class ScheduleService {
 		/*
 		 * 
 		 */
+		int yearMinus2005 = seasonSchedule.getYear() - 2005;
+		int modulo = yearMinus2005 % list.size();
+		
+		
+		// clone the list so we don't actually remove the schools
+		SchoolList listClone = new SchoolList();
+		for (School school : list) {
+			listClone.add(school);
+		}
 
-		while (!list.isEmpty()) {
-			School s1 = list.pop();
+		//rotate schedule based on year & conference size
+		for(int i = 0; i < modulo; i++) {
+			School s1 = listClone.removeFirst();
+			listClone.add(s1);
+		}
+		
+		int i = 0;
+		while (!listClone.isEmpty()) {
+			School s1 = listClone.pop();
 			
 			// this might be breaking it. You may need to create a new list!
+			
 			while (s1.getNumOfConferenceGames() < numOfConfGames) {
-				for (int j = 0; j < list.size(); j++) {
-					School s2 = list.get(j);
-					if (s2.getNumOfConferenceGames() < numOfConfGames) {
-						int week = randomizeConfGameWeek(s1, s2, confGamesStartDate);
-						addYearlySeriesHelper(s1, s2, week, 5, seasonSchedule.getYear(), false);
+				for (int j = listClone.size()-1; j > 0; j--) {
+					School s2 = listClone.get(j-i);
+					if (s1.getNumOfConferenceGames() < numOfConfGames) {
+						//alternate home away... might not need yearlyserieshelper
+						//since it might be doing the same thing.
+						if(i % 2 == 0) {
+							int week = randomizeConfGameWeek(s1, s2, confGamesStartDate);
+							addYearlySeriesHelper(s1, s2, week, 5, seasonSchedule.getYear(), false);
+						} else {
+							int week = randomizeConfGameWeek(s1, s2, confGamesStartDate);
+							addYearlySeriesHelper(s2, s1, week, 5, seasonSchedule.getYear(), false);
+						}
 					}
+					
 				}
 			}
+			i++;
 		}
 	}
 
