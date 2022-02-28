@@ -7,7 +7,6 @@ public class FileChooser {
     private final Logger LOGGER = Logger.getLogger(FileChooser.class.getName());
 
     public String chooseFile(String title) {
-        boolean exit = false;
         FileDialog dialog = new FileDialog((Frame) null, title);
         dialog.setFile("*.xlsx");
         dialog.setMode(FileDialog.LOAD);

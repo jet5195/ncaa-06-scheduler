@@ -1,6 +1,5 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,11 +7,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-
 import javax.annotation.PostConstruct;
-
 import com.robotdebris.ncaaps2scheduler.model.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -1194,6 +1190,5 @@ public class ScheduleService {
 			seasonSchedule.addGameSpecificHomeTeam(away, home, addGameRequest.getWeek(), addGameRequest.getDay(),
 					addGameRequest.getTime(), addGameRequest.getGameResult());
 		}
-
 	}
 }

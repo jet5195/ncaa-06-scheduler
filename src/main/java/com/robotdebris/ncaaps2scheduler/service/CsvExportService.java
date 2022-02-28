@@ -1,17 +1,10 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
 import com.robotdebris.ncaaps2scheduler.model.SwapList;
@@ -66,18 +59,14 @@ public class CsvExportService {
         	csvPrinter.print(i);
         	i++;
         }
+        csvPrinter.close();
     }
 
 	
 	private void addGameToCSV(CSVPrinter csvPrinter, ArrayList game, int r) throws IOException {
         for (int c = 0; c < game.size(); c++) {
-        	if (r == 0) {
-        		csvPrinter.print(game.get(c));
-        	} else {
-        		csvPrinter.print(game.get(c));
-            }
+        	csvPrinter.print(game.get(c));
         }
-        
     }
 
 }

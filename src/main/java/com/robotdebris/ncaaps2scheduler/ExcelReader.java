@@ -1,14 +1,10 @@
 package com.robotdebris.ncaaps2scheduler;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.ConferenceList;
 import com.robotdebris.ncaaps2scheduler.model.Game;
@@ -17,18 +13,11 @@ import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SchoolList;
 import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
 import com.robotdebris.ncaaps2scheduler.model.SwapList;
-
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 @Component
@@ -433,18 +422,4 @@ public class ExcelReader {
         seasonSchedule.setBowlSchedule(bowlSchedule);
         return seasonSchedule;
     }
-    
-	private void addLine(Sheet sheet, ArrayList game, int r) {
-        Row row = sheet.createRow(r);
-        for (int c = 0; c < game.size(); c++) {
-        	if (r == 0) {
-                row.createCell(c).setCellValue((String) game.get(c));
-            } else {
-                row.createCell(c).setCellValue((Integer) game.get(c));
-            }
-
-        }
-    }
-	
-
 }

@@ -1,12 +1,9 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Writer;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.ConferenceList;

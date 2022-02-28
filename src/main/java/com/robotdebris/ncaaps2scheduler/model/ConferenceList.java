@@ -7,7 +7,12 @@ import java.util.LinkedList;
 
 @Component
 public class ConferenceList extends LinkedList<Conference> {
-    static {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7843984523561502029L;
+
+	static {
         PropertyConfigurator.configure("src/main/resources/log4j.properties");
     }
 

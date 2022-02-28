@@ -6,7 +6,12 @@ import java.util.LinkedList;
 
 @Component
 public class SwapList extends LinkedList<Swap> {
-    static {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1082717548552261220L;
+
+	static {
         PropertyConfigurator.configure("src/main/resources/log4j.properties");
     }
 
