@@ -106,12 +106,11 @@ public class ExcelReader {
                 String logo = "";
                 int confGames = 0;
                 int startWeek = 0;
-                int c = 0;
-                if (dataFormatter.formatCellValue(row.getCell(0)) != "") {
-                    for (Cell cell : row) {
+                if (!dataFormatter.formatCellValue(row.getCell(0)).equals("")) {
+                    for (int i = 0; i <= 6; i++) {
+                    	Cell cell = row.getCell(i);
                         String cellValue = dataFormatter.formatCellValue(cell);
-                        //System.out.print(cellValue + "\t");
-                        switch (c) {
+                        switch (i) {
                             case 0:
                             	conferenceName = cellValue;
                                 break;
@@ -142,7 +141,6 @@ public class ExcelReader {
                             default:
                                 break;
                         }//end of switch
-                        c++;
                     }//end col iterator
                     conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, logo, confGames, startWeek));
                 }//end of if not null
