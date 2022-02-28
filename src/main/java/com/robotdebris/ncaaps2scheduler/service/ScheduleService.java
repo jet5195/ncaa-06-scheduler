@@ -293,8 +293,30 @@ public class ScheduleService {
 				// go through all the schools
 				School s1 = allSchools.get(i);
 				if (s1.getNcaaDivision().equals("FBS") && j < s1.getRivals().size()) {
-					School rival = s1.getRivals().get(j);
-					count += addRivalryGameTwoSchools(seasonSchedule, s1, rival, aggressive, j);
+					// new chance algorithm so you don't ALWAYS play your 5th rival.
+					// 1st rival: 100% chance
+					// 2nd rival: 70% chance
+					// 3rd rival: 50% chance
+					// 4th rival: 20% chance
+					// >4th rival: 10% chance
+					int chance = new Random().nextInt(10);
+					boolean scheduleGame = false;
+					if (j == 0) {
+						scheduleGame = true;
+					} else if (j == 1 && chance < 7) {
+						scheduleGame = true;
+					} else if (j == 2 && chance < 5) {
+						scheduleGame = true;
+					} else if (j == 3 && chance < 2) {
+						scheduleGame = true;
+					} else if (j > 3 && chance < 1) {
+						scheduleGame = true;
+					}
+
+					if (scheduleGame) {
+						School rival = s1.getRivals().get(j);
+						count += addRivalryGameTwoSchools(seasonSchedule, s1, rival, aggressive, j);
+					}
 				}
 			}
 		}
