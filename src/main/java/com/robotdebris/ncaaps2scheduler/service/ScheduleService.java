@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Random;
 import javax.annotation.PostConstruct;
 import com.robotdebris.ncaaps2scheduler.model.*;
@@ -1287,6 +1288,24 @@ public class ScheduleService {
 			School away = schoolList.schoolSearch(addGameRequest.getAwayId());
 			seasonSchedule.addGameSpecificHomeTeam(away, home, addGameRequest.getWeek(), addGameRequest.getDay(),
 					addGameRequest.getTime(), addGameRequest.getGameResult());
+		}
+	}
+
+    public void removeAllConferenceGames() {
+		for (Conference conf : conferenceList) {
+			this.removeConferenceGames(conf.getName());
+		}
+    }
+
+	public void addAllConferenceGames() throws Exception {
+		for (Conference conf : conferenceList) {
+			// if conference is FBS...
+			SchoolList schools = conf.getSchools();
+			if (schools != null){
+				if (Objects.equals(schools.getFirst().getNcaaDivision(), "FBS")){
+					this.autoAddConferenceGames(conf.getName(), 0);
+				}
+			}
 		}
 	}
 }

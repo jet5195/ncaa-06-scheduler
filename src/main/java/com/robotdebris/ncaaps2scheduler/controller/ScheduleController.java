@@ -110,6 +110,16 @@ public class ScheduleController {
 	public Game getGame(@PathVariable("week") int week, @PathVariable("gameNumber") int gameNumber) {
 		return scheduleService.getGame(week, gameNumber);
 	}
+
+	@PostMapping(value = "remove-conference-games")
+	public void removeAllConferenceGames() {
+		scheduleService.removeAllConferenceGames();
+	}
+
+	@PostMapping(value = "add-conference-games")
+	public void addAllConferenceGames() throws Exception {
+		scheduleService.addAllConferenceGames();
+	}
 	
 //	@PostMapping(value = "game")
 //	public void saveGame(@RequestBody Game game) {
