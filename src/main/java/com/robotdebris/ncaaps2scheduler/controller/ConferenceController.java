@@ -82,7 +82,7 @@ public class ConferenceController {
 	}
 	
 	@PostMapping(value = "{name}/add-games")
-	public int autoAddConferenceGames(@PathVariable String name) {
+	public int autoAddConferenceGames(@PathVariable String name) throws Exception{
 		return scheduleService.autoAddConferenceGames(name, 0);
 	}
 

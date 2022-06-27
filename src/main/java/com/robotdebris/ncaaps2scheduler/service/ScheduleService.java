@@ -650,17 +650,21 @@ public class ScheduleService {
 		return count;
 	}
 
-	public int autoAddConferenceGames(String name, int attempts) {
+	public int autoAddConferenceGames(String name, int attempts) throws Exception {
 		Conference conf = conferenceList.conferenceSearch(name);
 		// setAllYearlyGames();
 
 		try {
 			if (conf.getSchools().size() <= 10) {
 				scheduleConferenceGamesUnder10Teams(conf);
-			} else if (conf.getSchools().size() >= 12) {
+			} else if (conf.getSchools().size() == 12) {
 				scheduleConferenceGamesDivisions(conf);
-			}
-		} catch (IndexOutOfBoundsException e) {
+			} else if (conf.getSchools().size() == 14) {
+			    scheduleConferenceGamesDivisions14(conf);
+            } else {
+			    throw new UnsupportedOperationException();
+            }
+		} catch (Exception e) {
 			if (attempts < 25) {
 				seasonSchedule.removeAllConferenceGames(conf);
 				autoAddConferenceGames(name, ++attempts);
@@ -671,12 +675,12 @@ public class ScheduleService {
 		return 0;
 	}
 
-	public void scheduleConferenceGamesUnder10Teams(Conference conf) throws IndexOutOfBoundsException {
+    public void scheduleConferenceGamesUnder10Teams(Conference conf) throws Exception {
 		scheduleConferenceGamesUnder10Teams(conf.getSchools(), conf.getConfGamesStartWeek());
 	}
 
 	public void scheduleConferenceGamesUnder10Teams(SchoolList list, int confGamesStartDate)
-			throws IndexOutOfBoundsException {
+            throws Exception {
 		int numOfSchools = list.size();
 		for (School school : list) {
 			if (school.getNumOfConferenceGames() < numOfSchools - 1) {
@@ -708,7 +712,74 @@ public class ScheduleService {
 		}
 	}
 
-	public void scheduleConferenceGamesDivisions(Conference conf) throws IndexOutOfBoundsException {
+    private void scheduleConferenceGamesDivisions14(Conference conf) throws Exception {
+	    SchoolList div1 = conf.getSchoolsByDivision(conf.getDivisions().get(0));
+	    SchoolList div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
+
+	    //schedule inner div games
+        scheduleConferenceGamesUnder10Teams(div1, conf.getConfGamesStartWeek());
+        scheduleConferenceGamesUnder10Teams(div2, conf.getConfGamesStartWeek());
+
+        boolean xDivRivals = div1.getFirst().getxDivRival() != null;
+        int numOfConfGames = conf.getNumOfConfGames();
+        int yearMinus2005 = seasonSchedule.getYear() - 2005;
+
+        if (numOfConfGames == 8 && xDivRivals) {
+            div2 = orderDivByXDivRivals(div1);
+            //add protected rivalry games
+            int i = 0;
+            for (School school: div1) {
+                School opponent = div2.get(i);
+                int week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), false);
+                i++;
+            }
+            //at this point all we have to do is alternate that 1 game.. home away SHOULD be taken care of too due to xdivrival
+            int year = (yearMinus2005 % 12) +1;
+            int j = year;
+            for (School school: div1) {
+                //if we're in years 6-11, alternate the schedule a bit. IE, play team 2 then 1, so we actually swap home/away
+                if(year >= 7) {
+                    if (j >= 7) {
+                        //odd & we only go back 5 for the first school!!
+                        if (j % 2 != 0 && div1.getFirst().equals(school)) {
+                            j -= 5;
+                            //even
+                        } else {
+                            j -= 7;
+                        }
+                    }
+                } else {
+                    if (j >=7){
+                        j-=7;
+                    }
+                }
+                School opponent = div2.get(j);
+                int week = randomizeConfGameWeek(school, opponent, conf.getConfGamesStartWeek());
+                if (school.getNumOfHomeConferenceGames() < 4){
+                    addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
+                } else {
+                    addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
+                }
+                j++;
+            }
+        /*
+                0   1   2   3   4   5   6
+                _____________________________
+     2010       1   2   3   4   5   6   0
+     2011       2   3   4   5   6   0   1
+     2012       3   4   5   6   0   1   2
+     2013       4   5   6   0   1   2   3
+     2014       5   6   0   1   2   3   4
+     2015       6   0   1   2   3   4   5
+     2016       1   2   3   4   5   6   0
+         */
+
+        }
+
+    }
+
+	public void scheduleConferenceGamesDivisions(Conference conf) throws Exception {
 		try {
 			int index = 0;
 			// move school order by year
@@ -1053,9 +1124,11 @@ public class ScheduleService {
 		return emptyWeeks.get(randomNum);
 	}
 
-	private int randomizeConfGameWeek(School school, School opponent, int startWeek) throws IndexOutOfBoundsException {
+	private int randomizeConfGameWeek(School school, School opponent, int startWeek) throws Exception {
 		ArrayList<Integer> emptyWeeks = findEmptyWeeks(school, opponent);
-		emptyWeeks.remove(Integer.valueOf(14));
+		if (emptyWeeks.size() > 1) {
+            emptyWeeks.remove(Integer.valueOf(14));
+        }
 		for (int i = 0; i < emptyWeeks.size(); i++) {
 			int week = emptyWeeks.get(i);
 			if (week < startWeek) {
@@ -1063,6 +1136,9 @@ public class ScheduleService {
 				i--;
 			}
 		}
+        if(emptyWeeks.isEmpty()){
+            throw new Exception("No empty weeks available!");
+        }
 		int max = emptyWeeks.size() - 1;
 		int min = 0;
 		int range = max - min + 1;
