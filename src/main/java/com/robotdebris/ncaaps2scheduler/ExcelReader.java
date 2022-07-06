@@ -311,9 +311,10 @@ public class ExcelReader {
     public SeasonSchedule getScheduleData(File file, SchoolList allSchools) throws IOException, NumberFormatException {
     	//if the first school has a schedule already, empty it.
     	//eventually it may make sense to autowire seasonschedule and check it
-    	if(!allSchools.get(0).getSchedule().isEmpty()) {
+        seasonSchedule = new SeasonSchedule();
+//    	if(!allSchools.get(0).getSchedule().isEmpty()) {
     		allSchools.resetAllSchoolsSchedules();
-    	}
+//    	}
         School bowlSchool = new School(511, "Bowl", "Bowl", "Bowl", "Bowl", "Bowl", "Bowl");
         Workbook workbook = readExcel(file);
         // Getting the Sheet at index zero

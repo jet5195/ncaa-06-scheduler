@@ -1321,4 +1321,12 @@ public class ScheduleService {
 			}
 		}
 	}
+
+	public SeasonSchedule getSeasonSchedule() {
+		return this.seasonSchedule;
+	}
+
+	public void setSeasonSchedule(SeasonSchedule seasonSchedule) {
+		this.seasonSchedule = seasonSchedule;
+	}
 }

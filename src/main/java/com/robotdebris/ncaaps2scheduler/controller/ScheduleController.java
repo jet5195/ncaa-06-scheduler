@@ -120,6 +120,12 @@ public class ScheduleController {
 	public void addAllConferenceGames() throws Exception {
 		scheduleService.addAllConferenceGames();
 	}
+
+	@GetMapping()
+	public SeasonSchedule getSchedule() {return scheduleService.getSeasonSchedule();}
+
+	@PutMapping()
+	public void setSchedule(SeasonSchedule seasonSchedule) {scheduleService.setSeasonSchedule(seasonSchedule);}
 	
 //	@PostMapping(value = "game")
 //	public void saveGame(@RequestBody Game game) {
