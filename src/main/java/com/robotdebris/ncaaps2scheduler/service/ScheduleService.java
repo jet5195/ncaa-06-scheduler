@@ -51,7 +51,7 @@ public class ScheduleService {
 	}
 
 	public void setScheduleFile(MultipartFile scheduleFile) throws IOException {
-		File file = multipartFileToFile(scheduleFile);
+		File file = excelReader.multipartFileToFile(scheduleFile);
 		try {
 			seasonSchedule = excelReader.getScheduleData(file, schoolList);
 			// is this going to miss conference games since conferences aren't set yet?
@@ -59,15 +59,6 @@ public class ScheduleService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	public File multipartFileToFile(MultipartFile multipartFile) throws IOException {
-		File file = new File(multipartFile.getOriginalFilename());
-		file.createNewFile();
-		FileOutputStream fos = new FileOutputStream(file);
-		fos.write(multipartFile.getBytes());
-		fos.close();
-		return file;
 	}
 
 	public SchoolList getSchoolList() {
@@ -614,7 +605,7 @@ public class ScheduleService {
 	}
 
 	public void setAlignmentFile(MultipartFile alignmentFile) throws IOException {
-		File file = multipartFileToFile(alignmentFile);
+		File file = excelReader.multipartFileToFile(alignmentFile);
 		try {
 			conferenceList = excelReader.getConferenceData(file);
 			excelReader.setAlignmentData(file, schoolList, conferenceList);

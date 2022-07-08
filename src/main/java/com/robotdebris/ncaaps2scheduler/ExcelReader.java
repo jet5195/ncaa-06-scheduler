@@ -1,24 +1,21 @@
 package com.robotdebris.ncaaps2scheduler;
+import com.robotdebris.ncaaps2scheduler.model.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.robotdebris.ncaaps2scheduler.model.Conference;
-import com.robotdebris.ncaaps2scheduler.model.ConferenceList;
-import com.robotdebris.ncaaps2scheduler.model.Game;
-import com.robotdebris.ncaaps2scheduler.model.GameResult;
-import com.robotdebris.ncaaps2scheduler.model.School;
-import com.robotdebris.ncaaps2scheduler.model.SchoolList;
-import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
-import com.robotdebris.ncaaps2scheduler.model.SwapList;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ExcelReader {
@@ -31,6 +28,8 @@ public class ExcelReader {
 	SeasonSchedule seasonSchedule;
 	@Autowired
 	SwapList swaplist;
+    @Autowired
+    List<Bowl> bowlList;
 	
     private Workbook readExcel(String path) throws IOException {
 
@@ -422,5 +421,117 @@ public class ExcelReader {
         allSchools.populateUserSchools();
         seasonSchedule.setBowlSchedule(bowlSchedule);
         return seasonSchedule;
+    }
+
+    /**
+     * Populates the the bowl schedule
+     * @param file the path of the bowl excel file
+     * @return bowlList a list of all games in a season
+     * @throws IOException
+     */
+    public List<Bowl> getBowlData(File file) throws IOException, NumberFormatException {
+
+        bowlList = new ArrayList<>();
+        Workbook workbook = readExcel(file);
+        // Getting the Sheet at index zero
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // Create a DataFormatter to format and get each cell's value as String
+        DataFormatter dataFormatter = new DataFormatter();
+        // 2. Or you can use a for-each loop to iterate over the rows and columns
+        int r = 0;
+        for (Row row : sheet) {
+            int bci1 = 0;//conference 1 id 1
+            int bcr1 = 0;//conference 1 rank 2
+            int bci2 = 0;//conference 2 id 3
+            int bcr2 = 0;//conference 2 rank 4
+            int bmfd = 0;//? 5
+            int sgid = 0;//stadium id 6
+            int utid = 0;//trophy id 7
+            int gtod = 0;//time of day 8
+            String bnme = "";//bowl name 9
+            int sgnm = 0;//game of week number 10
+            int bmon = 0;//bowl month 11
+            int sewn = 0;//week number 12
+            int blgo = 0;//bowl logo 13
+            int bplo = 0;//? 14
+            int bidx = 0;//bowl index 15
+            int bday = 0;//bowl day 16
+
+            int c = 0;
+            if (r > 0) {
+                for (Cell cell : row) {
+                    String cellValue = dataFormatter.formatCellValue(cell);
+                    //System.out.print(cellValue + "\t");
+                    switch (c) {
+
+                        case 0:
+                            bci1 = Integer.parseInt(cellValue);
+                            break;
+                        case 1:
+                            bcr1 = Integer.parseInt(cellValue);
+                            break;
+                        case 2:
+                            bci2 = Integer.parseInt(cellValue);
+                            break;
+                        case 3:
+                            bcr2 = Integer.parseInt(cellValue);
+                            break;
+                        case 4:
+                            bmfd = Integer.parseInt(cellValue);
+                            break;
+                        case 5:
+                            sgid = Integer.parseInt(cellValue);
+                            break;
+                        case 6:
+                            utid = Integer.parseInt(cellValue);
+                            break;
+                        case 7:
+                            gtod = Integer.parseInt(cellValue);
+                            break;
+                        case 8:
+                            bnme = cellValue;
+                            break;
+                        case 9:
+                            sgnm = Integer.parseInt(cellValue);
+                            break;
+                        case 10:
+                            bmon = Integer.parseInt(cellValue);
+                            break;
+                        case 11:
+                            sewn = Integer.parseInt(cellValue);
+                            break;
+                        case 12:
+                            blgo = Integer.parseInt(cellValue);
+                            break;
+                        case 13:
+                            bplo = Integer.parseInt(cellValue);
+                            break;
+                        case 14:
+                            bidx = Integer.parseInt(cellValue);
+                            break;
+                        case 15:
+                            bday = Integer.parseInt(cellValue);
+                            break;
+                        default:
+                            break;
+                    }
+                    c++;
+                }
+            }
+            Bowl newBowl = new Bowl(bci1, bcr1, bci2, bcr2, bmfd, sgid, utid, gtod, bnme, sgnm, bmon, sewn, blgo, bplo, bidx, bday);
+            bowlList.add(newBowl);
+            r++;
+        }
+        return bowlList;
+    }
+
+    public File multipartFileToFile(MultipartFile multipartFile) throws IOException {
+        File file = new File(multipartFile.getOriginalFilename());
+        file.createNewFile();
+        FileOutputStream fos = new FileOutputStream(file);
+        fos.write(multipartFile.getBytes());
+        fos.close();
+        return file;
     }
 }
