@@ -656,8 +656,8 @@ public class ScheduleService {
 		// setAllYearlyGames();
 
 		try {
-			if (conf.getSchools().size() <= 10) {
-				scheduleConferenceGamesUnder10Teams(conf);
+			if (conf.getSchools().size() <= 11) {
+				scheduleRoundRobinConfGames(conf);
 			} else if (conf.getSchools().size() == 12) {
 				scheduleConferenceGamesDivisions(conf);
 			} else if (conf.getSchools().size() == 14) {
@@ -676,11 +676,11 @@ public class ScheduleService {
 		return 0;
 	}
 
-	public void scheduleConferenceGamesUnder10Teams(Conference conf) throws Exception {
-		scheduleConferenceGamesUnder10Teams(conf.getSchools(), conf.getConfGamesStartWeek());
+	public void scheduleRoundRobinConfGames(Conference conf) throws Exception {
+		scheduleRoundRobinConfGames(conf.getSchools(), conf.getConfGamesStartWeek());
 	}
 
-	public void scheduleConferenceGamesUnder10Teams(SchoolList list, int confGamesStartDate) throws Exception {
+	public void scheduleRoundRobinConfGames(SchoolList list, int confGamesStartDate) throws Exception {
 		int numOfSchools = list.size();
 		for (School school : list) {
 			if (school.getNumOfConferenceGames() < numOfSchools - 1) {
@@ -717,8 +717,8 @@ public class ScheduleService {
 		SchoolList div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
 
 		// schedule inner div games
-		scheduleConferenceGamesUnder10Teams(div1, conf.getConfGamesStartWeek());
-		scheduleConferenceGamesUnder10Teams(div2, conf.getConfGamesStartWeek());
+		scheduleRoundRobinConfGames(div1, conf.getConfGamesStartWeek());
+		scheduleRoundRobinConfGames(div2, conf.getConfGamesStartWeek());
 
 		boolean xDivRivals = div1.getFirst().getxDivRival() != null;
 		int numOfConfGames = conf.getNumOfConfGames();
@@ -784,8 +784,8 @@ public class ScheduleService {
 			SchoolList div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
 
 			// schedule inner division games
-			scheduleConferenceGamesUnder10Teams(div1, conf.getConfGamesStartWeek());
-			scheduleConferenceGamesUnder10Teams(div2, conf.getConfGamesStartWeek());
+			scheduleRoundRobinConfGames(div1, conf.getConfGamesStartWeek());
+			scheduleRoundRobinConfGames(div2, conf.getConfGamesStartWeek());
 
 			// order by cross div rivals
 			boolean xDivRivals = div1.getFirst().getxDivRival() != null;
