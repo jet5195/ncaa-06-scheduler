@@ -17,7 +17,15 @@ public class RestResponseEntityExceptionHandler
     protected ResponseEntity<Object> handleConflict(
             RuntimeException ex, WebRequest request) {
         String bodyOfResponse = "This should be application specific";
-        return handleExceptionInternal(ex, bodyOfResponse,
-                new HttpHeaders(), HttpStatus.CONFLICT, request);
+        return handleExceptionInternal(ex, ex,
+                new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+    
+    @ExceptionHandler(value
+            = { NoWeeksAvailableException.class })
+    protected ResponseEntity<ErrorMessage> handleNoWeeksAvailableException(NoWeeksAvailableException ex, WebRequest request) {
+        ErrorMessage message = new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), ex.getStackTrace().toString());
+
+        return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -10,10 +10,15 @@ import java.util.Objects;
 import java.util.Random;
 import javax.annotation.PostConstruct;
 import com.robotdebris.ncaaps2scheduler.model.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.robotdebris.ncaaps2scheduler.ErrorMessage;
 import com.robotdebris.ncaaps2scheduler.ExcelReader;
+import com.robotdebris.ncaaps2scheduler.NoWeeksAvailableException;
 
 @Service
 public class ScheduleService {
@@ -670,7 +675,7 @@ public class ScheduleService {
 				seasonSchedule.removeAllConferenceGames(conf);
 				autoAddConferenceGames(name, ++attempts);
 			} else {
-				throw e;
+				throw new NoWeeksAvailableException(conf);
 			}
 		}
 		return 0;
