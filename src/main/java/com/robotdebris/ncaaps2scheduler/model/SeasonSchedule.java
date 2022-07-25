@@ -203,7 +203,7 @@ public class SeasonSchedule extends SchoolSchedule {
         for(School school : conf.getSchools()) {
             for (int i = 0; i < school.getSchedule().size(); i++) {
                 Game game = school.getSchedule().get(i);
-                if (game.getConferenceGame() == 1){
+                if (game.getHomeTeam().getConference() != null && game.getAwayTeam().getConference() != null && game.getHomeTeam().getConference().getName().equalsIgnoreCase(game.getAwayTeam().getConference().getName())) {
                     this.removeGame(game);
                     i--;
                 }
@@ -220,7 +220,12 @@ public class SeasonSchedule extends SchoolSchedule {
     	int count = 0;
         for (int i = 0; i < this.size(); i++) {
             Game game = this.get(i);
-            if (game.getHomeTeam().getConference() != null && game.getAwayTeam().getConference() != null && !game.getHomeTeam().getConference().getName().equalsIgnoreCase(game.getAwayTeam().getConference().getName())) {
+            //remove game no matter what if either team isn't in a conference.
+            if(game.getHomeTeam().getConference() == null || game.getAwayTeam().getConference() == null){
+                this.removeGame(game);
+                count++;
+                i--;
+            } else if (!game.getHomeTeam().getConference().getName().equalsIgnoreCase(game.getAwayTeam().getConference().getName())) {
                 if (removeRivals) {
                     this.removeGame(game);
                     count++;

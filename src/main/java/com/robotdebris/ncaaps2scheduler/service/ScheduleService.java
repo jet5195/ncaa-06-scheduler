@@ -567,9 +567,9 @@ public class ScheduleService {
                 int range = max - min + 1;
                 int randomNum = (int) (Math.random() * range) + min;
                 School randomSchool = myOptions.get(randomNum);
-                ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, randomSchool);
-                if (randomSchool.getSchedule().size() < 12) {
-                    if (s1.isPossibleOpponent(randomSchool) && !emptyWeeks.isEmpty()) {
+                if (s1.isPossibleOpponent(randomSchool) && randomSchool.getSchedule().size() < 12) {
+                    ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, randomSchool);
+                    if (!emptyWeeks.isEmpty()) {
                         // verify Alabama won't play Michigan to end the year. Instead they'll play LA
                         // Monroe
                         if (emptyWeeks.get(0) < 11
