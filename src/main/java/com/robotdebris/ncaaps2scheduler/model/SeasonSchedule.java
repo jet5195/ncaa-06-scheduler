@@ -111,8 +111,8 @@ public class SeasonSchedule extends SchoolSchedule {
         s1.getSchedule().remove(theGame);
         s2.getSchedule().remove(theGame);
         updateGameNumbers(gameNumber, weekNumber);
-        LOGGER.info("Removing game " + s1 + " at " + s2);
-        System.out.println("Removing game " + s1 + " at " + s2);
+        LOGGER.info("Removing game " + s2+ " at " + s1);
+        System.out.println("Removing game " + s2 + " at " + s1);
     }
 
     /**
