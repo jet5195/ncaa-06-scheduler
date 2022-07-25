@@ -15,6 +15,7 @@ public class Conference {
 	private String logo;
 	private int numOfConfGames;
 	private int confGamesStartWeek;
+	private int numOfSchools;
 	@JsonIgnore
 	private SchoolList schools;
 	
@@ -100,6 +101,7 @@ public class Conference {
 
 	public void setSchools(SchoolList schools) {
 		this.schools = schools;
+		this.numOfSchools = schools.size();
 	}
 
 	public SchoolList getSchoolsByDivision(String division) {
@@ -138,6 +140,8 @@ public class Conference {
 	public void setConfGamesStartWeek(int confGamesStartWeek) {
 		this.confGamesStartWeek = confGamesStartWeek;
 	}
+
+	public int getNumOfSchools() { return numOfSchools;}
 	
 	
 }
