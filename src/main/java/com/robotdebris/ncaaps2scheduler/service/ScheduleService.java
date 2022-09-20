@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Random;
 import javax.annotation.PostConstruct;
 
@@ -279,15 +278,15 @@ public class ScheduleService {
                 // should isPossibleOpponent check this instead?
                 if (rival.getSchedule().size() < 12) {
                     ArrayList<Integer> emptyWeeks = findEmptyWeeks(thisSchool, rival);
-                    if (emptyWeeks.contains(12)) {
+                    if (emptyWeeks.contains(13)) {
+                        return new SuggestedGameResponse(13, rival, isHomeGame);
+                        // week 14 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is
+                        // referenced by 13
+                    } else if (emptyWeeks.contains(12)) {
                         return new SuggestedGameResponse(12, rival, isHomeGame);
-                        // week 13 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is
-                        // referenced by 12
+                        // week 12 is empty
                     } else if (emptyWeeks.contains(11)) {
                         return new SuggestedGameResponse(11, rival, isHomeGame);
-                        // week 12 is empty
-                    } else if (emptyWeeks.contains(13)) {
-                        return new SuggestedGameResponse(13, rival, isHomeGame);
                         // week 14 is empty
                     } else if (!emptyWeeks.isEmpty()) {
                         return new SuggestedGameResponse(emptyWeeks.get(0), rival, isHomeGame);
@@ -411,18 +410,19 @@ public class ScheduleService {
 
     private int addRivalryGameHelper(SeasonSchedule seasonSchedule, School s1, School rival, int rivalRank) {
         ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
+        //TODO: move games if week 13 is taken (ie so FSU UF can be week 13 yearly
         if (rivalRank < 2) {
-            if (emptyWeeks.contains(12)) {
-                seasonSchedule.addGame(s1, rival, 12, 5);
+            if (emptyWeeks.contains(13)) {
+                seasonSchedule.addGame(s1, rival, 13, 5);
                 return 1;
                 // week 13 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is
                 // referenced by 12
-            } else if (emptyWeeks.contains(11)) {
-                seasonSchedule.addGame(s1, rival, 11, 5);
+            } else if (emptyWeeks.contains(12)) {
+                seasonSchedule.addGame(s1, rival, 12, 5);
                 return 1;
                 // week 12 is empty
-            } else if (emptyWeeks.contains(13)) {
-                seasonSchedule.addGame(s1, rival, 13, 5);
+            } else if (emptyWeeks.contains(11)) {
+                seasonSchedule.addGame(s1, rival, 11, 5);
                 return 1;
                 // week 14 is empty
             } else if (!emptyWeeks.isEmpty()) {
@@ -748,7 +748,7 @@ public class ScheduleService {
             if (school.getNumOfConferenceGames() < numOfSchools - 1) {
                 for (School opponent : list) {
                     if (!school.equals(opponent) && !school.isOpponent(opponent)) {
-                        int week = randomizeConfGameWeek(school, opponent);
+                        int week = findConfGameWeek(school, opponent);
                         if ((school.getNumOfAwayConferenceGames() >= numOfSchools / 2)
                                 || opponent.getNumOfHomeConferenceGames() >= numOfSchools / 2) {
                             // add a home game for school
@@ -796,7 +796,7 @@ public class ScheduleService {
                     firstOpponent -= 7;
                 }
                 School opponent = div2.get(firstOpponent);
-                int week = randomizeConfGameWeek(school, opponent);
+                int week = findConfGameWeek(school, opponent);
                 addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                 int secondOpponent = firstOpponent + 1;
@@ -804,7 +804,7 @@ public class ScheduleService {
                     secondOpponent -= 7;
                 }
                 School opponent2 = div2.get(secondOpponent);
-                int week2 = randomizeConfGameWeek(school, opponent2);
+                int week2 = findConfGameWeek(school, opponent2);
                 addYearlySeriesHelper(opponent2, school, week2, 5, seasonSchedule.getYear(), true);
             }
             /*
@@ -826,7 +826,7 @@ public class ScheduleService {
             int i = 0;
             for (School school : div1) {
                 School opponent = div2.get(i);
-                int week = randomizeConfGameWeek(school, opponent);
+                int week = findConfGameWeek(school, opponent);
                 addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), false);
                 i++;
             }
@@ -853,7 +853,7 @@ public class ScheduleService {
                     }
                 }
                 School opponent = div2.get(j);
-                int week = randomizeConfGameWeek(school, opponent);
+                int week = findConfGameWeek(school, opponent);
                 if (school.getNumOfHomeConferenceGames() < 4) {
                     addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
                 } else {
@@ -942,7 +942,7 @@ public class ScheduleService {
                     if (numOfConfGames == 8 && xDivRivals) {
                         if (school.getxDivRival() != null) {
                             School opponent = school.getxDivRival();
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             // should be home or away game?
                             if (school.getNumOfHomeConferenceGames() >= div1.size() / 2) {
                                 addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
@@ -953,7 +953,7 @@ public class ScheduleService {
                         }
                         if (index == 0) {
                             School opponent = div2.get(1);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 2;
@@ -961,11 +961,11 @@ public class ScheduleService {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
                         } else if (index == 1) {
                             School opponent = div2.get(2);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 3;
@@ -973,11 +973,11 @@ public class ScheduleService {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
                         } else if (index == 2) {
                             School opponent = div2.get(3);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 4;
@@ -985,11 +985,11 @@ public class ScheduleService {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
                         } else if (index == 3) {
                             School opponent = div2.get(4);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 5;
@@ -997,11 +997,11 @@ public class ScheduleService {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
                         } else if (index == 4) {
                             School opponent = div2.get(5);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 0;
@@ -1009,11 +1009,11 @@ public class ScheduleService {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
                         } else if (index == 5) {
                             School opponent = div2.get(0);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 1;
@@ -1021,7 +1021,7 @@ public class ScheduleService {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
                         }
                     }
@@ -1030,55 +1030,55 @@ public class ScheduleService {
                     if (numOfConfGames == 9) {
                         if (index == 0) {
                             School opponent = div2.get(0);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(1);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(2);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(3);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             // 0 1 4 5
                         } else if (index == 1) {
                             School opponent = div2.get(0);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(1);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(4);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(5);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             // 2 3 4 5
                         } else if (index == 2) {
                             School opponent = div2.get(2);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(3);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(4);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(5);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             // 2 3 0 1
@@ -1088,53 +1088,53 @@ public class ScheduleService {
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(3);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(0);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(1);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
                         }
 
                         // 4 5 0 1
                         else if (index == 4) {
                             School opponent = div2.get(4);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(5);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(0);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(1);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
                         }
 
                         // 4 5 2 3
                         else if (index == 5) {
                             School opponent = div2.get(4);
-                            int week = randomizeConfGameWeek(school, opponent);
+                            int week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(5);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(2);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
 
                             opponent = div2.get(3);
-                            week = randomizeConfGameWeek(school, opponent);
+                            week = findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
                         }
                     } // end of 9 game loop
@@ -1182,7 +1182,7 @@ public class ScheduleService {
             if (scheduleAbc) {
                 for (int j = 0; j < div1.size() / 2; j++) {
                     School opponent = div2.get(j);
-                    int week = randomizeConfGameWeek(school, opponent);
+                    int week = findConfGameWeek(school, opponent);
 
                     if (school.getNumOfHomeConferenceGames() >= numOfConfGames / 2) {
                         addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
@@ -1195,7 +1195,7 @@ public class ScheduleService {
             } else {
                 for (int j = div1.size() / 2; j < div1.size(); j++) {
                     School opponent = div2.get(j);
-                    int week = randomizeConfGameWeek(school, opponent);
+                    int week = findConfGameWeek(school, opponent);
 
                     if (school.getNumOfHomeConferenceGames() >= numOfConfGames / 2) {
                         addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
@@ -1230,8 +1230,21 @@ public class ScheduleService {
         return randomizeWeek(emptyWeeks);
     }
 
-    private int randomizeConfGameWeek(School school, School opponent) throws Exception {
+    private int findConfGameWeek(School school, School opponent) throws Exception {
         ArrayList<Integer> emptyWeeks = findEmptyWeeks(school, opponent);
+        //If both schools are each other's #1 rival, schedule the game for week 13 (14 in game).. or 12 if unavailable
+        //TODO move games if week 13 isn't available
+        if(school.getRivals() != null && opponent.getRivals() != null &&
+            school.getRivals().getFirst().equals(opponent)){
+            if (emptyWeeks.isEmpty()) {
+                throw new Exception("No empty weeks available!");
+            }
+            if(emptyWeeks.contains(13)){
+                return 13;
+            } else if (emptyWeeks.contains(12)){
+                return 12;
+            }
+        }
         if (emptyWeeks.size() > 1) {
             emptyWeeks.remove(Integer.valueOf(14));
         }
