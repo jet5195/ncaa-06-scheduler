@@ -786,6 +786,40 @@ public class ScheduleService {
         int numOfConfGames = conf.getNumOfConfGames();
         int yearMinus2005 = seasonSchedule.getYear() - 2005;
 
+        if (numOfConfGames == 8 && !xDivRivals) {
+            //so there's 7 different schedules, figure it out based on the year
+            int modulo = yearMinus2005 % 7;
+            for (int i = 0; i < 7; i++) {
+                School school = div1.get(i);
+                int firstOpponent = i + modulo;
+                if (firstOpponent >= 7) {
+                    firstOpponent -= 7;
+                }
+                School opponent = div2.get(firstOpponent);
+                int week = randomizeConfGameWeek(school, opponent);
+                addYearlySeriesHelper(school, opponent, week, 5, seasonSchedule.getYear(), true);
+
+                int secondOpponent = firstOpponent + 1;
+                if (secondOpponent >= 7) {
+                    secondOpponent -= 7;
+                }
+                School opponent2 = div2.get(secondOpponent);
+                int week2 = randomizeConfGameWeek(school, opponent2);
+                addYearlySeriesHelper(opponent2, school, week2, 5, seasonSchedule.getYear(), true);
+            }
+            /*
+
+            0: 0 1  1 2  2 3  3 4  4 5  5 6  6 0
+            1: 1 2  2 3  3 4  4 5  5 6  6 0  0 1
+            2: 2 3  3 4  4 5  5 6  6 0  0 1  1 2
+            3: 3 4  4 5  5 6  6 0  0 1  1 2  2 3
+            4: 4 5
+            5: 5 6
+            6: 6 0
+             */
+
+        }
+
         if (numOfConfGames == 8 && xDivRivals) {
             div2 = orderDivByXDivRivals(div1);
             // add protected rivalry games
