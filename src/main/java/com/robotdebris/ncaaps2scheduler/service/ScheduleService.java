@@ -56,6 +56,7 @@ public class ScheduleService {
     public void setScheduleFile(MultipartFile scheduleFile) throws IOException {
         File file = multipartFileToFile(scheduleFile);
         try {
+            removeAllGames();
             seasonSchedule = excelReader.getScheduleData(file, schoolList);
             // is this going to miss conference games since conferences aren't set yet?
         } catch (IOException e) {
