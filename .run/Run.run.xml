@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.robotdebris.ncaaps2scheduler.NcaaPs2SchedulerApplication" />
+    <module name="ncaa-ps2-scheduler" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -345,10 +345,21 @@ public class ScheduleService {
         return count / 2;// it's returning 1 removed game as removed for both schools
     }
 
+    //finds the FIRST game between 2 schools.
     private Game findGame(School s1, School s2) {
         for (int i = 0; i < s1.getSchedule().size(); i++) {
             Game game = s1.getSchedule().get(i);
             if (game.getHomeTeam().getTgid() == s2.getTgid() || game.getAwayTeam().getTgid() == s2.getTgid())
+                return game;
+        }
+        return null;
+    }
+
+    //find game by week number and game number
+    private Game findGame(int week, int gameNumber){
+        for (int i = 0; i < seasonSchedule.size(); i++) {
+            Game game = seasonSchedule.get(i);
+            if (game.getWeek() == week && game.getGameNumber() == gameNumber)
                 return game;
         }
         return null;
@@ -1383,6 +1394,31 @@ public class ScheduleService {
                 if (conf.isFbs()) {
                     this.autoAddConferenceGames(conf.getName());
                 }
+            }
+        }
+    }
+
+    public void saveGame(AddGameRequest addGameRequest, int oldWeek, int oldGameNumber) {
+        School home = schoolList.schoolSearch(addGameRequest.getHomeId());
+        School away = schoolList.schoolSearch(addGameRequest.getAwayId());
+
+        Game oldGame = findGame(oldWeek, oldGameNumber);
+        oldGame.setGameResult(addGameRequest.getGameResult());
+        oldGame.setAwayTeam(away);
+        oldGame.setHomeTeam(home);
+        oldGame.setWeek(addGameRequest.getWeek());
+        oldGame.setDay(addGameRequest.getDay());
+        oldGame.setTime(addGameRequest.getTime());
+
+        //calculate gameNumber for every game
+        this.recalculateGameNumbers();
+    }
+
+    public void recalculateGameNumbers() {
+        for (int weekNum = 0; weekNum < 23; weekNum++){
+            ArrayList<Game> weeklySchedule = this.seasonSchedule.getScheduleByWeek(weekNum);
+            for (int gameNum = 0; gameNum < weeklySchedule.size(); gameNum++ ){
+                weeklySchedule.get(gameNum).setGameNumber(gameNum);
             }
         }
     }
