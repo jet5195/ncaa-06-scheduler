@@ -1390,7 +1390,7 @@ public class ScheduleService {
 			SchoolList schools = conf.getSchools();
 			if (schools != null) {
 				if (Objects.equals(schools.getFirst().getNcaaDivision(), "FBS")) {
-					this.autoAddConferenceGames(conf.getName(), 0);
+					this.autoAddConferenceGames(conf.getName());
 				}
 			}
 		}
