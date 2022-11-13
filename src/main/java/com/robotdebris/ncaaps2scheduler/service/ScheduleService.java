@@ -1409,13 +1409,16 @@ public class ScheduleService {
         oldGame.setWeek(addGameRequest.getWeek());
         oldGame.setDay(addGameRequest.getDay());
         oldGame.setTime(addGameRequest.getTime());
-
+        boolean confGame = away.isInConference(home);
+        oldGame.setConferenceGame(confGame ? 1 : 0);
         //calculate gameNumber for every game
         this.recalculateGameNumbers();
     }
 
     public void recalculateGameNumbers() {
-        for (int weekNum = 0; weekNum < 23; weekNum++){
+        //stop calculating after week 15, because the rest are bowl games.
+        //for bowl games changing the gameNumber changes what bowl it is!!
+        for (int weekNum = 0; weekNum < 16; weekNum++){
             ArrayList<Game> weeklySchedule = this.seasonSchedule.getScheduleByWeek(weekNum);
             for (int gameNum = 0; gameNum < weeklySchedule.size(); gameNum++ ){
                 weeklySchedule.get(gameNum).setGameNumber(gameNum);
