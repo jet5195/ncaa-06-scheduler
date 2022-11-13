@@ -121,8 +121,8 @@ public class ScheduleController {
 		scheduleService.addAllConferenceGames();
 	}
 	
-//	@PostMapping(value = "game")
-//	public void saveGame(@RequestBody Game game) {
-//		scheduleService.saveGame(game);
-//	}
+	@PostMapping(value = "game/{week}/{gameNumber}")
+	public void saveGame(@RequestBody AddGameRequest addGameRequest, @PathVariable int week, @PathVariable int gameNumber) {
+		scheduleService.saveGame(addGameRequest, week, gameNumber);
+	}
 }
