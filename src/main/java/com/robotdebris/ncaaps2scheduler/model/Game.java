@@ -194,7 +194,13 @@ public class Game implements Comparable {
         ArrayList<Integer> list = new ArrayList();
         int i = 0;
         while (i < 14) {
-            if (i == 3) {
+            if (i == 0) {
+                list.add(this.getGameResult().getOt());
+            } else if (i == 1) {
+                list.add(this.getGameResult().getAwayScore());
+            } else if (i == 2) {
+                list.add(this.getGameResult().getHomeScore());
+            } else if (i == 3) {
                 list.add(this.getTime());
             } else if (i == 4) {
                 list.add(this.getAwayTeam().getTgid());

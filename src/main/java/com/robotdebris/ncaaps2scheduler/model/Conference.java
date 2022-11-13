@@ -10,11 +10,13 @@ public class Conference {
 	private String name;
 	private ArrayList<String> divisions;
 	private boolean powerConf;
+	private boolean fbs;
 //	private String color;
 //	private String altColor;
 	private String logo;
 	private int numOfConfGames;
 	private int confGamesStartWeek;
+	private int numOfSchools;
 	@JsonIgnore
 	private SchoolList schools;
 	
@@ -100,6 +102,8 @@ public class Conference {
 
 	public void setSchools(SchoolList schools) {
 		this.schools = schools;
+		this.numOfSchools = schools.size();
+		this.fbs = schools.get(0).getNcaaDivision().equalsIgnoreCase("fbs");
 	}
 
 	public SchoolList getSchoolsByDivision(String division) {
@@ -138,6 +142,10 @@ public class Conference {
 	public void setConfGamesStartWeek(int confGamesStartWeek) {
 		this.confGamesStartWeek = confGamesStartWeek;
 	}
+
+	public int getNumOfSchools() { return numOfSchools;}
+
+	public boolean isFbs() {return fbs;}
 	
 	
 }
