@@ -3,6 +3,11 @@ package com.robotdebris.ncaaps2scheduler.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class School implements Comparable<School> {
+
+//	TEAM  tscs = conference ranking
+//0 = conf champ
+//TBRK = bcs bowl ranking
+//tmrk = media poll rank
 	private int tgid;
 	private String name;
 	private String nickname;

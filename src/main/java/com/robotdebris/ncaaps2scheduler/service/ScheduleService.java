@@ -63,15 +63,6 @@ public class ScheduleService {
 		}
 	}
 
-    public File multipartFileToFile(MultipartFile multipartFile) throws IOException {
-        File file = new File(multipartFile.getOriginalFilename());
-        file.createNewFile();
-        FileOutputStream fos = new FileOutputStream(file);
-        fos.write(multipartFile.getBytes());
-        fos.close();
-        return file;
-    }
-
     public SchoolList getSchoolList() {
         return schoolList;
     }
@@ -1409,14 +1400,16 @@ public class ScheduleService {
 		School away = schoolList.schoolSearch(addGameRequest.getAwayId());
 
 		Game oldGame = findGame(oldWeek, oldGameNumber);
+        seasonSchedule.removeGame(oldGame);
+
 		oldGame.setGameResult(addGameRequest.getGameResult());
 		oldGame.setAwayTeam(away);
 		oldGame.setHomeTeam(home);
 		oldGame.setWeek(addGameRequest.getWeek());
 		oldGame.setDay(addGameRequest.getDay());
 		oldGame.setTime(addGameRequest.getTime());
-		boolean confGame = away.isInConference(home);
-		oldGame.setConferenceGame(confGame ? 1 : 0);
+
+        seasonSchedule.addGame(oldGame);
 		//calculate gameNumber for every game
 		this.recalculateGameNumbers();
 	}
@@ -1431,4 +1424,41 @@ public class ScheduleService {
 			}
 		}
 	}
+
+    public void swapSchedule(int tgid1, int tgid2) {
+        School s1 = schoolList.schoolSearch(tgid1);
+        School s2 = schoolList.schoolSearch(tgid2);
+
+        //remove original game from season schedule, and add to new lists to iterate through
+        ArrayList<Game> s1Schedule = new ArrayList<>();
+        for (Game game : s1.getSchedule()) {
+            s1Schedule.add(game);
+        }
+
+        ArrayList<Game> s2Schedule = new ArrayList<>();
+        for (Game game : s2.getSchedule()) {
+            s2Schedule.add(game);
+        }
+
+        for (Game game : s1Schedule) {
+            seasonSchedule.removeGame(game);
+            if(game.getHomeTeam().equals(s1)){
+                game.setHomeTeam(s2);
+            } else {
+                game.setAwayTeam(s2);
+            }
+            seasonSchedule.addGame(game);
+        }
+
+        for (Game game : s2Schedule) {
+            seasonSchedule.removeGame(game);
+            if(game.getHomeTeam().equals(s2)){
+                game.setHomeTeam(s1);
+            } else {
+                game.setAwayTeam(s1);
+            }
+            seasonSchedule.addGame(game);
+        }
+        recalculateGameNumbers();
+    }
 }

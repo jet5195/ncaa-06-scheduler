@@ -92,10 +92,11 @@ public class ExcelReader {
                 String division1 = "";
                 String division2 = "";
                 String logo = "";
+                Integer conferenceId = null;
                 int confGames = 0;
                 int startWeek = 0;
                 if (!dataFormatter.formatCellValue(row.getCell(0)).equals("")) {
-                    for (int i = 0; i <= 6; i++) {
+                    for (int i = 0; i <= 7; i++) {
                     	Cell cell = row.getCell(i);
                         String cellValue = dataFormatter.formatCellValue(cell);
                         switch (i) {
@@ -126,11 +127,21 @@ public class ExcelReader {
                             case 6:
                                 division2 = cellValue;
                                 break;
+                            case 7:
+                                if(!isStringBlank(cellValue)) {
+                                    conferenceId = Integer.parseInt(cellValue);
+                                }
+                                break;
                             default:
                                 break;
                         }//end of switch
                     }//end col iterator
-                    conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, logo, confGames, startWeek));
+                    if(conferenceId == null){
+                        conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, logo, confGames, startWeek));
+                    } else {
+                        conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, logo, confGames, startWeek, conferenceId));
+                    }
+
                 }//end of if not null
             }//end of row iterator
             r++;

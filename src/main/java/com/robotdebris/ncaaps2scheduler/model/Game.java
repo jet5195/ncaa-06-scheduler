@@ -96,6 +96,9 @@ public class Game implements Comparable {
 
     public void setHomeTeam(School homeTeam) {
         this.homeTeam = homeTeam;
+        if(this.awayTeam != null) {
+            this.setConferenceGame(this.homeTeam.isInConference(this.awayTeam) ? 1 : 0);
+        }
     }
 
     public School getAwayTeam() {
@@ -104,6 +107,9 @@ public class Game implements Comparable {
 
     public void setAwayTeam(School awayTeam) {
         this.awayTeam = awayTeam;
+        if(this.homeTeam != null) {
+            this.setConferenceGame(this.homeTeam.isInConference(this.awayTeam) ? 1 : 0);
+        }
     }
 
     public int getTime() {

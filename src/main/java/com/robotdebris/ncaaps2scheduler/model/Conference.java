@@ -3,10 +3,14 @@ package com.robotdebris.ncaaps2scheduler.model;
 import java.util.ArrayList;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.Setter;
 
 public class Conference {
 
-//	private int conferenceID;
+	@Getter
+	@Setter
+	private int conferenceID;
 	private String name;
 	private ArrayList<String> divisions;
 	private boolean powerConf;
@@ -39,14 +43,21 @@ public class Conference {
 		this.confGamesStartWeek = confGamesStartWeek;
 	}
 
-//	public int getConferenceID() {
-//		return conferenceID;
-//	}
-//
-//
-//	public void setConferenceID(int conferenceID) {
-//		this.conferenceID = conferenceID;
-//	}
+	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo, int numOfConfGames, int confGamesStartWeek, int conferenceID) {
+		this.name = conferenceName;
+		this.powerConf = powerConf;
+		if (division1 != null && !division1.trim().isEmpty()) {
+			divisions = new ArrayList<>();
+			divisions.add(division1);
+			divisions.add(division2);
+		}
+		this.logo = logo;
+		this.numOfConfGames = numOfConfGames;
+		this.confGamesStartWeek = confGamesStartWeek;
+		this.conferenceID = conferenceID;
+	}
+
+
 
 	public String getName() {
 		return name;

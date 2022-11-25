@@ -73,9 +73,7 @@ public class SeasonSchedule extends SchoolSchedule {
      */
     private void addGame(School away, School home, int week, int day, int gameNumber) {
         Game newGame = new Game(away, home, gameNumber, week, day);
-		away.addGame(newGame);
-		home.addGame(newGame);
-		this.add(newGame);
+		addGame(newGame);
         LOGGER.info("Adding game " + newGame.getAwayTeam().getName() + " at " + newGame.getHomeTeam().getName());
         System.out.println("Adding game " + newGame.getAwayTeam().getName() + " at " + newGame.getHomeTeam().getName());
     }
@@ -166,6 +164,7 @@ public class SeasonSchedule extends SchoolSchedule {
      * @param weekNumber the week of the game that is being removed
      */
     private void updateGameNumbers(int gameNumber, int weekNumber) {
+        if(weekNumber < 16)
         for (Game game : this) {
             if (game.getWeek() == weekNumber && game.getGameNumber() > gameNumber) {
                 game.setGameNumber(game.getGameNumber() - 1);
@@ -296,5 +295,11 @@ public class SeasonSchedule extends SchoolSchedule {
             }
         }
         return weeklySchedule;
+    }
+
+    public void addGame(Game game) {
+        game.getAwayTeam().addGame(game);
+        game.getHomeTeam().addGame(game);
+        this.add(game);
     }
 }

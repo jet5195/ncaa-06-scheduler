@@ -130,4 +130,9 @@ public class ScheduleController {
 	public void saveGame(@RequestBody AddGameRequest addGameRequest, @PathVariable int week, @PathVariable int gameNumber) {
 		scheduleService.saveGame(addGameRequest, week, gameNumber);
 	}
+
+	@PostMapping(value = "swap-schedule/{tgid1}/{tgid2}")
+	public void swapSchedule(@PathVariable int tgid1, @PathVariable int tgid2){
+		scheduleService.swapSchedule(tgid1, tgid2);
+	}
 }
