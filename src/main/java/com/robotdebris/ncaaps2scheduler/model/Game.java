@@ -192,6 +192,11 @@ public class Game implements Comparable {
         return this.getConferenceGame() == 0 && !this.isRivalryGame();
     }
 
+    public School getWinner() {
+        if (this.getGameResult().getHomeScore() > this.gameResult.getAwayScore()){
+            return this.getHomeTeam();
+        } else return this.getAwayTeam();
+    }
     /**
      *
      * @return an arrayList of all the data of a specific game, is used when creating the output excel file

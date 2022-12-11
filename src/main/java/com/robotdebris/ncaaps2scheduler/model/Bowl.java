@@ -59,4 +59,21 @@ public class Bowl {
     @Getter
     @Setter
     private int day; //bday
+
+    @Override
+    public boolean equals(Object obj) {
+        // Check if the obj parameter is null or not an instance of MyClass
+        if (obj == null || !(obj instanceof Bowl)) {
+            return false;
+        }
+        Bowl otherBowl = (Bowl) obj;
+        if (this.getConference1Id() == otherBowl.getConference1Id() && this.getConference2Id() == otherBowl.getConference2Id()
+                && this.getConference1Rank() == otherBowl.getConference1Rank() && this.getConference2Rank() == otherBowl.getConference2Rank()
+                && this.getBmfd() == otherBowl.getBmfd() && this.getStadiumId() == otherBowl.getStadiumId() && this.getTrophyId() == otherBowl.getTrophyId()
+                && this.getTime() == otherBowl.getTime() && this.getBowlName().equals(otherBowl.getBowlName()) && this.getGameNumber() == otherBowl.getGameNumber()
+                && this.getBowlMonth() == otherBowl.getBowlMonth() && this.getWeek() == otherBowl.getWeek() && this.getBowlLogo() == otherBowl.getBowlLogo()
+                && this.getBplo() == otherBowl.getBplo() && this.getBowlIndex() == otherBowl.getBowlIndex() && this.getDay() == otherBowl.getDay()) {
+            return true;
+        } else return false;
+    }
 }

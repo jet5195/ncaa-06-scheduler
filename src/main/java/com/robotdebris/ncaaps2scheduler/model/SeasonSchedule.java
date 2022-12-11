@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SeasonSchedule extends SchoolSchedule {
 
-    private SeasonSchedule bowlSchedule;
+//    private SeasonSchedule bowlSchedule;
     private int year;
     private final Logger LOGGER = Logger.getLogger(SeasonSchedule.class.getName());
 
@@ -15,17 +15,17 @@ public class SeasonSchedule extends SchoolSchedule {
      *
      * @return the bowl schedule
      */
-    public SeasonSchedule getBowlSchedule() {
-        return bowlSchedule;
-    }
+//    public SeasonSchedule getBowlSchedule() {
+//        return bowlSchedule;
+//    }
 
     /**
      * Sets the bowl schedule. Currently this is only called once when the excel file is being read
      * @param bowlSchedule
      */
-    public void setBowlSchedule(SeasonSchedule bowlSchedule) {
-        this.bowlSchedule = bowlSchedule;
-    }
+//    public void setBowlSchedule(SeasonSchedule bowlSchedule) {
+//        this.bowlSchedule = bowlSchedule;
+//    }
 
     /**
      * Adds game with a randomized home team
@@ -296,6 +296,16 @@ public class SeasonSchedule extends SchoolSchedule {
         }
         return weeklySchedule;
     }
+
+//    public ArrayList<Game> getBowlScheduleByWeek(int week) {
+//        ArrayList<Game> weeklySchedule = new ArrayList<>();
+//        for (Game game : this.getBowlSchedule()) {
+//            if (game.getWeek() == week) {
+//                weeklySchedule.add(game);
+//            }
+//        }
+//        return weeklySchedule;
+//    }
 
     public void addGame(Game game) {
         game.getAwayTeam().addGame(game);

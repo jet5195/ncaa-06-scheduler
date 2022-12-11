@@ -1,5 +1,10 @@
 package com.robotdebris.ncaaps2scheduler.model;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
 public class AddGameRequest {
 
     private int awayId;

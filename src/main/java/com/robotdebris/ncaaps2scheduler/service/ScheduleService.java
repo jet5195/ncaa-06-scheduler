@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 import javax.annotation.PostConstruct;
 import com.robotdebris.ncaaps2scheduler.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -783,9 +780,9 @@ public class ScheduleService {
         scheduleRoundRobinConfGames(div1, conf.getConfGamesStartWeek());
         scheduleRoundRobinConfGames(div2, conf.getConfGamesStartWeek());
 
-        boolean xDivRivals = div1.getFirst().getxDivRival() != null;
+        boolean xDivRivals = div1.getFirst().getXDivRival() != null;
         int numOfConfGames = conf.getNumOfConfGames();
-        int yearMinus2005 = seasonSchedule.getYear() - 2005;
+        int yearMinus2005 = Math.abs(seasonSchedule.getYear() - 2005);
 
         if (numOfConfGames == 8 && !xDivRivals) {
             //so there's 7 different schedules, figure it out based on the year
@@ -885,7 +882,7 @@ public class ScheduleService {
             scheduleRoundRobinConfGames(div2, conf.getConfGamesStartWeek());
 
             // order by cross div rivals
-            boolean xDivRivals = div1.getFirst().getxDivRival() != null;
+            boolean xDivRivals = div1.getFirst().getXDivRival() != null;
             int numOfConfGames = conf.getNumOfConfGames();
             int yearMinus2005 = seasonSchedule.getYear() - 2005;
 
@@ -941,8 +938,8 @@ public class ScheduleService {
 //                int numOfConfGames = 9;
 
                     if (numOfConfGames == 8 && xDivRivals) {
-                        if (school.getxDivRival() != null) {
-                            School opponent = school.getxDivRival();
+                        if (school.getXDivRival() != null) {
+                            School opponent = school.getXDivRival();
                             int week = findConfGameWeek(school, opponent);
                             // should be home or away game?
                             if (school.getNumOfHomeConferenceGames() >= div1.size() / 2) {
@@ -958,7 +955,7 @@ public class ScheduleService {
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 2;
-                            if (div2.get(opponent2Id) == school.getxDivRival()) {
+                            if (div2.get(opponent2Id) == school.getXDivRival()) {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
@@ -970,7 +967,7 @@ public class ScheduleService {
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 3;
-                            if (div2.get(opponent2Id) == school.getxDivRival()) {
+                            if (div2.get(opponent2Id) == school.getXDivRival()) {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
@@ -982,7 +979,7 @@ public class ScheduleService {
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 4;
-                            if (div2.get(opponent2Id) == school.getxDivRival()) {
+                            if (div2.get(opponent2Id) == school.getXDivRival()) {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
@@ -994,7 +991,7 @@ public class ScheduleService {
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 5;
-                            if (div2.get(opponent2Id) == school.getxDivRival()) {
+                            if (div2.get(opponent2Id) == school.getXDivRival()) {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
@@ -1006,7 +1003,7 @@ public class ScheduleService {
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 0;
-                            if (div2.get(opponent2Id) == school.getxDivRival()) {
+                            if (div2.get(opponent2Id) == school.getXDivRival()) {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
@@ -1018,7 +1015,7 @@ public class ScheduleService {
                             addYearlySeriesHelper(opponent, school, week, 5, seasonSchedule.getYear(), true);
 
                             int opponent2Id = 1;
-                            if (div2.get(opponent2Id) == school.getxDivRival()) {
+                            if (div2.get(opponent2Id) == school.getXDivRival()) {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
@@ -1167,7 +1164,7 @@ public class ScheduleService {
         SchoolList div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
 
         // order by cross div rivals
-        boolean xDivRivals = div1.getFirst().getxDivRival() != null;
+        boolean xDivRivals = div1.getFirst().getXDivRival() != null;
         int numOfConfGames = conf.getNumOfConfGames();
         int yearMinus2005 = seasonSchedule.getYear() - 2005;
         int i = 0;
@@ -1220,7 +1217,7 @@ public class ScheduleService {
     private SchoolList orderDivByXDivRivals(SchoolList div1) {
         SchoolList orderedDiv = new SchoolList();
         for (School school : div1) {
-            orderedDiv.add(school.getxDivRival());
+            orderedDiv.add(school.getXDivRival());
         }
         return orderedDiv;
     }
@@ -1340,7 +1337,14 @@ public class ScheduleService {
     }
 
     public SeasonSchedule getBowlGames() {
-        return seasonSchedule.getBowlSchedule();
+        SeasonSchedule bowlGames = new SeasonSchedule();
+        for (int i = 16; i <=23; i++){
+            List<Game> weeklySchedule = this.getScheduleByWeek(i);
+            for (Game game : weeklySchedule) {
+                bowlGames.add(game);
+            }
+        }
+        return bowlGames;
     }
 
     public int removeConferenceGames(String name) {
@@ -1357,6 +1361,16 @@ public class ScheduleService {
         }
         return null;
     }
+
+//    public Game getBowlGame(int week, int gameId) {
+//        ArrayList<Game> weeklyGames = seasonSchedule.getBowlScheduleByWeek(week);
+//        for (Game game : weeklyGames) {
+//            if (game.getGameNumber() == gameId) {
+//                return game;
+//            }
+//        }
+//        return null;
+//    }
 
     public void addGame(AddGameRequest addGameRequest) {
         if (addGameRequest.getGameResult() == null) {

@@ -21,22 +21,25 @@ public class CsvExportService {
     	CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
 
         ArrayList<ArrayList> list = seasonSchedule.scheduleToList(true);
-        ArrayList<ArrayList> bowlList = seasonSchedule.getBowlSchedule().scheduleToList(false);
+//        ArrayList<ArrayList> bowlList = new ArrayList<>();
+//        if(seasonSchedule.getBowlSchedule() != null) {
+//            bowlList = seasonSchedule.getBowlSchedule().scheduleToList(false);
+//        }
         int i = 0;
         while (i < list.size()) {
         	addGameToCSV(csvPrinter, list.get(i), i);
-            if (i == 0) {
-    			csvPrinter.print(list.size()+ bowlList.size() -1);
-    		}
+//            if (i == 0) {
+//    			csvPrinter.print(list.size()+ bowlList.size() -1);
+//    		}
             csvPrinter.println();
             i++;
         }
         
-        for (int j = 0; j < bowlList.size(); j++) {
-            addGameToCSV(csvPrinter, bowlList.get(j), i);
-            csvPrinter.println();
-            i++;
-        }
+//        for (int j = 0; j < bowlList.size(); j++) {
+//            addGameToCSV(csvPrinter, bowlList.get(j), i);
+//            csvPrinter.println();
+//            i++;
+//        }
     }
     
     /**

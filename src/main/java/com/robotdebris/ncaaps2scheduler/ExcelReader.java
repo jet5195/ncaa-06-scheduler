@@ -336,7 +336,7 @@ public class ExcelReader {
         // 2. Or you can use a for-each loop to iterate over the rows and columns
         /*System.out.println("\n\nIterating over Rows and Columns using for-each loop\n");*/
         //SeasonSchedule seasonSchedule = new SeasonSchedule();
-        SeasonSchedule bowlSchedule = new SeasonSchedule();
+        //SeasonSchedule bowlSchedule = new SeasonSchedule();
         int r = 0;
         for (Row row : sheet) {
         	int gasc = 0;//away score 1
@@ -402,10 +402,9 @@ public class ExcelReader {
                     }
                     c++;
                 }
-                
-                if (ghtg != 511) {//don't add bowl games
-                    awaySchool = allSchools.schoolSearch(gatg);
-                    homeSchool = allSchools.schoolSearch(ghtg);
+                awaySchool = allSchools.schoolSearch(gatg);
+                homeSchool = allSchools.schoolSearch(ghtg);
+                if (sewn <= 15 || awaySchool != null ) {//only add bowl games if games already are set!
                     if (awaySchool == null) {
                         awaySchool = new School(gatg, "null", "null", "null", new Conference("null", false, null, null, null, 0,0), null, "FCS", "null", "null", "null");
                         awaySchool.setRivals(new SchoolList());
@@ -423,14 +422,15 @@ public class ExcelReader {
                     seasonSchedule.add(newGame);
                 } else {
                 	GameResult gameResult = new GameResult(gasc, ghsc, gfot);
-                    bowlSchedule.add(new Game(gameResult, gtod, bowlSchool, bowlSchool, sgnm, sewn, gdat, gffu, gmfx));
+                    //bowlSchedule.add(new Game(gameResult, gtod, bowlSchool, bowlSchool, sgnm, sewn, gdat, gffu, gmfx));
+                    seasonSchedule.add(new Game(gameResult, gtod, bowlSchool, bowlSchool, sgnm, sewn, gdat, gffu, gmfx));
                 }
             }
             r++;
         }
 
         allSchools.populateUserSchools();
-        seasonSchedule.setBowlSchedule(bowlSchedule);
+        //seasonSchedule.setBowlSchedule(bowlSchedule);
         return seasonSchedule;
     }
 
