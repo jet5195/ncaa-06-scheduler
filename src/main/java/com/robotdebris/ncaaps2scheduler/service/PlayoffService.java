@@ -139,22 +139,22 @@ public class PlayoffService {
                 pg.setWeek(currWeek);
                 playoffGames.add(pg);
                 // schedule the 1 seed game, then 4 seed, then 3, then 2 (to match the order of the bracket)
-                if (i == 0) {
-                    pg.setHomeTeam(playoffSchools.get(0));
+                if (i < 4) {
+                    pg.setHomeTeam(playoffSchools.get(i));
                     pg.setAwayTeam(placeholder);
                     quarterfinals.add(pg);
-                } else if (i == 1) {
-                    pg.setHomeTeam(playoffSchools.get(3));
-                    pg.setAwayTeam(placeholder);
-                    quarterfinals.add(pg);
-                } else if (i == 2) {
-                    pg.setHomeTeam(playoffSchools.get(2));
-                    pg.setAwayTeam(placeholder);
-                    quarterfinals.add(pg);
-                } else if (i == 3) {
-                    pg.setHomeTeam(playoffSchools.get(1));
-                    pg.setAwayTeam(placeholder);
-                    quarterfinals.add(pg);
+//                } else if (i == 1) {
+//                    pg.setHomeTeam(playoffSchools.get(3));
+//                    pg.setAwayTeam(placeholder);
+//                    quarterfinals.add(pg);
+//                } else if (i == 2) {
+//                    pg.setHomeTeam(playoffSchools.get(2));
+//                    pg.setAwayTeam(placeholder);
+//                    quarterfinals.add(pg);
+//                } else if (i == 3) {
+//                    pg.setHomeTeam(playoffSchools.get(1));
+//                    pg.setAwayTeam(placeholder);
+//                    quarterfinals.add(pg);
                 } else {
                     pg.setHomeTeam(placeholder);
                     pg.setAwayTeam(placeholder);
@@ -165,6 +165,14 @@ public class PlayoffService {
                 i++;
             }
         }
+
+        //manipulate the order of the games a little (we need quarterfinals to be 1 seed, then 4, then 3, then 2
+        this.scheduleService.saveGame(new AddGameRequest(quarterfinals.get(2).getAwayTeam().getTgid(), quarterfinals.get(2).getHomeTeam().getTgid(),
+                        quarterfinals.get(2).getWeek(), quarterfinals.get(2).getTime(), quarterfinals.get(2).getDay(), quarterfinals.get(2).getGameResult()),
+                quarterfinals.get(2).getWeek(), quarterfinals.get(2).getGameNumber());
+        this.scheduleService.saveGame(new AddGameRequest(quarterfinals.get(1).getAwayTeam().getTgid(), quarterfinals.get(1).getHomeTeam().getTgid(),
+                        quarterfinals.get(1).getWeek(), quarterfinals.get(1).getTime(), quarterfinals.get(1).getDay(), quarterfinals.get(1).getGameResult()),
+                quarterfinals.get(1).getWeek(), quarterfinals.get(1).getGameNumber());
         //now add the games in order
 //        this.scheduleService.saveGame(new AddGameRequest(quarterfinals.get(0).getAwayTeam().getTgid(), quarterfinals.get(0).getHomeTeam().getTgid(), quarterfinals.get(0).getWeek(), quarterfinals.get(0).getTime(), quarterfinals.get(0).getDay(), quarterfinals.get(0).getGameResult()),
 //                quarterfinals.get(0).getWeek(), quarterfinals.get(0).getGameNumber());
