@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import com.robotdebris.ncaaps2scheduler.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.NoWeeksAvailableException;
@@ -1232,7 +1233,8 @@ public class ScheduleService {
         ArrayList<Integer> emptyWeeks = findEmptyWeeks(school, opponent);
         //If both schools are each other's #1 rival, schedule the game for week 13 (14 in game).. or 12 if unavailable
         //TODO move games if week 13 isn't available
-        if(school.getRivals() != null && opponent.getRivals() != null &&
+        //bug fix, first check if getRivals is null or empty
+        if(!CollectionUtils.isEmpty(school.getRivals()) && !CollectionUtils.isEmpty(opponent.getRivals()) &&
             school.getRivals().getFirst().equals(opponent)){
             if (emptyWeeks.isEmpty()) {
                 throw new Exception("No empty weeks available!");
