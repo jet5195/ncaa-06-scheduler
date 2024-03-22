@@ -1,8 +1,10 @@
 package com.robotdebris.ncaaps2scheduler.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,13 +24,14 @@ public class Conference {
 	private int confGamesStartWeek;
 	private int numOfSchools;
 	@JsonIgnore
-	private SchoolList schools;
-	
+	private List<School> schools;
+
 	public Conference() {
-		
+
 	}
 
-	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo, int numOfConfGames, int confGamesStartWeek) {
+	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo,
+			int numOfConfGames, int confGamesStartWeek) {
 		this.name = conferenceName;
 		this.powerConf = powerConf;
 		if (division1 != null && !division1.trim().isEmpty()) {
@@ -43,7 +46,8 @@ public class Conference {
 		this.confGamesStartWeek = confGamesStartWeek;
 	}
 
-	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo, int numOfConfGames, int confGamesStartWeek, int conferenceID) {
+	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo,
+			int numOfConfGames, int confGamesStartWeek, int conferenceID) {
 		this.name = conferenceName;
 		this.powerConf = powerConf;
 		if (division1 != null && !division1.trim().isEmpty()) {
@@ -56,8 +60,6 @@ public class Conference {
 		this.confGamesStartWeek = confGamesStartWeek;
 		this.conferenceID = conferenceID;
 	}
-
-
 
 	public String getName() {
 		return name;
@@ -107,18 +109,18 @@ public class Conference {
 		this.divisions = divisions;
 	}
 
-	public SchoolList getSchools() {
+	public List<School> getSchools() {
 		return schools;
 	}
 
-	public void setSchools(SchoolList schools) {
+	public void setSchools(List<School> schools) {
 		this.schools = schools;
 		this.numOfSchools = schools.size();
 		this.fbs = schools.get(0).getNcaaDivision().equalsIgnoreCase("fbs");
 	}
 
-	public SchoolList getSchoolsByDivision(String division) {
-		SchoolList divSchools = new SchoolList();
+	public List<School> getSchoolsByDivision(String division) {
+		List<School> divSchools = new ArrayList<School>();
 		for (School school : this.getSchools()) {
 			if (school.getDivision().equalsIgnoreCase(division)) {
 				divSchools.add(school);
@@ -135,17 +137,17 @@ public class Conference {
 		this.numOfConfGames = numOfConfGames;
 	}
 
-	//big 10 1
-	//pac-12 2
-	//sec 2
-	//acc 3
-	//big 12 3
-	//c-usa 3
-	//mwc 3
-	//mac 4
-	//sun belt 4
-	//aac 4
-	
+	// big 10 1
+	// pac-12 2
+	// sec 2
+	// acc 3
+	// big 12 3
+	// c-usa 3
+	// mwc 3
+	// mac 4
+	// sun belt 4
+	// aac 4
+
 	public int getConfGamesStartWeek() {
 		return confGamesStartWeek;
 	}
@@ -154,9 +156,12 @@ public class Conference {
 		this.confGamesStartWeek = confGamesStartWeek;
 	}
 
-	public int getNumOfSchools() { return numOfSchools;}
+	public int getNumOfSchools() {
+		return numOfSchools;
+	}
 
-	public boolean isFbs() {return fbs;}
-	
-	
+	public boolean isFbs() {
+		return fbs;
+	}
+
 }
