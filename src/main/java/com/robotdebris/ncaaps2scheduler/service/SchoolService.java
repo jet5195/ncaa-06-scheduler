@@ -1,48 +1,47 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import com.robotdebris.ncaaps2scheduler.ExcelReader;
-import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SchoolSchedule;
-import com.robotdebris.ncaaps2scheduler.model.Swap;
 
+@Service
 public class SchoolService {
 
-	private List<School> schoolList;
-	@Autowired
-	ExcelReader excelReader;
+	List<School> schoolList;
+//	@Autowired
+//	ExcelReader excelReader;
 	@Autowired
 	ConferenceService conferenceService;
 
 	private final Logger LOGGER = Logger.getLogger(SchoolService.class.getName());
 
-	@PostConstruct
-	public void init() {
+	// @PostConstruct
+	// public void init() {
 
-		// final String schoolsFile = "src/main/resources/School_Data.xlsx";
-		final String schoolsFile = "resources/app/School_Data.xlsx";
+	// final String schoolsFile = "src/main/resources/School_Data.xlsx";
+	// final String schoolsFile = "resources/app/School_Data.xlsx";
 //	    
-		try {
-			schoolList = excelReader.getSchoolData(schoolsFile);
-			Collections.sort(schoolList);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+//		try {
+//			schoolList = excelReader.getSchoolData(schoolsFile);
+//			Collections.sort(schoolList);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+	// }
 
 	public List<School> getSchoolList() {
 		return schoolList;
+	}
+
+	public void setSchoolList(List<School> schoolList) {
+		this.schoolList = schoolList;
 	}
 
 	/**
@@ -156,31 +155,6 @@ public class SchoolService {
 			school.setSchedule(new SchoolSchedule());
 		}
 
-	}
-
-	public void swapSchools(School s1, School s2) {
-		// if the conferences & divisions aren't already the same...
-		if (!(s1.getConference().getName() == s2.getConference().getName() && s1.getDivision() == s2.getDivision())) {
-			Conference tempConf = s1.getConference();
-			String tempDiv = s1.getDivision();
-			String tempNcaaDiv = s1.getNcaaDivision();
-
-			s1.setConference(s2.getConference());
-			s1.setDivision(s2.getDivision());
-			s1.setNcaaDivision(s2.getNcaaDivision());
-			// this could also be done recursively like conf swap
-			s2.setConference(tempConf);
-			s2.setDivision(tempDiv);
-			s2.setNcaaDivision(tempNcaaDiv);
-
-			// need to add schedule stuff here
-			// need to reset the conferenceList, it isn't updating
-			// in the future, optimize this by making it only set the updated confs instead
-			// of all
-			conferenceService.setConferencesSchoolList(schoolList);
-
-			swaplist.add(new Swap(s1, s2));
-		}
 	}
 
 }

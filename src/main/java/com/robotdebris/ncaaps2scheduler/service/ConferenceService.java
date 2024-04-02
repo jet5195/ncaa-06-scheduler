@@ -1,7 +1,5 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -9,22 +7,15 @@ import org.apache.log4j.PropertyConfigurator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
-import com.robotdebris.ncaaps2scheduler.model.ConferenceList;
 import com.robotdebris.ncaaps2scheduler.model.School;
-import com.robotdebris.ncaaps2scheduler.model.SwapList;
 
 @Service
 public class ConferenceService {
 
-	private ConferenceList conferenceList;
-	@Autowired
-	SwapList swaplist;
+	private List<Conference> conferenceList;
 	@Autowired
 	SchoolService schoolService;
-	@Autowired
-	ExcelReader excelReader;
 //	@Autowired
 //	int year;
 
@@ -32,7 +23,7 @@ public class ConferenceService {
 		PropertyConfigurator.configure("src/main/resources/log4j.properties");
 	}
 
-	private final Logger LOGGER = Logger.getLogger(ConferenceList.class.getName());
+	private final Logger LOGGER = Logger.getLogger(ConferenceService.class.getName());
 
 	public List<Conference> getConferenceList() {
 		return conferenceList;
@@ -68,16 +59,6 @@ public class ConferenceService {
 
 	}
 
-	public SwapList getSwapList() {
-		// right now setting the order when pulling the data, not sure if this makes
-		// more sense
-		// or setting the swap order while running
-		for (int i = 0; i < swaplist.size(); i++) {
-			swaplist.get(i).setSwapID(i);
-		}
-		return swaplist;
-	}
-
 	public void renameConference(String name, String newName) {
 		Conference c1 = conferenceSearch(name);
 		c1.setName(newName);
@@ -95,25 +76,9 @@ public class ConferenceService {
 		}
 	}
 
-	public void swapSchools(int tgid1, int tgid2) {
-		School s1 = schoolService.schoolSearch(tgid1);
-		School s2 = schoolService.schoolSearch(tgid2);
-		schoolService.swapSchools(s1, s2);
-	}
-
 	public List<School> getSchoolsByDivision(String name, String division) {
 		Conference conf = conferenceSearch(name);
 		return conf.getSchoolsByDivision(division);
-	}
-
-	public void downloadSwapFile(Writer writer) {
-		try {
-			CsvExportService csvExportService = new CsvExportService();
-			csvExportService.writeSwapList(writer, swaplist);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	public void addSchool(String name, School s1) {
@@ -142,4 +107,5 @@ public class ConferenceService {
 			conf.setSchools(schoolService.getAllSchoolsInConference(conf.getName()));
 		}
 	}
+
 }

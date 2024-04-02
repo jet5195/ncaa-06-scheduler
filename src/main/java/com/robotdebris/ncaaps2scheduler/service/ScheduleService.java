@@ -18,7 +18,6 @@ import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.NoWeeksAvailableException;
 import com.robotdebris.ncaaps2scheduler.model.AddGameRequest;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
-import com.robotdebris.ncaaps2scheduler.model.ConferenceList;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SchoolSchedule;
@@ -31,7 +30,7 @@ public class ScheduleService {
 	@Autowired
 	SchoolService schoolService;
 	@Autowired
-	ConferenceList conferenceList;
+	ConferenceService conferenceService;
 	@Autowired
 	SeasonSchedule seasonSchedule;
 	@Autowired
@@ -49,7 +48,7 @@ public class ScheduleService {
 		File file = excelReader.multipartFileToFile(scheduleFile);
 		try {
 			removeAllGames();
-			seasonSchedule = excelReader.getScheduleData(file, schoolList);
+			seasonSchedule = excelReader.getScheduleData(file, schoolService.getSchoolList());
 			// is this going to miss conference games since conferences aren't set yet?
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -57,34 +56,34 @@ public class ScheduleService {
 		}
 	}
 
-	public SchoolList getSchoolList() {
-		return schoolList;
+	public List<School> getSchoolList() {
+		return schoolService.getSchoolList();
 	}
 
 	public School getSchool(int schoolId) {
-		return schoolList.get(schoolId);
+		return schoolService.getSchoolList().get(schoolId);
 	}
 
 	public SchoolSchedule getSchoolSchedule(int schoolId) {
-		return schoolList.get(schoolId).getSchedule();
+		return schoolService.getSchoolList().get(schoolId).getSchedule();
 	}
 
-	public SchoolList getSchoolRivals(int schoolId) {
-		return schoolList.get(schoolId).getRivals();
+	public List<School> getSchoolRivals(int schoolId) {
+		return schoolService.getSchoolList().get(schoolId).getRivals();
 	}
 
 	public School searchSchoolByTgid(int tgid) {
-		return schoolList.schoolSearch(tgid);
+		return schoolService.schoolSearch(tgid);
 	}
 
 	public School searchSchoolByName(String name) {
-		return schoolList.schoolSearch(name);
+		return schoolService.schoolSearch(name);
 	}
 
-	public SchoolList getAvailableOpponents(int tgid, int week) {
-		School input = schoolList.schoolSearch(tgid);
-		SchoolList availableOpponents = new SchoolList();
-		for (School school : schoolList) {
+	public List<School> getAvailableOpponents(int tgid, int week) {
+		School input = schoolService.schoolSearch(tgid);
+		List<School> availableOpponents = new ArrayList<School>();
+		for (School school : schoolService.getSchoolList()) {
 			// if they don't already play one another
 			if (!input.isOpponent(school)) {
 				// if they don't have a game that week
@@ -96,9 +95,9 @@ public class ScheduleService {
 		return availableOpponents;
 	}
 
-	public SchoolList getAvailableRivals(int tgid, int week) {
-		School input = schoolList.schoolSearch(tgid);
-		SchoolList availableOpponents = new SchoolList();
+	public List<School> getAvailableRivals(int tgid, int week) {
+		School input = schoolService.schoolSearch(tgid);
+		List<School> availableOpponents = new ArrayList<School>();
 		for (School school : input.getRivals()) {
 			// if they don't already play one another
 			if (input.isPossibleOpponent(school)) {
@@ -128,7 +127,7 @@ public class ScheduleService {
 	}
 
 	public void removeGame(int tgid, int week) {
-		School input = schoolList.schoolSearch(tgid);
+		School input = schoolService.schoolSearch(tgid);
 		Game game = input.getSchedule().getGame(week);
 		seasonSchedule.removeGame(game);
 	}
@@ -247,7 +246,7 @@ public class ScheduleService {
 	}
 
 	public SuggestedGameResponse getSuggestedGame(int tgid) {
-		School thisSchool = schoolList.schoolSearch(tgid);
+		School thisSchool = schoolService.schoolSearch(tgid);
 		int homeGameCount = 0;
 		boolean isHomeGame = false;
 		for (Game game : thisSchool.getSchedule()) {
@@ -287,25 +286,25 @@ public class ScheduleService {
 
 	public int autoAddGames(boolean aggressive) {
 		int count = 0;
-		count += addRivalryGamesAll(seasonSchedule, schoolList, aggressive);
-		count -= removeExtraGames(seasonSchedule, schoolList);
-		count += fillOpenGames(seasonSchedule, schoolList);
+		count += addRivalryGamesAll(seasonSchedule, schoolService.getSchoolList(), aggressive);
+		count -= removeExtraGames(seasonSchedule, schoolService.getSchoolList());
+		count += fillOpenGames(seasonSchedule, schoolService.getSchoolList());
 		return count;
 	}
 
-	private int fillOpenGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+	private int fillOpenGames(SeasonSchedule seasonSchedule, List<School> schoolList) {
 		int count = 0;
-		SchoolList tooFewGames = schoolList.findTooFewGames();
+		List<School> tooFewGames = schoolService.findTooFewGames();
 		count += addRivalryGamesAll(seasonSchedule, tooFewGames, false);
 		// recalculate tooFewGames?
-		tooFewGames = schoolList.findTooFewGames();
+		tooFewGames = schoolService.findTooFewGames();
 		count += addRandomGames(seasonSchedule, schoolList, tooFewGames);
 		return count;
 	}
 
-	private int removeExtraGames(SeasonSchedule seasonSchedule, SchoolList schoolList) {
+	private int removeExtraGames(SeasonSchedule seasonSchedule, List<School> schoolList) {
 		int count = 0;
-		SchoolList tooManyGames = schoolList.findTooManyGames();
+		List<School> tooManyGames = schoolService.findTooManyGames();
 		for (int i = 0; i < tooManyGames.size(); i++) {
 			School school = tooManyGames.get(i);
 			while (school.getSchedule().size() > 12) {
@@ -351,7 +350,7 @@ public class ScheduleService {
 		return null;
 	}
 
-	private int addRivalryGamesAll(SeasonSchedule seasonSchedule, SchoolList allSchools, boolean aggressive) {
+	private int addRivalryGamesAll(SeasonSchedule seasonSchedule, List<School> allSchools, boolean aggressive) {
 		int count = 0;
 		for (int j = 0; j <= 8; j++) {
 			for (int i = 0; i < allSchools.size(); i++) {
@@ -551,11 +550,11 @@ public class ScheduleService {
 		return 0;
 	}
 
-	private int addRandomGames(SeasonSchedule seasonSchedule, SchoolList allSchools, SchoolList needGames) {
+	private int addRandomGames(SeasonSchedule seasonSchedule, List<School> allSchools, List<School> needGames) {
 		int count = 0;
 		for (int i = 0; i < needGames.size(); i++) {
 			School s1 = needGames.get(i);
-			SchoolList myOptions = schoolList.findTooFewGames();
+			List<School> myOptions = schoolService.findTooFewGames();
 			myOptions.remove(s1);
 
 			boolean exit = false;
@@ -610,7 +609,7 @@ public class ScheduleService {
 			// add games vs fcs schools
 
 			// create fcs schools array
-			SchoolList fcsSchoolList = new SchoolList();
+			List<School> fcsSchoolList = new ArrayList<School>();
 			for (int i = 0; i < allSchools.size(); i++) {
 				// checking if it doesn't = FBS so schools added to the SchoolData
 				// spreadsheet but not added to the conference spreadsheets are
@@ -658,33 +657,33 @@ public class ScheduleService {
 
 	public int fixSchedule() {
 		int count = 0;
-		count += removeExtraGames(seasonSchedule, schoolList);
+		count += removeExtraGames(seasonSchedule, schoolService.getSchoolList());
 		// count += fillOpenGames(seasonSchedule, schoolList);
 		return count;
 	}
 
 	public Conference searchConferenceByName(String name) {
-		return conferenceList.conferenceSearch(name);
+		return conferenceService.conferenceSearch(name);
 	}
 
-	public ConferenceList getConferenceList() {
-		return conferenceList;
+	public List<Conference> getConferenceList() {
+		return conferenceService.getConferenceList();
 	}
 
-	public SchoolList getSchoolsByConference(String name) {
+	public List<School> getSchoolsByConference(String name) {
 		if (name.equalsIgnoreCase("All")) {
-			return schoolList;
+			return schoolService.getSchoolList();
 		}
-		return schoolList.getAllSchoolsInConference(name);
+		return schoolService.getAllSchoolsInConference(name);
 	}
 
 	public void setAlignmentFile(MultipartFile alignmentFile) throws IOException {
 		File file = excelReader.multipartFileToFile(alignmentFile);
 		try {
-			conferenceList = excelReader.getConferenceData(file);
-			excelReader.setAlignmentData(file, schoolList, conferenceList);
-			conferenceList.setConferencesSchoolList(schoolList);
-			Collections.sort(schoolList);
+			List<Conference> conferenceList = excelReader.getConferenceData(file);
+			excelReader.setAlignmentData(file, schoolService.getSchoolList(), conferenceService.getConferenceList());
+			conferenceService.setConferencesSchoolList(schoolService.getSchoolList());
+			Collections.sort(schoolService.getSchoolList());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -705,19 +704,19 @@ public class ScheduleService {
 
 	public int autoAddRivalries() {
 		int count = 0;
-		count += addRivalryGamesAll(seasonSchedule, schoolList, false);
+		count += addRivalryGamesAll(seasonSchedule, schoolService.getSchoolList(), false);
 		return count;
 	}
 
 	public int autoAddRandomly() {
 		int count = 0;
-		SchoolList tooFewGames = schoolList.findTooFewGames();
-		count += addRandomGames(seasonSchedule, schoolList, tooFewGames);
+		List<School> tooFewGames = schoolService.findTooFewGames();
+		count += addRandomGames(seasonSchedule, schoolService.getSchoolList(), tooFewGames);
 		return count;
 	}
 
 	public int autoAddConferenceGames(String name) throws Exception {
-		Conference conf = conferenceList.conferenceSearch(name);
+		Conference conf = conferenceService.conferenceSearch(name);
 		// setAllYearlyGames();
 
 		try {
@@ -740,7 +739,7 @@ public class ScheduleService {
 		scheduleRoundRobinConfGames(conf.getSchools(), conf.getConfGamesStartWeek());
 	}
 
-	private void scheduleRoundRobinConfGames(SchoolList list, int confGamesStartDate) throws Exception {
+	private void scheduleRoundRobinConfGames(List<School> list, int confGamesStartDate) throws Exception {
 		int numOfSchools = list.size();
 		for (School school : list) {
 			if (school.getNumOfConferenceGames() < numOfSchools - 1) {
@@ -773,14 +772,14 @@ public class ScheduleService {
 	}
 
 	private void scheduleConferenceGamesDivisions14(Conference conf) throws Exception {
-		SchoolList div1 = conf.getSchoolsByDivision(conf.getDivisions().get(0));
-		SchoolList div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
+		List<School> div1 = conf.getSchoolsByDivision(conf.getDivisions().get(0));
+		List<School> div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
 
 		// schedule inner div games
 		scheduleRoundRobinConfGames(div1, conf.getConfGamesStartWeek());
 		scheduleRoundRobinConfGames(div2, conf.getConfGamesStartWeek());
 
-		boolean xDivRivals = div1.getFirst().getXDivRival() != null;
+		boolean xDivRivals = div1.get(0).getXDivRival() != null;
 		int numOfConfGames = conf.getNumOfConfGames();
 		int yearMinus2005 = Math.abs(seasonSchedule.getYear() - 2005);
 
@@ -833,7 +832,7 @@ public class ScheduleService {
 				if (year >= 7) {
 					if (j >= 7) {
 						// odd & we only go back 5 for the first school!!
-						if (j % 2 != 0 && div1.getFirst().equals(school)) {
+						if (j % 2 != 0 && div1.get(0).equals(school)) {
 							j -= 5;
 							// even
 						} else {
@@ -869,15 +868,15 @@ public class ScheduleService {
 			int index = 0;
 			// move school order by year
 
-			SchoolList div1 = conf.getSchoolsByDivision(conf.getDivisions().get(0));
-			SchoolList div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
+			List<School> div1 = conf.getSchoolsByDivision(conf.getDivisions().get(0));
+			List<School> div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
 
 			// schedule inner division games
 			scheduleRoundRobinConfGames(div1, conf.getConfGamesStartWeek());
 			scheduleRoundRobinConfGames(div2, conf.getConfGamesStartWeek());
 
 			// order by cross div rivals
-			boolean xDivRivals = div1.getFirst().getXDivRival() != null;
+			boolean xDivRivals = div1.get(0).getXDivRival() != null;
 			int numOfConfGames = conf.getNumOfConfGames();
 			int yearMinus2005 = seasonSchedule.getYear() - 2005;
 
@@ -895,37 +894,37 @@ public class ScheduleService {
 				} else if (yearMinus2005 % 6 == 1) {
 					int i = 0;
 					while (i < 1) {
-						School s1 = div1.removeLast();
-						div1.addFirst(s1);
+						School s1 = div1.remove(div1.size() - 1);
+						div1.add(0, s1);
 						i++;
 					}
 				} else if (yearMinus2005 % 6 == 2) {
 					int i = 0;
 					while (i < 2) {
-						School s1 = div1.removeLast();
-						div1.addFirst(s1);
+						School s1 = div1.remove(div1.size() - 1);
+						div1.add(0, s1);
 						i++;
 					}
 				} else if (yearMinus2005 % 6 == 3) {
 					int i = 0;
 					while (i < 3) {
-						School s1 = div1.removeLast();
-						div1.addFirst(s1);
+						School s1 = div1.remove(div1.size() - 1);
+						div1.add(0, s1);
 						i++;
 					}
 
 				} else if (yearMinus2005 % 6 == 4) {
 					int i = 0;
 					while (i < 4) {
-						School s1 = div1.removeLast();
-						div1.addFirst(s1);
+						School s1 = div1.remove(div1.size() - 1);
+						div1.add(0, s1);
 						i++;
 					}
 				} else if (yearMinus2005 % 6 == 5) {
 					int i = 0;
 					while (i < 5) {
-						School s1 = div1.removeLast();
-						div1.addFirst(s1);
+						School s1 = div1.remove(div1.size() - 1);
+						div1.add(0, s1);
 						i++;
 					}
 				}
@@ -1155,11 +1154,11 @@ public class ScheduleService {
 	}
 
 	private void schedule12Teams8GamesNoXDivRivals(Conference conf) throws Exception {
-		SchoolList div1 = conf.getSchoolsByDivision(conf.getDivisions().get(0));
-		SchoolList div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
+		List<School> div1 = conf.getSchoolsByDivision(conf.getDivisions().get(0));
+		List<School> div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
 
 		// order by cross div rivals
-		boolean xDivRivals = div1.getFirst().getXDivRival() != null;
+		boolean xDivRivals = div1.get(0).getXDivRival() != null;
 		int numOfConfGames = conf.getNumOfConfGames();
 		int yearMinus2005 = seasonSchedule.getYear() - 2005;
 		int i = 0;
@@ -1209,8 +1208,8 @@ public class ScheduleService {
 		// 5 4 5 6
 	}
 
-	private SchoolList orderDivByXDivRivals(SchoolList div1) {
-		SchoolList orderedDiv = new SchoolList();
+	private List<School> orderDivByXDivRivals(List<School> div1) {
+		List<School> orderedDiv = new ArrayList<School>();
 		for (School school : div1) {
 			orderedDiv.add(school.getXDivRival());
 		}
@@ -1230,7 +1229,7 @@ public class ScheduleService {
 		// TODO move games if week 13 isn't available
 		// bug fix, first check if getRivals is null or empty
 		if (!CollectionUtils.isEmpty(school.getRivals()) && !CollectionUtils.isEmpty(opponent.getRivals())
-				&& school.getRivals().getFirst().equals(opponent)) {
+				&& school.getRivals().get(0).equals(opponent)) {
 			if (emptyWeeks.isEmpty()) {
 				throw new Exception("No empty weeks available!");
 			}
@@ -1288,7 +1287,7 @@ public class ScheduleService {
 		// week 13 (rivalry week)
 		addYearlySeriesHelper("Virginia", "Virginia Tech", 13, 5, seasonSchedule.getYear(), false);
 		addYearlySeriesHelper("North Carolina", "North Carolina State", 13, 5, seasonSchedule.getYear(), false);
-		for (School school : schoolList) {
+		for (School school : schoolService.getSchoolList()) {
 			if (!school.getNcaaDivision().equalsIgnoreCase("FCS")) {
 				boolean endLoop = false;
 				int i = 0;
@@ -1309,8 +1308,8 @@ public class ScheduleService {
 	}
 
 	private boolean addYearlySeriesHelper(String s1, String s2, int week, int day, int year, boolean specifyHome) {
-		School school1 = schoolList.schoolSearch(s1);
-		School school2 = schoolList.schoolSearch(s2);
+		School school1 = schoolService.schoolSearch(s1);
+		School school2 = schoolService.schoolSearch(s2);
 		return addYearlySeriesHelper(school1, school2, week, day, year, specifyHome);
 	}
 
@@ -1345,7 +1344,7 @@ public class ScheduleService {
 	}
 
 	public int removeConferenceGames(String name) {
-		Conference conf = conferenceList.conferenceSearch(name);
+		Conference conf = conferenceService.conferenceSearch(name);
 		return seasonSchedule.removeAllConferenceGames(conf);
 	}
 
@@ -1373,25 +1372,25 @@ public class ScheduleService {
 		if (addGameRequest.getGameResult() == null) {
 			addGame(addGameRequest.getAwayId(), addGameRequest.getHomeId(), addGameRequest.getWeek());
 		} else {
-			School home = schoolList.schoolSearch(addGameRequest.getHomeId());
-			School away = schoolList.schoolSearch(addGameRequest.getAwayId());
+			School home = schoolService.schoolSearch(addGameRequest.getHomeId());
+			School away = schoolService.schoolSearch(addGameRequest.getAwayId());
 			seasonSchedule.addGameSpecificHomeTeam(away, home, addGameRequest.getWeek(), addGameRequest.getDay(),
 					addGameRequest.getTime(), addGameRequest.getGameResult());
 		}
 	}
 
 	public void removeAllConferenceGames() {
-		for (Conference conf : conferenceList) {
+		for (Conference conf : conferenceService.getConferenceList()) {
 			this.removeConferenceGames(conf.getName());
 		}
 	}
 
 	public void addAllConferenceGames() throws Exception {
-		for (Conference conf : conferenceList) {
+		for (Conference conf : conferenceService.getConferenceList()) {
 			// if conference is FBS...
-			SchoolList schools = conf.getSchools();
+			List<School> schools = conf.getSchools();
 			if (schools != null) {
-				if (Objects.equals(schools.getFirst().getNcaaDivision(), "FBS")) {
+				if (Objects.equals(schools.get(0).getNcaaDivision(), "FBS")) {
 					this.autoAddConferenceGames(conf.getName());
 				}
 			}
@@ -1407,8 +1406,8 @@ public class ScheduleService {
 	}
 
 	public void saveGame(AddGameRequest addGameRequest, int oldWeek, int oldGameNumber) {
-		School home = schoolList.schoolSearch(addGameRequest.getHomeId());
-		School away = schoolList.schoolSearch(addGameRequest.getAwayId());
+		School home = schoolService.schoolSearch(addGameRequest.getHomeId());
+		School away = schoolService.schoolSearch(addGameRequest.getAwayId());
 
 		Game oldGame = findGame(oldWeek, oldGameNumber);
 		seasonSchedule.removeGame(oldGame);
@@ -1437,8 +1436,8 @@ public class ScheduleService {
 	}
 
 	public void swapSchedule(int tgid1, int tgid2) {
-		School s1 = schoolList.schoolSearch(tgid1);
-		School s2 = schoolList.schoolSearch(tgid2);
+		School s1 = schoolService.schoolSearch(tgid1);
+		School s2 = schoolService.schoolSearch(tgid2);
 
 		// remove original game from season schedule, and add to new lists to iterate
 		// through

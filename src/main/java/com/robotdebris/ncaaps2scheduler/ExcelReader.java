@@ -23,27 +23,43 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.robotdebris.ncaaps2scheduler.model.Bowl;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
-import com.robotdebris.ncaaps2scheduler.model.ConferenceList;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.GameResult;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
-import com.robotdebris.ncaaps2scheduler.model.SwapList;
+import com.robotdebris.ncaaps2scheduler.service.ConferenceService;
 import com.robotdebris.ncaaps2scheduler.service.SchoolService;
+import com.robotdebris.ncaaps2scheduler.service.SwapService;
 
 @Component
 public class ExcelReader {
 
 	@Autowired
-	ConferenceList conferenceList;
+	ConferenceService conferenceService;
 	@Autowired
 	SchoolService schoolService;
 	@Autowired
 	SeasonSchedule seasonSchedule;
 	@Autowired
-	SwapList swaplist;
-	@Autowired
 	List<Bowl> bowlList;
+	@Autowired
+	SwapService swapService;
+
+//	@PostConstruct
+//	public void init() {
+//
+//		// final String schoolsFile = "src/main/resources/School_Data.xlsx";
+//		final String schoolsFile = "resources/app/School_Data.xlsx";
+//
+//		try {
+//			List<School> schoolList = getSchoolData(schoolsFile);
+//			Collections.sort(schoolList);
+//			schoolService.setSchoolList(schoolList);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
 
 	private Workbook readExcel(String path) throws IOException {
 
@@ -92,9 +108,9 @@ public class ExcelReader {
 		}
 	}
 
-	public ConferenceList getConferenceData(File file) throws IOException {
-		conferenceList.clear();
-		swaplist.clear();
+	public List<Conference> getConferenceData(File file) throws IOException {
+		conferenceService.getConferenceList().clear();
+		swapService.swapList.clear();
 		Workbook workbook = readExcel(file);
 		Sheet sheet = workbook.getSheetAt(0);
 		DataFormatter dataFormatter = new DataFormatter();
@@ -151,18 +167,18 @@ public class ExcelReader {
 						}// end of switch
 					} // end col iterator
 					if (conferenceId == null) {
-						conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, logo,
-								confGames, startWeek));
+						conferenceService.getConferenceList().add(new Conference(conferenceName, powerConf, division1,
+								division2, logo, confGames, startWeek));
 					} else {
-						conferenceList.add(new Conference(conferenceName, powerConf, division1, division2, logo,
-								confGames, startWeek, conferenceId));
+						conferenceService.getConferenceList().add(new Conference(conferenceName, powerConf, division1,
+								division2, logo, confGames, startWeek, conferenceId));
 					}
 
 				} // end of if not null
 			} // end of row iterator
 			r++;
 		}
-		return conferenceList;
+		return conferenceService.getConferenceList();
 	}
 
 	// String.isBlank doesn't work on older versions of java?
@@ -173,7 +189,8 @@ public class ExcelReader {
 			return false;
 	}
 
-	public void setAlignmentData(File file, List<School> allSchools, ConferenceList conferenceList) throws IOException {
+	public void setAlignmentData(File file, List<School> allSchools, List<Conference> conferenceList)
+			throws IOException {
 		Workbook workbook = readExcel(file);
 		Sheet sheet = workbook.getSheetAt(1);
 		DataFormatter dataFormatter = new DataFormatter();
@@ -219,7 +236,7 @@ public class ExcelReader {
 					School school = schoolService.schoolSearch(tgid);
 					if (school != null) {
 						School xDivRivalSchool = schoolService.schoolSearch(xDivRival);
-						Conference conference = conferenceList.conferenceSearch(conf);
+						Conference conference = conferenceService.conferenceSearch(conf);
 						school.updateAlignment(conference, div, ncaaDiv, xDivRivalSchool);
 					} else {
 						System.out
