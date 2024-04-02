@@ -1,4 +1,4 @@
-package com.robotdebris.ncaaps2scheduler;
+package com.robotdebris.ncaaps2scheduler.exception;
 
 import org.springframework.http.HttpStatus;
 

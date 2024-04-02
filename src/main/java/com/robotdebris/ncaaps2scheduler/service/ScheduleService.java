@@ -45,10 +45,10 @@ public class ScheduleService {
 	}
 
 	public void setScheduleFile(MultipartFile scheduleFile) throws IOException {
-		File file = excelReader.multipartFileToFile(scheduleFile);
+		File file = excelReader.convertMultipartFileToFile(scheduleFile);
 		try {
 			removeAllGames();
-			seasonSchedule = excelReader.getScheduleData(file, schoolService.getSchoolList());
+			seasonSchedule = excelReader.populateSeasonScheduleFromExcel(file, schoolService.getAllSchools());
 			// is this going to miss conference games since conferences aren't set yet?
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -57,19 +57,19 @@ public class ScheduleService {
 	}
 
 	public List<School> getSchoolList() {
-		return schoolService.getSchoolList();
+		return schoolService.getAllSchools();
 	}
 
 	public School getSchool(int schoolId) {
-		return schoolService.getSchoolList().get(schoolId);
+		return schoolService.getAllSchools().get(schoolId);
 	}
 
 	public SchoolSchedule getSchoolSchedule(int schoolId) {
-		return schoolService.getSchoolList().get(schoolId).getSchedule();
+		return schoolService.getAllSchools().get(schoolId).getSchedule();
 	}
 
 	public List<School> getSchoolRivals(int schoolId) {
-		return schoolService.getSchoolList().get(schoolId).getRivals();
+		return schoolService.getAllSchools().get(schoolId).getRivals();
 	}
 
 	public School searchSchoolByTgid(int tgid) {
@@ -83,7 +83,7 @@ public class ScheduleService {
 	public List<School> getAvailableOpponents(int tgid, int week) {
 		School input = schoolService.schoolSearch(tgid);
 		List<School> availableOpponents = new ArrayList<School>();
-		for (School school : schoolService.getSchoolList()) {
+		for (School school : schoolService.getAllSchools()) {
 			// if they don't already play one another
 			if (!input.isOpponent(school)) {
 				// if they don't have a game that week
@@ -286,9 +286,9 @@ public class ScheduleService {
 
 	public int autoAddGames(boolean aggressive) {
 		int count = 0;
-		count += addRivalryGamesAll(seasonSchedule, schoolService.getSchoolList(), aggressive);
-		count -= removeExtraGames(seasonSchedule, schoolService.getSchoolList());
-		count += fillOpenGames(seasonSchedule, schoolService.getSchoolList());
+		count += addRivalryGamesAll(seasonSchedule, schoolService.getAllSchools(), aggressive);
+		count -= removeExtraGames(seasonSchedule, schoolService.getAllSchools());
+		count += fillOpenGames(seasonSchedule, schoolService.getAllSchools());
 		return count;
 	}
 
@@ -657,7 +657,7 @@ public class ScheduleService {
 
 	public int fixSchedule() {
 		int count = 0;
-		count += removeExtraGames(seasonSchedule, schoolService.getSchoolList());
+		count += removeExtraGames(seasonSchedule, schoolService.getAllSchools());
 		// count += fillOpenGames(seasonSchedule, schoolList);
 		return count;
 	}
@@ -672,18 +672,18 @@ public class ScheduleService {
 
 	public List<School> getSchoolsByConference(String name) {
 		if (name.equalsIgnoreCase("All")) {
-			return schoolService.getSchoolList();
+			return schoolService.getAllSchools();
 		}
 		return schoolService.getAllSchoolsInConference(name);
 	}
 
 	public void setAlignmentFile(MultipartFile alignmentFile) throws IOException {
-		File file = excelReader.multipartFileToFile(alignmentFile);
+		File file = excelReader.convertMultipartFileToFile(alignmentFile);
 		try {
-			List<Conference> conferenceList = excelReader.getConferenceData(file);
-			excelReader.setAlignmentData(file, schoolService.getSchoolList(), conferenceService.getConferenceList());
-			conferenceService.setConferencesSchoolList(schoolService.getSchoolList());
-			Collections.sort(schoolService.getSchoolList());
+			List<Conference> conferenceList = excelReader.populateConferencesFromExcel(file);
+			excelReader.setAlignmentData(file, schoolService.getAllSchools(), conferenceService.getConferenceList());
+			conferenceService.setConferencesSchoolList(schoolService.getAllSchools());
+			Collections.sort(schoolService.getAllSchools());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -704,14 +704,14 @@ public class ScheduleService {
 
 	public int autoAddRivalries() {
 		int count = 0;
-		count += addRivalryGamesAll(seasonSchedule, schoolService.getSchoolList(), false);
+		count += addRivalryGamesAll(seasonSchedule, schoolService.getAllSchools(), false);
 		return count;
 	}
 
 	public int autoAddRandomly() {
 		int count = 0;
 		List<School> tooFewGames = schoolService.findTooFewGames();
-		count += addRandomGames(seasonSchedule, schoolService.getSchoolList(), tooFewGames);
+		count += addRandomGames(seasonSchedule, schoolService.getAllSchools(), tooFewGames);
 		return count;
 	}
 
@@ -1287,7 +1287,7 @@ public class ScheduleService {
 		// week 13 (rivalry week)
 		addYearlySeriesHelper("Virginia", "Virginia Tech", 13, 5, seasonSchedule.getYear(), false);
 		addYearlySeriesHelper("North Carolina", "North Carolina State", 13, 5, seasonSchedule.getYear(), false);
-		for (School school : schoolService.getSchoolList()) {
+		for (School school : schoolService.getAllSchools()) {
 			if (!school.getNcaaDivision().equalsIgnoreCase("FCS")) {
 				boolean endLoop = false;
 				int i = 0;

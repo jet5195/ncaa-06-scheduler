@@ -48,7 +48,7 @@ public class ConferenceService {
 		if (callAgain) {
 			swapConferences(c2, c1, false);
 		} else {
-			setConferencesSchoolList(schoolService.getSchoolList());
+			setConferencesSchoolList(schoolService.getAllSchools());
 		}
 	}
 

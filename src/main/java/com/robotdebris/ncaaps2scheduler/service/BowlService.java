@@ -23,9 +23,9 @@ public class BowlService {
     @Autowired
     ExcelReader excelReader;
     public void setBowlFile(MultipartFile bowlFile) throws IOException {
-        File file = excelReader.multipartFileToFile(bowlFile);
+        File file = excelReader.convertMultipartFileToFile(bowlFile);
         try {
-            bowlList = excelReader.getBowlData(file);
+            bowlList = excelReader.populateBowlsFromExcel(file);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

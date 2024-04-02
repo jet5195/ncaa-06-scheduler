@@ -1,7 +1,7 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,53 +9,51 @@ import org.springframework.stereotype.Service;
 
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SchoolSchedule;
+import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 
 @Service
 public class SchoolService {
 
-	List<School> schoolList;
-//	@Autowired
-//	ExcelReader excelReader;
 	@Autowired
 	ConferenceService conferenceService;
 
+	private final SchoolRepository schoolRepository;
+
 	private final Logger LOGGER = Logger.getLogger(SchoolService.class.getName());
 
-	// @PostConstruct
-	// public void init() {
+	public SchoolService(SchoolRepository schoolRepository) {
+		this.schoolRepository = schoolRepository;
+	}
 
-	// final String schoolsFile = "src/main/resources/School_Data.xlsx";
-	// final String schoolsFile = "resources/app/School_Data.xlsx";
-//	    
+//	@PostConstruct
+//	public void init() {
+//
+//		final String schoolsFile = "src/main/resources/School_Data.xlsx";
+//		// final String schoolsFile = "resources/app/School_Data.xlsx";
+//
 //		try {
-//			schoolList = excelReader.getSchoolData(schoolsFile);
+//			List<School> schoolList = excelReader.populateSeasonScheduleFromExcel(schoolsFile);
 //			Collections.sort(schoolList);
 //		} catch (IOException e) {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-	// }
+//	}
 
-	public List<School> getSchoolList() {
-		return schoolList;
+	public List<School> getAllSchools() {
+		return schoolRepository.findAll();
 	}
 
 	public void setSchoolList(List<School> schoolList) {
-		this.schoolList = schoolList;
+		// this.schoolList = schoolList;
 	}
 
 	/**
 	 * @param school the String name of the School you are searching for
 	 * @return School with the same name as the the parameter inputted
 	 */
-	public School schoolSearch(String school) {
-		for (School theSchool : schoolList) {
-			if (theSchool.getName().equalsIgnoreCase(school)) {
-				return theSchool;
-			}
-		}
-		LOGGER.warn(school + " could not be found, please check your spelling and try again.");
-		return null;
+	public School schoolSearch(String name) {
+		return schoolRepository.findByName(name);
 	}
 
 	/**
@@ -63,15 +61,12 @@ public class SchoolService {
 	 * @param conf the name of a a conference
 	 * @return all schools in a given conference conf
 	 */
-	public List<School> getAllSchoolsInConference(String conf) {
-		List<School> conference = new ArrayList<School>();
-		for (int i = 0; i < schoolList.size(); i++) {
-			School school = schoolList.get(i);
-			if (school.getConference() != null && school.getConference().getName().equalsIgnoreCase(conf)) {
-				conference.add(school);
-			}
-		}
-		return conference;
+	public List<School> getAllSchoolsInConference(String conferenceName) {
+		List<School> allSchools = schoolRepository.findAll();
+		return allSchools.stream()
+				.filter(school -> school.getConference() != null
+						&& school.getConference().getName().equalsIgnoreCase(conferenceName))
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -94,22 +89,15 @@ public class SchoolService {
 	 * @return School with the same tgid as the parameter inputted
 	 */
 	public School schoolSearch(int tgid) {
-		for (School theSchool : schoolList) {
-			if (theSchool.getTgid() == tgid) {
-				return theSchool;
-			}
-		}
-		LOGGER.warn(
-				tgid + " could not be found. (schoolList may be an FCS team that is missing in your excel document)");
-		return null;
+		return schoolRepository.findById(tgid);
 	}
 
 	/**
 	 * Searches for user schools and adds that flag to every user school in the list
 	 */
 	public void populateUserSchools() {
-		for (int i = 0; i < schoolList.size(); i++) {
-			School theSchool = schoolList.get(i);
+		for (int i = 0; i < getAllSchools().size(); i++) {
+			School theSchool = getAllSchools().get(i);
 			int numOfUserGames = 0;
 			for (int j = 0; j < theSchool.getSchedule().size(); j++) {
 				if (theSchool.getSchedule().get(j).getUserGame() == 1) {
@@ -123,35 +111,29 @@ public class SchoolService {
 	}
 
 	/**
-	 * @return List<School> of schools with > 12 games
+	 * Finds schools with more than 12 games in their schedule.
+	 *
+	 * @return a list of schools with too many games
 	 */
 	public List<School> findTooManyGames() {
-		List<School> tooManyGames = new ArrayList<School>();
-		for (int i = 0; i < schoolList.size(); i++) {
-			School theSchool = schoolList.get(i);
-			if (theSchool.getNcaaDivision().equals("FBS") && theSchool.getSchedule().size() > 12) {
-				tooManyGames.add(theSchool);
-			}
-		}
-		return tooManyGames;
+		List<School> allSchools = schoolRepository.findAll();
+		return allSchools.stream()
+				.filter(school -> "FBS".equals(school.getNcaaDivision()) && school.getSchedule().size() > 12)
+				.collect(Collectors.toList());
 	}
 
 	/**
 	 * @return List<School> of schools with < 12 games
 	 */
 	public List<School> findTooFewGames() {
-		List<School> tooFewGames = new ArrayList<School>();
-		for (int i = 0; i < schoolList.size(); i++) {
-			School theSchool = schoolList.get(i);
-			if (theSchool.getSchedule().size() < 12 && theSchool.getNcaaDivision().equals("FBS")) {
-				tooFewGames.add(theSchool);
-			}
-		}
-		return tooFewGames;
+		List<School> allSchools = schoolRepository.findAll();
+		return allSchools.stream()
+				.filter(school -> "FBS".equals(school.getNcaaDivision()) && school.getSchedule().size() < 12)
+				.collect(Collectors.toList());
 	}
 
 	public void resetAllSchoolsSchedules() {
-		for (School school : schoolList) {
+		for (School school : getAllSchools()) {
 			school.setSchedule(new SchoolSchedule());
 		}
 

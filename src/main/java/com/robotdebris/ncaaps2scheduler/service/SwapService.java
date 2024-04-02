@@ -67,7 +67,7 @@ public class SwapService {
 			// in the future, optimize this by making it only set the updated confs instead
 			// of all
 			// TODO: this is ugly
-			conferenceService.setConferencesSchoolList(schoolService.getSchoolList());
+			conferenceService.setConferencesSchoolList(schoolService.getAllSchools());
 
 			swapList.add(new Swap(s1, s2));
 		}

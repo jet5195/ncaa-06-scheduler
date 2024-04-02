@@ -71,7 +71,7 @@ public class ExcelReader {
 	private Workbook readExcel(File file) throws IOException {
 
 		if (file.toString().endsWith("csv")) {
-			return csvToXLSX(file);
+			return convertCsvToXLSX(file);
 		}
 
 		// Creating a Workbook from an Excel file (.xls or .xlsx)
@@ -79,7 +79,7 @@ public class ExcelReader {
 		// workbook.close();
 	}
 
-	public Workbook csvToXLSX(File file) {
+	public Workbook convertCsvToXLSX(File file) {
 		try {
 			String csvFileAddress = file.getPath(); // csv file address
 			String xlsxFileAddress = file.getPath() + ".xlsx"; // xlsx file address
@@ -108,7 +108,7 @@ public class ExcelReader {
 		}
 	}
 
-	public List<Conference> getConferenceData(File file) throws IOException {
+	public List<Conference> populateConferencesFromExcel(File file) throws IOException {
 		conferenceService.getConferenceList().clear();
 		swapService.swapList.clear();
 		Workbook workbook = readExcel(file);
@@ -247,7 +247,7 @@ public class ExcelReader {
 			r++;
 		}
 		Conference blankConference = new Conference("null", false, null, null, null, 0, 0);
-		for (School school : schoolService.getSchoolList()) {
+		for (School school : schoolService.getAllSchools()) {
 			if (school.getConference() == null) {
 				school.updateAlignment(blankConference, null, "fcs", null);
 			}
@@ -261,7 +261,7 @@ public class ExcelReader {
 	 * @return List<School> of all schools in your excel file
 	 * @throws IOException
 	 */
-	public List<School> getSchoolData(String path) throws IOException {
+	public List<School> populateSchoolsFromExcel(String path) throws IOException {
 		List<School> schoolList = new ArrayList<School>();
 		Workbook workbook = readExcel(path);
 		// Getting the Sheet at index zero
@@ -356,7 +356,7 @@ public class ExcelReader {
 	 * @return SeasonSchedule a list of all games in a season
 	 * @throws IOException
 	 */
-	public SeasonSchedule getScheduleData(File file, List<School> allSchools)
+	public SeasonSchedule populateSeasonScheduleFromExcel(File file, List<School> allSchools)
 			throws IOException, NumberFormatException {
 		// if the first school has a schedule already, empty it.
 		// eventually it may make sense to autowire seasonschedule and check it
@@ -489,7 +489,7 @@ public class ExcelReader {
 	 * @return bowlList a list of all games in a season
 	 * @throws IOException
 	 */
-	public List<Bowl> getBowlData(File file) throws IOException, NumberFormatException {
+	public List<Bowl> populateBowlsFromExcel(File file) throws IOException, NumberFormatException {
 
 		bowlList = new ArrayList<>();
 		Workbook workbook = readExcel(file);
@@ -587,7 +587,7 @@ public class ExcelReader {
 		return bowlList;
 	}
 
-	public File multipartFileToFile(MultipartFile multipartFile) throws IOException {
+	public File convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
 		File file = new File(multipartFile.getOriginalFilename());
 		file.createNewFile();
 		FileOutputStream fos = new FileOutputStream(file);
