@@ -50,7 +50,7 @@ public class SchoolService {
 
 	/**
 	 * @param school the String name of the School you are searching for
-	 * @return School with the same name as the the parameter inputted
+	 * @return School with the same name as the parameter inputted
 	 */
 	public School schoolSearch(String name) {
 		return schoolRepository.findByName(name);
@@ -58,7 +58,7 @@ public class SchoolService {
 
 	/**
 	 *
-	 * @param conf the name of a a conference
+	 * @param conf the name of a conference
 	 * @return all schools in a given conference conf
 	 */
 	public List<School> getAllSchoolsInConference(String conferenceName) {
@@ -136,7 +136,5 @@ public class SchoolService {
 		for (School school : getAllSchools()) {
 			school.setSchedule(new SchoolSchedule());
 		}
-
 	}
-
 }
