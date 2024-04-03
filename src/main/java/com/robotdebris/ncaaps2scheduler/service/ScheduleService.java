@@ -11,7 +11,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,24 +53,8 @@ public class ScheduleService {
         return schoolService.getAllSchools();
     }
 
-    public School getSchool(int schoolId) {
-        return schoolService.getAllSchools().get(schoolId);
-    }
-
-    public SchoolSchedule getSchoolSchedule(int schoolId) {
-        return schoolService.getAllSchools().get(schoolId).getSchedule();
-    }
-
-    public List<School> getSchoolRivals(int schoolId) {
-        return schoolService.getAllSchools().get(schoolId).getRivals();
-    }
-
     public School searchSchoolByTgid(int tgid) {
         return schoolService.schoolSearch(tgid);
-    }
-
-    public School searchSchoolByName(String name) {
-        return schoolService.schoolSearch(name);
     }
 
     public List<School> findOpenOpponentsForWeek(int tgid, int week) {
@@ -93,7 +80,7 @@ public class ScheduleService {
         }
 
         return input.getRivals().stream()
-                .filter(school -> input.isEligibleNonConferenceMatchup(school))
+                .filter(input::isEligibleNonConferenceMatchup)
                 .filter(school -> school.getSchedule().getGame(week) == null)
                 .collect(Collectors.toList());
     }
@@ -305,7 +292,7 @@ public class ScheduleService {
                     for (int j = school.getRivals().size() - 1; school.getSchedule().size() > 12; j--) {
                         School rival = school.getRivals().get(j);
                         if (school.isOpponent(rival)) {
-                            removeMe = findGame(school, rival);
+                            removeMe = findFirstGameBetweenSchools(school, rival);
                             if (removeMe.getConferenceGame() == 0) {
                                 seasonSchedule.removeGame(removeMe);
                                 count++;
@@ -319,23 +306,19 @@ public class ScheduleService {
     }
 
     // finds the FIRST game between 2 schools.
-    private Game findGame(School s1, School s2) {
-        for (int i = 0; i < s1.getSchedule().size(); i++) {
-            Game game = s1.getSchedule().get(i);
-            if (game.getHomeTeam().getTgid() == s2.getTgid() || game.getAwayTeam().getTgid() == s2.getTgid())
-                return game;
-        }
-        return null;
+    private Game findFirstGameBetweenSchools(School s1, School s2) {
+        return s1.getSchedule().stream()
+                .filter(game -> game.getHomeTeam().getTgid() == s2.getTgid() || game.getAwayTeam().getTgid() == s2.getTgid())
+                .findFirst()
+                .orElse(null);
     }
 
     // find game by week number and game number
-    private Game findGame(int week, int gameNumber) {
-        for (int i = 0; i < seasonSchedule.size(); i++) {
-            Game game = seasonSchedule.get(i);
-            if (game.getWeek() == week && game.getGameNumber() == gameNumber)
-                return game;
-        }
-        return null;
+    private Game findGameByWeekAndGameNumber(int week, int gameNumber) {
+        return seasonSchedule.stream()
+                .filter(game -> game.getWeek() == week && game.getGameNumber() == gameNumber)
+                .findFirst()
+                .orElse(null);
     }
 
     private int addRivalryGamesAll(SeasonSchedule seasonSchedule, List<School> allSchools, boolean aggressive) {
@@ -669,9 +652,11 @@ public class ScheduleService {
         File file = excelReader.convertMultipartFileToFile(alignmentFile);
         try {
             List<Conference> conferenceList = excelReader.populateConferencesFromExcel(file);
-            excelReader.setAlignmentData(file, schoolService.getAllSchools(), conferenceService.getConferenceList());
+            conferenceService.setConferenceList(conferenceList);
+            excelReader.setAlignmentData(file);
             conferenceService.setConferencesSchoolList(schoolService.getAllSchools());
-            Collections.sort(schoolService.getAllSchools());
+            //TODO: probably need to reimplement this as well.
+            //Collections.sort(schoolService.getAllSchools());
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -1397,7 +1382,7 @@ public class ScheduleService {
         School home = schoolService.schoolSearch(addGameRequest.getHomeId());
         School away = schoolService.schoolSearch(addGameRequest.getAwayId());
 
-        Game oldGame = findGame(oldWeek, oldGameNumber);
+        Game oldGame = findGameByWeekAndGameNumber(oldWeek, oldGameNumber);
         seasonSchedule.removeGame(oldGame);
 
         oldGame.setGameResult(addGameRequest.getGameResult());
