@@ -37,4 +37,5 @@ public interface SchoolRepository {
 	School findByName(String name) throws SchoolNotFoundException;
 
 	void saveAll(List<School> schools);
+
 }
