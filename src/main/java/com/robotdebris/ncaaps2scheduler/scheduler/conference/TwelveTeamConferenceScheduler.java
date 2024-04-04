@@ -3,14 +3,17 @@ package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
+import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.robotdebris.ncaaps2scheduler.SchedulerUtils.randomizeWeek;
-
 @Component
 public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
+
+    @Autowired
+    ScheduleService scheduleService;
 
     @Override
     public void generateConferenceSchedule(Conference conference, GameRepository gameRepository) {
@@ -92,9 +95,9 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                     if (numOfConfGames == 8 && xDivRivals) {
                         if (school.getXDivRival() != null) {
                             School opponent = school.getXDivRival();
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             // should be home or away game?
-                            if (school.getNumOfHomeConferenceGames() >= div1.size() / 2) {
+                            if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= div1.size() / 2) {
                                 addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
                             } else {
                                 addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
@@ -103,7 +106,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                         }
                         if (index == 0) {
                             School opponent = div2.get(1);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             int opponent2Id = 2;
@@ -111,11 +114,11 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
                         } else if (index == 1) {
                             School opponent = div2.get(2);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             int opponent2Id = 3;
@@ -123,11 +126,11 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
                         } else if (index == 2) {
                             School opponent = div2.get(3);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             int opponent2Id = 4;
@@ -135,11 +138,11 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
                         } else if (index == 3) {
                             School opponent = div2.get(4);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             int opponent2Id = 5;
@@ -147,11 +150,11 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
                         } else if (index == 4) {
                             School opponent = div2.get(5);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             int opponent2Id = 0;
@@ -159,11 +162,11 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
                         } else if (index == 5) {
                             School opponent = div2.get(0);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             int opponent2Id = 1;
@@ -171,7 +174,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                                 opponent2Id = opponent2Id < div2.size() - 1 ? opponent2Id++ : 0;
                             }
                             opponent = div2.get(opponent2Id);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
                         }
                     }
@@ -180,111 +183,111 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                     if (numOfConfGames == 9) {
                         if (index == 0) {
                             School opponent = div2.get(0);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(1);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(2);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(3);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             // 0 1 4 5
                         } else if (index == 1) {
                             School opponent = div2.get(0);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(1);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(4);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(5);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             // 2 3 4 5
                         } else if (index == 2) {
                             School opponent = div2.get(2);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(3);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(4);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(5);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             // 2 3 0 1
                         } else if (index == 3) {
                             School opponent = div2.get(2);
-                            int week = randomizeWeek(school, opponent);
+                            int week = scheduleService.randomizeWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(3);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(0);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(1);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
                         }
 
                         // 4 5 0 1
                         else if (index == 4) {
                             School opponent = div2.get(4);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(5);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(0);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(1);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
                         }
 
                         // 4 5 2 3
                         else if (index == 5) {
                             School opponent = div2.get(4);
-                            int week = findConfGameWeek(school, opponent);
+                            int week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(5);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(2);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                             opponent = div2.get(3);
-                            week = findConfGameWeek(school, opponent);
+                            week = scheduleService.findConfGameWeek(school, opponent);
                             addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
                         }
                     } // end of 9 game loop
@@ -332,11 +335,11 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
             if (scheduleAbc) {
                 for (int j = 0; j < div1.size() / 2; j++) {
                     School opponent = div2.get(j);
-                    int week = findConfGameWeek(school, opponent);
+                    int week = scheduleService.findConfGameWeek(school, opponent);
 
-                    if (school.getNumOfHomeConferenceGames() >= numOfConfGames / 2) {
+                    if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= numOfConfGames / 2) {
                         addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
-                    } else if (school.getNumOfAwayConferenceGames() >= numOfConfGames / 2) {
+                    } else if (scheduleService.getNumOfAwayConferenceGamesForSchool(school) >= numOfConfGames / 2) {
                         addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
                     } else {
                         addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), false);
@@ -345,11 +348,11 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
             } else {
                 for (int j = div1.size() / 2; j < div1.size(); j++) {
                     School opponent = div2.get(j);
-                    int week = findConfGameWeek(school, opponent);
+                    int week = scheduleService.findConfGameWeek(school, opponent);
 
-                    if (school.getNumOfHomeConferenceGames() >= numOfConfGames / 2) {
+                    if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= numOfConfGames / 2) {
                         addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
-                    } else if (school.getNumOfAwayConferenceGames() >= numOfConfGames / 2) {
+                    } else if (scheduleService.getNumOfAwayConferenceGamesForSchool(school) >= numOfConfGames / 2) {
                         addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
                     } else {
                         addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), false);

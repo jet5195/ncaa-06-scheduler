@@ -1,6 +1,5 @@
 package com.robotdebris.ncaaps2scheduler.controller;
 
-import com.robotdebris.ncaaps2scheduler.SchedulerUtils;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SuggestedGameResponse;
@@ -68,13 +67,13 @@ public class SchoolController {
     @GetMapping(value = "{tgid}/schedule/empty-weeks")
     public ArrayList<Integer> getEmptyWeeks(@PathVariable int tgid) {
         School school = scheduleService.searchSchoolByTgid(tgid);
-        return SchedulerUtils.findEmptyWeeks(school);
+        return scheduleService.findEmptyWeeks(school);
     }
 
     @GetMapping(value = "{tgid}/schedule/empty-weeks/{tgid2}")
     public ArrayList<Integer> getEmptyWeeks(@PathVariable int tgid, @PathVariable int tgid2) {
         School school = scheduleService.searchSchoolByTgid(tgid);
         School school2 = scheduleService.searchSchoolByTgid(tgid2);
-        return SchedulerUtils.findEmptyWeeks(school, school2);
+        return scheduleService.findEmptyWeeks(school, school2);
     }
 }

@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Optional;
 
 public class School implements Comparable<School> {
 
@@ -60,41 +59,13 @@ public class School implements Comparable<School> {
     @JsonIgnore
     private School xDivRival;
 
-    private GameRepository gameRepository;
-
     School() {
-    }
-
-    public List<Game> getSchedule() {
-        return gameRepository.findGamesByTeam(this);
-    }
-
-    public Game getGameByWeek(int week) {
-        List<Game> schedule = gameRepository.findGamesByTeam(this);
-        Optional<Game> optional = schedule.stream().filter(game -> game.getWeek() == week).findFirst();
-        return optional.orElse(null);
     }
 
 //	public void addGame(Game theGame) {
 //		this.schedule.add(theGame);
 //	}
 
-    /**
-     * Searches a school's schedule for a game that is not in conference or a
-     * rivalry game
-     *
-     * @return Game that is removable (not a rivalry and not a conference game)
-     */
-    public Game findNonConferenceNonRivalryGame() {
-        for (int i = 0; i < this.getSchedule().size(); i++) {
-            Game theGame = this.getSchedule().get(i);
-            // 0 means non-con
-            if (theGame.isRemovableGame()) {
-                return theGame;
-            }
-        }
-        return null;
-    }
 
     /**
      * Checks to see if this school is in the same conference as another
@@ -112,35 +83,6 @@ public class School implements Comparable<School> {
             return this.getConference().getName().equalsIgnoreCase(school.getConference().getName());
     }
 
-    /**
-     * Checks to see if this school plays an opponent
-     *
-     * @param school the opponent
-     * @return true if these schools do play, false if else
-     */
-    public boolean isOpponent(School school) {
-        for (int i = 0; i < this.getSchedule().size(); i++) {
-            if (this.getSchedule().get(i).getHomeTeam() != null && this.getSchedule().get(i).getAwayTeam() != null) {
-                if (this.getSchedule().get(i).getHomeTeam().getTgid() == school.getTgid()
-                        || this.getSchedule().get(i).getAwayTeam().getTgid() == school.getTgid()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns true if schools are not in the same conference and don't already play
-     * one another
-     *
-     * @param school the opponent
-     * @return true if schools are not in the same conference and don't already play
-     * one another
-     */
-    public boolean isEligibleNonConferenceMatchup(School school) {
-        return !this.isInConference(school) && !this.isOpponent(school);
-    }
 
     /**
      * Prints the schedule of a school
@@ -188,51 +130,6 @@ public class School implements Comparable<School> {
             }
         }
         return false;
-    }
-
-    public int getNumOfConferenceGames() {
-        int confGames = 0;
-        for (Game game : this.getSchedule()) {
-            if (game.getHomeTeam().isInConference(game.getAwayTeam())) {
-                confGames++;
-            }
-        }
-        return confGames;
-    }
-
-    public int getNumOfHomeConferenceGames() {
-        int homeConfGames = 0;
-        for (Game game : this.getSchedule()) {
-            if (game.getHomeTeam().isInConference(game.getAwayTeam())) {
-                if (game.getHomeTeam() == this) {
-                    homeConfGames++;
-                }
-            }
-        }
-        return homeConfGames;
-    }
-
-    public int getNumOfAwayConferenceGames() {
-        int awayConfGames = 0;
-        for (Game game : this.getSchedule()) {
-            if (game.getHomeTeam().isInConference(game.getAwayTeam())) {
-                if (game.getAwayTeam() == this) {
-                    awayConfGames++;
-                }
-            }
-        }
-        return awayConfGames;
-    }
-
-    public int getNumOfDivisionalGames() {
-        int divisionalGames = 0;
-        for (Game game : this.getSchedule()) {
-            if (game.getHomeTeam().isInConference(game.getAwayTeam())
-                    && game.getHomeTeam().getDivision().equalsIgnoreCase(game.getAwayTeam().getDivision())) {
-                divisionalGames++;
-            }
-        }
-        return divisionalGames;
     }
 
     @Override
@@ -359,7 +256,6 @@ public class School implements Comparable<School> {
 
         public School build() {
             School school = new School();
-            school.gameRepository = this.gameRepository;
             school.tgid = this.tgid;
             school.name = this.name;
             school.nickname = this.nickname;

@@ -4,10 +4,17 @@ import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
+import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler {
+
+    @Autowired
+    ScheduleService scheduleService;
 
     @Override
     public void generateConferenceSchedule(Conference conference, GameRepository gameRepository) {
@@ -48,7 +55,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
                     firstOpponent -= 7;
                 }
                 School opponent = div2.get(firstOpponent);
-                int week = findConfGameWeek(school, opponent);
+                int week = scheduleService.findConfGameWeek(school, opponent);
                 addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
 
                 int secondOpponent = firstOpponent + 1;
@@ -56,7 +63,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
                     secondOpponent -= 7;
                 }
                 School opponent2 = div2.get(secondOpponent);
-                int week2 = findConfGameWeek(school, opponent2);
+                int week2 = scheduleService.findConfGameWeek(school, opponent2);
                 addYearlySeriesHelper(opponent2, school, week2, 5, gameRepository.getYear(), true);
             }
             /*
@@ -73,7 +80,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
             int i = 0;
             for (School school : div1) {
                 School opponent = div2.get(i);
-                int week = findConfGameWeek(school, opponent);
+                int week = scheduleService.findConfGameWeek(school, opponent);
                 addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), false);
                 i++;
             }
@@ -100,8 +107,8 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
                     }
                 }
                 School opponent = div2.get(j);
-                int week = findConfGameWeek(school, opponent);
-                if (school.getNumOfHomeConferenceGames() < 4) {
+                int week = scheduleService.findConfGameWeek(school, opponent);
+                if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) < 4) {
                     addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
                 } else {
                     addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);

@@ -18,6 +18,8 @@ public class SchoolService {
     private final Logger LOGGER = Logger.getLogger(SchoolService.class.getName());
     @Autowired
     ConferenceService conferenceService;
+    @Autowired
+    ScheduleService scheduleService;
 
     public SchoolService(SchoolRepository schoolRepository, GameRepository gameRepository) {
         this.schoolRepository = schoolRepository;
@@ -96,7 +98,7 @@ public class SchoolService {
     public void populateUserSchools() {
         List<School> allSchools = schoolRepository.findAll();
         for (School school : allSchools) {
-            long numOfUserGames = school.getSchedule().stream().filter(game -> game.getUserGame() == 1).count();
+            long numOfUserGames = scheduleService.getScheduleBySchool(school).stream().filter(game -> game.getUserGame() == 1).count();
             if (numOfUserGames >= 10) {
                 school.setUserTeam(true);
             }
@@ -112,7 +114,7 @@ public class SchoolService {
     public List<School> findTooManyGames() {
         List<School> allSchools = schoolRepository.findAll();
         return allSchools.stream()
-                .filter(school -> school.getNcaaDivision().isFBS() && school.getSchedule().size() > 12)
+                .filter(school -> school.getNcaaDivision().isFBS() && scheduleService.getScheduleBySchool(school).size() > 12)
                 .collect(Collectors.toList());
     }
 
@@ -122,7 +124,7 @@ public class SchoolService {
     public List<School> findTooFewGames() {
         List<School> allSchools = schoolRepository.findAll();
         return allSchools.stream()
-                .filter(school -> school.getNcaaDivision().isFBS() && school.getSchedule().size() < 12)
+                .filter(school -> school.getNcaaDivision().isFBS() && scheduleService.getScheduleBySchool(school).size() < 12)
                 .collect(Collectors.toList());
     }
 }

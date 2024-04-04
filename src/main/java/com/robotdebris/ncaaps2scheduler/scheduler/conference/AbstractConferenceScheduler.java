@@ -1,18 +1,14 @@
 package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 
-import com.robotdebris.ncaaps2scheduler.SchedulerUtils;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.robotdebris.ncaaps2scheduler.SchedulerUtils.findEmptyWeeks;
 
 @Component
 abstract class AbstractConferenceScheduler implements ConferenceScheduler {
@@ -33,20 +29,20 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
     void scheduleRoundRobinConfGames(List<School> list, int confGamesStartDate) throws Exception {
         int numOfSchools = list.size();
         for (School school : list) {
-            if (school.getNumOfConferenceGames() < numOfSchools - 1) {
+            if (scheduleService.getNumOfConferenceGamesForSchool(school) < numOfSchools - 1) {
                 for (School opponent : list) {
-                    if (!school.equals(opponent) && !school.isOpponent(opponent)) {
-                        int week = findConfGameWeek(school, opponent);
-                        if ((school.getNumOfAwayConferenceGames() >= numOfSchools / 2)
-                                || opponent.getNumOfHomeConferenceGames() >= numOfSchools / 2) {
+                    if (!school.equals(opponent) && !scheduleService.isOpponentForSchool(school, opponent)) {
+                        int week = scheduleService.findConfGameWeek(school, opponent);
+                        if ((scheduleService.getNumOfAwayConferenceGamesForSchool(school) >= numOfSchools / 2)
+                                || scheduleService.getNumOfHomeConferenceGamesForSchool(opponent) >= numOfSchools / 2) {
                             // add a home game for school
                             if (gameRepository.getYear() % 2 == 0) {
                                 addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), false);
                             } else {
                                 addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), false);
                             }
-                        } else if ((school.getNumOfHomeConferenceGames() >= numOfSchools / 2)
-                                || opponent.getNumOfAwayConferenceGames() >= numOfSchools / 2) {
+                        } else if ((scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= numOfSchools / 2)
+                                || scheduleService.getNumOfAwayConferenceGamesForSchool(opponent) >= numOfSchools / 2) {
                             // add an away game for school
                             if (gameRepository.getYear() % 2 == 0) {
                                 addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), false);
@@ -60,32 +56,6 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
                 }
             }
         }
-    }
-
-    int findConfGameWeek(School school, School opponent) throws Exception {
-        ArrayList<Integer> emptyWeeks = findEmptyWeeks(school, opponent);
-        // If both schools are each other's #1 rival, schedule the game for week 13 (14
-        // in game).. or 12 if unavailable
-        // TODO move games if week 13 isn't available
-        // bug fix, first check if getRivals is null or empty
-        if (!CollectionUtils.isEmpty(school.getRivals()) && !CollectionUtils.isEmpty(opponent.getRivals())
-                && school.getRivals().get(0).equals(opponent)) {
-            if (emptyWeeks.isEmpty()) {
-                throw new Exception("No empty weeks available!");
-            }
-            if (emptyWeeks.contains(13)) {
-                return 13;
-            } else if (emptyWeeks.contains(12)) {
-                return 12;
-            }
-        }
-        if (emptyWeeks.size() > 1) {
-            emptyWeeks.remove(Integer.valueOf(14));
-        }
-        if (emptyWeeks.isEmpty()) {
-            throw new Exception("No empty weeks available!");
-        }
-        return SchedulerUtils.randomizeWeek(emptyWeeks);
     }
 
     List<School> orderDivByXDivRivals(List<School> div1) {
@@ -104,8 +74,8 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 
     boolean addYearlySeriesHelper(School school1, School school2, int week, int day, int year,
                                   boolean specifyHome) {
-        if (!school1.isOpponent(school2) && school1.getSchedule().size() < 12 && school2.getSchedule().size() < 12
-                && school1.getGameByWeek(week) == null && school2.getGameByWeek(week) == null) {
+        if (!scheduleService.isOpponentForSchool(school1, school2) && scheduleService.getScheduleBySchool(school1).size() < 12 && scheduleService.getScheduleBySchool(school2).size() < 12
+                && scheduleService.getGameBySchoolAndWeek(school1, week) == null && scheduleService.getGameBySchoolAndWeek(school2, week) == null) {
             // check if out of division conf opponent here?
             if (!specifyHome) {
                 scheduleService.addGameYearlySeries(school1, school2, week, day, year);
