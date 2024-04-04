@@ -17,9 +17,10 @@ public class SchoolService {
     private final GameRepository gameRepository;
     private final Logger LOGGER = Logger.getLogger(SchoolService.class.getName());
     @Autowired
-    ConferenceService conferenceService;
-    @Autowired
+    public
     ScheduleService scheduleService;
+    @Autowired
+    ConferenceService conferenceService;
 
     public SchoolService(SchoolRepository schoolRepository, GameRepository gameRepository) {
         this.schoolRepository = schoolRepository;
@@ -104,27 +105,5 @@ public class SchoolService {
             }
         }
         schoolRepository.saveAll(allSchools);
-    }
-
-    /**
-     * Finds schools with more than 12 games in their schedule.
-     *
-     * @return a list of schools with too many games
-     */
-    public List<School> findTooManyGames() {
-        List<School> allSchools = schoolRepository.findAll();
-        return allSchools.stream()
-                .filter(school -> school.getNcaaDivision().isFBS() && scheduleService.getScheduleBySchool(school).size() > 12)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * @return List<School> of schools with < 12 games
-     */
-    public List<School> findTooFewGames() {
-        List<School> allSchools = schoolRepository.findAll();
-        return allSchools.stream()
-                .filter(school -> school.getNcaaDivision().isFBS() && scheduleService.getScheduleBySchool(school).size() < 12)
-                .collect(Collectors.toList());
     }
 }

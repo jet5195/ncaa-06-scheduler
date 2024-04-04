@@ -3,6 +3,7 @@ package com.robotdebris.ncaaps2scheduler.service;
 import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.model.*;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
+import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 import com.robotdebris.ncaaps2scheduler.scheduler.conference.ConferenceScheduler;
 import com.robotdebris.ncaaps2scheduler.scheduler.conference.ConferenceSchedulerFactory;
 import org.apache.log4j.Logger;
@@ -24,6 +25,7 @@ import static com.robotdebris.ncaaps2scheduler.SchedulerUtils.findEmptyWeeksInCo
 public class ScheduleService {
 
     private final GameRepository gameRepository;
+    private final SchoolRepository schoolRepository;
     private final Logger LOGGER = Logger.getLogger(ScheduleService.class.getName());
     int year = 2005;
     @Autowired
@@ -33,8 +35,9 @@ public class ScheduleService {
     @Autowired
     ExcelReader excelReader;
 
-    public ScheduleService(GameRepository gameRepository) {
+    public ScheduleService(GameRepository gameRepository, SchoolRepository schoolRepository) {
         this.gameRepository = gameRepository;
+        this.schoolRepository = schoolRepository;
     }
 
     public ArrayList<Integer> findEmptyWeeks(School s1, School s2) {// returns list of empty weeks between 2 schools
@@ -220,17 +223,17 @@ public class ScheduleService {
 
     private int fillOpenGames(List<School> schoolList) {
         int count = 0;
-        List<School> tooFewGames = schoolService.findTooFewGames();
+        List<School> tooFewGames = findTooFewGames();
         count += addRivalryGamesAll(tooFewGames, false);
         // recalculate tooFewGames?
-        tooFewGames = schoolService.findTooFewGames();
+        tooFewGames = findTooFewGames();
         count += addRandomGames(schoolList, tooFewGames);
         return count;
     }
 
     private int removeExtraGames(List<School> schoolList) {
         int count = 0;
-        List<School> tooManyGames = schoolService.findTooManyGames();
+        List<School> tooManyGames = findTooManyGames();
         for (int i = 0; i < tooManyGames.size(); i++) {
             School school = tooManyGames.get(i);
             while (getScheduleBySchool(school).size() > 12) {
@@ -472,7 +475,7 @@ public class ScheduleService {
         int count = 0;
         for (int i = 0; i < needGames.size(); i++) {
             School s1 = needGames.get(i);
-            List<School> myOptions = schoolService.findTooFewGames();
+            List<School> myOptions = findTooFewGames();
             myOptions.remove(s1);
 
             boolean exit = false;
@@ -631,7 +634,7 @@ public class ScheduleService {
 
     public int autoAddRandomly() {
         int count = 0;
-        List<School> tooFewGames = schoolService.findTooFewGames();
+        List<School> tooFewGames = findTooFewGames();
         count += addRandomGames(schoolService.getAllSchools(), tooFewGames);
         return count;
     }
@@ -1317,4 +1320,25 @@ public class ScheduleService {
         return optional.orElse(null);
     }
 
+    /**
+     * @return List<School> of schools with < 12 games
+     */
+    public List<School> findTooFewGames() {
+        List<School> allSchools = schoolRepository.findAll();
+        return allSchools.stream()
+                .filter(school -> school.getNcaaDivision().isFBS() && getScheduleBySchool(school).size() < 12)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Finds schools with more than 12 games in their schedule.
+     *
+     * @return a list of schools with too many games
+     */
+    public List<School> findTooManyGames() {
+        List<School> allSchools = schoolRepository.findAll();
+        return allSchools.stream()
+                .filter(school -> school.getNcaaDivision().isFBS() && getScheduleBySchool(school).size() > 12)
+                .collect(Collectors.toList());
+    }
 }
