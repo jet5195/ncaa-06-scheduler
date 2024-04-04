@@ -2,7 +2,6 @@ package com.robotdebris.ncaaps2scheduler;
 
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.School;
-import com.robotdebris.ncaaps2scheduler.model.SchoolSchedule;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 import com.robotdebris.ncaaps2scheduler.service.SchoolService;
 import org.junit.jupiter.api.Test;

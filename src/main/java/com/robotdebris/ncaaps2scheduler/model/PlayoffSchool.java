@@ -1,10 +1,7 @@
 package com.robotdebris.ncaaps2scheduler.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.stereotype.Component;
 
 //@AllArgsConstructor
 //@NoArgsConstructor
@@ -14,8 +11,11 @@ public class PlayoffSchool extends School {
     @Setter
     private int seed;
 
-    public PlayoffSchool(School school, int seed) {
-        super(school.getTgid(), school.getName(), school.getNickname(), school.getState(), school.getConference(), school.getDivision(), school.getNcaaDivision(), school.getColor(), school.getAltColor(), school.getLogo(), school.getRivals(), school.isUserTeam(), school.getSchedule(), school.getXDivRival());
-        this.seed = seed;
+    private PlayoffSchool(School school, int seed) {
+        super();
+    }
+
+    public static PlayoffSchool createPlayoffSchool(School school, int seed) {
+        return new PlayoffSchool(school, seed);
     }
 }

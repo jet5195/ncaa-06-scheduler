@@ -3,7 +3,6 @@ package com.robotdebris.ncaaps2scheduler.service;
 import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.model.Bowl;
 import com.robotdebris.ncaaps2scheduler.model.Game;
-import com.robotdebris.ncaaps2scheduler.model.SeasonSchedule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +21,7 @@ public class BowlService {
     List<Bowl> bowlList;
     @Autowired
     ExcelReader excelReader;
+
     public void setBowlFile(MultipartFile bowlFile) throws IOException {
         File file = excelReader.convertMultipartFileToFile(bowlFile);
         try {
@@ -41,13 +41,13 @@ public class BowlService {
         this.bowlList = bowlList;
     }
 
-    public Bowl findChampionship(){
+    public Bowl findChampionship() {
         //championship game is always the last game in the last week
         int maxWeek = 0;
         int maxSgnm = 0;//game number
         Bowl result = new Bowl();
-        for (Bowl bowl: this.bowlList) {
-            if (bowl.getWeek() > maxWeek || (bowl.getWeek() == maxWeek && bowl.getGameNumber() > maxSgnm)){
+        for (Bowl bowl : this.bowlList) {
+            if (bowl.getWeek() > maxWeek || (bowl.getWeek() == maxWeek && bowl.getGameNumber() > maxSgnm)) {
                 maxWeek = bowl.getWeek();
                 maxSgnm = bowl.getGameNumber();
                 result = bowl;
@@ -56,20 +56,20 @@ public class BowlService {
         return result;
     }
 
-    public Bowl findBowl(String bowlName){
+    public Bowl findBowl(String bowlName) {
         Bowl result = new Bowl();
-        for (Bowl bowl: this.bowlList) {
-            if(bowl.getBowlName().contains(bowlName)){
+        for (Bowl bowl : this.bowlList) {
+            if (bowl.getBowlName().contains(bowlName)) {
                 result = bowl;
             }
         }
         return result;
     }
 
-    public Bowl findBowl(int blgo){
+    public Bowl findBowl(int blgo) {
         Bowl emptyBowl = new Bowl();
-        for (Bowl bowl: this.bowlList) {
-            if(bowl.getBowlLogo() == blgo){
+        for (Bowl bowl : this.bowlList) {
+            if (bowl.getBowlLogo() == blgo) {
                 return bowl;
             }
         }
@@ -77,17 +77,17 @@ public class BowlService {
     }
 
     public void recalculateGameNumbers() {
-        for (int weekNum = 17; weekNum < 23; weekNum++){
-            ArrayList<Game> weeklySchedule = this.scheduleService.seasonSchedule.getScheduleByWeek(weekNum);
-            for (int gameNum = 0; gameNum < weeklySchedule.size(); gameNum++ ){
+        for (int weekNum = 17; weekNum < 23; weekNum++) {
+            ArrayList<Game> weeklySchedule = this.scheduleService.getScheduleByWeek(weekNum);
+            for (int gameNum = 0; gameNum < weeklySchedule.size(); gameNum++) {
                 weeklySchedule.get(gameNum).setGameNumber(gameNum);
             }
         }
 
-        for (int weekNum = 17; weekNum < 23; weekNum++){
+        for (int weekNum = 17; weekNum < 23; weekNum++) {
             int bowlIndex = 0;
             ArrayList<Bowl> weeklySchedule = this.getScheduleByWeek(weekNum);
-            for (int gameNum = 0; gameNum < weeklySchedule.size(); gameNum++ ){
+            for (int gameNum = 0; gameNum < weeklySchedule.size(); gameNum++) {
                 weeklySchedule.get(gameNum).setGameNumber(gameNum);
                 weeklySchedule.get(gameNum).setBowlIndex(bowlIndex);
                 bowlIndex++;

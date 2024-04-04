@@ -1,6 +1,7 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
+import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.Swap;
 import com.robotdebris.ncaaps2scheduler.repository.SwapRepository;
@@ -57,7 +58,7 @@ public class SwapService {
         if (!(s1.getConference().getName() == s2.getConference().getName() && s1.getDivision() == s2.getDivision())) {
             Conference tempConf = s1.getConference();
             String tempDiv = s1.getDivision();
-            String tempNcaaDiv = s1.getNcaaDivision();
+            NCAADivision tempNcaaDiv = s1.getNcaaDivision();
 
             s1.setConference(s2.getConference());
             s1.setDivision(s2.getDivision());
