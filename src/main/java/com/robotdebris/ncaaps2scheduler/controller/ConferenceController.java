@@ -21,7 +21,6 @@ import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.Swap;
 import com.robotdebris.ncaaps2scheduler.service.ConferenceService;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
-import com.robotdebris.ncaaps2scheduler.service.SchoolService;
 import com.robotdebris.ncaaps2scheduler.service.SwapService;
 
 @CrossOrigin(origins = "*")
@@ -31,8 +30,6 @@ public class ConferenceController {
 
 	@Autowired
 	private ConferenceService conferenceService;
-	@Autowired
-	private SchoolService schoolService;
 	@Autowired
 	private ScheduleService scheduleService;
 	@Autowired
