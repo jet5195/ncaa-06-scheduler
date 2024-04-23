@@ -1,8 +1,6 @@
 package com.robotdebris.ncaaps2scheduler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -23,16 +21,12 @@ import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.ConferenceRepository;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
-import com.robotdebris.ncaaps2scheduler.service.ConferenceService;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 
 @SpringBootTest
 public class ConferenceSchedulingIntegrationTest {
 	@Autowired
 	private ScheduleService scheduleService;
-
-	@Autowired
-	private ConferenceService conferenceService;
 
 	@Autowired
 	private ConferenceRepository conferenceRepository;
@@ -45,19 +39,25 @@ public class ConferenceSchedulingIntegrationTest {
 
 	@Test
 	public void testDefaultConferences() throws Exception {
+		verifyConferenceGameCounts("Default_06_07_Conferences.xlsx");
+	}
+
+	private void verifyConferenceGameCounts(String fileName) throws Exception {
 		// setup crap
-		MockMultipartFile file = createMockMultipartFile("Default_06_07_Conferences.xlsx");
+		MockMultipartFile file = createMockMultipartFile(fileName);
 		scheduleService.setAlignmentFile(file);
 
+		for (int i = 1980; i <= 2050; i++) {
+			testConfScheduleByYear(i);
+		}
+	}
+
+	private void testConfScheduleByYear(int year) throws Exception {
+		System.out.println("Setting schedule for year " + year);
+		gameRepository.removeAll();
 		// Act - perform the scheduling
 		scheduleService.addAllConferenceGames();
-
-		// Assert - verify the results
-		List<Game> scheduledGames = gameRepository.findAll();
-		assertNotNull(scheduledGames, "Scheduled games should not be null");
-		assertFalse(scheduledGames.isEmpty(), "Scheduled games should not be empty");
-		// Add more assertions to verify the schedule is as expected
-
+		gameRepository.setYear(year);
 		// Assert - for each conference all schools have correct number of games
 		List<Conference> conferenceList = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
 		for (Conference conf : conferenceList) {
@@ -74,7 +74,7 @@ public class ConferenceSchedulingIntegrationTest {
 		}
 	}
 
-	public MockMultipartFile createMockMultipartFile(String fileName) throws IOException, URISyntaxException {
+	private MockMultipartFile createMockMultipartFile(String fileName) throws IOException, URISyntaxException {
 		// Load the file from the classpath
 		Path path = Paths.get(getClass().getClassLoader().getResource(fileName).toURI());
 		byte[] content = Files.readAllBytes(path);
