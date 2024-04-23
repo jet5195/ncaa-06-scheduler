@@ -1231,16 +1231,9 @@ public class ScheduleService {
 	 * @return true if these schools do play, false if else
 	 */
 	public boolean isOpponentForSchool(School school, School possibleOpponent) {
-		for (int i = 0; i < getScheduleBySchool(school).size(); i++) {
-			if (getScheduleBySchool(school).get(i).getHomeTeam() != null
-					&& getScheduleBySchool(school).get(i).getAwayTeam() != null) {
-				if (getScheduleBySchool(school).get(i).getHomeTeam().getTgid() == possibleOpponent.getTgid()
-						|| getScheduleBySchool(school).get(i).getAwayTeam().getTgid() == possibleOpponent.getTgid()) {
-					return true;
-				}
-			}
-		}
-		return false;
+		return gameRepository.findGamesByTeam(school).stream()
+				.anyMatch(game -> Objects.equals(game.getHomeTeam(), possibleOpponent)
+						|| Objects.equals(game.getAwayTeam(), possibleOpponent));
 	}
 
 	/**

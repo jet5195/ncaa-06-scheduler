@@ -73,7 +73,8 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 //        return addYearlySeriesHelper(school1, school2, week, day, year, specifyHome);
 //    }
 
-	boolean addYearlySeriesHelper(School school1, School school2, int week, int day, int year, boolean specifyHome) {
+	void addYearlySeriesHelper(School school1, School school2, int week, int day, int year, boolean specifyHome)
+			throws Exception {
 		if (!scheduleService.isOpponentForSchool(school1, school2)
 				&& scheduleService.getScheduleBySchool(school1).size() < 12
 				&& scheduleService.getScheduleBySchool(school2).size() < 12
@@ -85,9 +86,8 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 			} else {
 				scheduleService.addGameSpecificHomeTeam(school1, school2, week, day);
 			}
-			return true;
 		}
-		return false;
+		throw new Exception("tried to add duplicate game for " + school1 + " vs " + school2);
 	}
 
 }
