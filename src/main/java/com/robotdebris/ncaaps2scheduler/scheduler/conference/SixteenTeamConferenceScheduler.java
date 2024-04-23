@@ -5,10 +5,10 @@ import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 
 public class SixteenTeamConferenceScheduler extends AbstractConferenceScheduler {
 
-    @Override
-    public void generateConferenceSchedule(Conference conference, GameRepository gameRepository) {
-        // TODO Auto-generated method stub
+	@Override
+	public void generateConferenceSchedule(Conference conference, GameRepository gameRepository) {
+		// TODO Auto-generated method stub
 
-    }
+	}
 
 }

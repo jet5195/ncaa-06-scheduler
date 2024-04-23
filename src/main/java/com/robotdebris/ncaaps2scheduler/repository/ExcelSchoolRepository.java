@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.School;
 
 @Repository
@@ -45,6 +46,11 @@ public class ExcelSchoolRepository implements SchoolRepository {
 	@Override
 	public void saveAll(List<School> schools) {
 		this.schools = schools;
+	}
+
+	@Override
+	public List<School> findByConference(Conference conference) {
+		return schools.stream().filter(school -> school.getConference().equals(conference)).toList();
 	}
 
 }

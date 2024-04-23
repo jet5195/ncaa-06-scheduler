@@ -9,6 +9,7 @@ import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
+import com.robotdebris.ncaaps2scheduler.service.SchoolService;
 
 @Component
 public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
@@ -16,8 +17,17 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 	@Autowired
 	ScheduleService scheduleService;
 
+	@Autowired
+	SchoolService schoolService;
+
 	@Override
 	public void generateConferenceSchedule(Conference conference, GameRepository gameRepository) {
+		if (schoolService == null) {
+			System.out.println("school service is null");
+		}
+		if (scheduleService == null) {
+			System.out.println("schedule service is null");
+		}
 		try {
 			scheduleConferenceGamesDivisions12(conference, gameRepository);
 		} catch (Exception e) {

@@ -1,5 +1,6 @@
 package com.robotdebris.ncaaps2scheduler;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -15,22 +16,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 
+import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Game;
+import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
+import com.robotdebris.ncaaps2scheduler.model.School;
+import com.robotdebris.ncaaps2scheduler.repository.ConferenceRepository;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
+import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
+import com.robotdebris.ncaaps2scheduler.service.ConferenceService;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 
 @SpringBootTest
 public class ConferenceSchedulingIntegrationTest {
 	@Autowired
-	private ScheduleService scheduleService; // Your scheduling service
+	private ScheduleService scheduleService;
 
 	@Autowired
-	private GameRepository gameRepository; // Your game repository
+	private ConferenceService conferenceService;
+
+	@Autowired
+	private ConferenceRepository conferenceRepository;
+
+	@Autowired
+	private SchoolRepository schoolRepository;
+
+	@Autowired
+	private GameRepository gameRepository;
 
 	@Test
-	public void testConferenceGameScheduling() throws Exception {
+	public void testDefaultConferences() throws Exception {
 		// setup crap
-		MockMultipartFile file = createMockMultipartFile("Default_06_Conferences.xlsx");
+		MockMultipartFile file = createMockMultipartFile("Default_06_07_Conferences.xlsx");
 		scheduleService.setAlignmentFile(file);
 
 		// Act - perform the scheduling
@@ -42,7 +58,20 @@ public class ConferenceSchedulingIntegrationTest {
 		assertFalse(scheduledGames.isEmpty(), "Scheduled games should not be empty");
 		// Add more assertions to verify the schedule is as expected
 
-		// Clean up - remove test data if necessary
+		// Assert - for each conference all schools have correct number of games
+		List<Conference> conferenceList = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
+		for (Conference conf : conferenceList) {
+			// TODO: Revisit this logic if you allow non round robin schedules for 11 or
+			// fewer confs
+			int numOfConfGames = conf.getNumOfConfGames() > 0 ? conf.getNumOfConfGames() : conf.getNumOfSchools() - 1;
+			List<School> schools = schoolRepository.findByConference(conf);
+			for (School school : schools) {
+				List<Game> schedule = gameRepository.findGamesByTeam(school);
+				System.out.println("Testing " + conf + " and school " + school + ". " + numOfConfGames + " expected, "
+						+ schedule.size() + " actual.");
+				assertEquals(numOfConfGames, schedule.size());
+			}
+		}
 	}
 
 	public MockMultipartFile createMockMultipartFile(String fileName) throws IOException, URISyntaxException {
@@ -52,7 +81,7 @@ public class ConferenceSchedulingIntegrationTest {
 
 		// Create a MockMultipartFile object
 		MockMultipartFile mockMultipartFile = new MockMultipartFile("file", // Parameter name used in the form
-				"Default_06_Conferences.xlsx", // Filename
+				fileName, // Filename
 				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // Content type
 				content // File content
 		);

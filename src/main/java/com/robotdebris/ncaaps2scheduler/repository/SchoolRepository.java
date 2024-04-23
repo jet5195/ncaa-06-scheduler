@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.robotdebris.ncaaps2scheduler.exception.SchoolNotFoundException;
+import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.School;
 
 /**
@@ -35,6 +36,8 @@ public interface SchoolRepository {
 	 * @return the found School or null if not found
 	 */
 	School findByName(String name) throws SchoolNotFoundException;
+
+	List<School> findByConference(Conference conference);
 
 	void saveAll(List<School> schools);
 

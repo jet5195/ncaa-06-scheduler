@@ -5,17 +5,21 @@ import com.robotdebris.ncaaps2scheduler.model.School;
 
 public class NoWeeksAvailableException extends RuntimeException {
 
-    public NoWeeksAvailableException(School s1) {
+	public NoWeeksAvailableException(School s1) {
 
-        super("No available weeks found for scheduling " + s1.getName() +
-        		" . Make sure you removed all non-conference games before" + 
-        		" setting conference schedule.");
-    }
-    
-    public NoWeeksAvailableException(Conference c1) {
+		super("No available weeks found for scheduling " + s1.getName()
+				+ " . Make sure you removed all non-conference games before" + " setting conference schedule.");
+	}
 
-        super("No available weeks found for scheduling " + c1.getName() +
-        		" . Make sure you removed all non-conference games before" + 
-        		" setting conference schedule.");
-    }
+	public NoWeeksAvailableException(Conference c1) {
+
+		super("No available weeks found for scheduling " + c1.getName()
+				+ " . Make sure you removed all non-conference games before" + " setting conference schedule.");
+	}
+
+	public NoWeeksAvailableException(School s1, School s2) {
+
+		super("No available weeks found for scheduling " + s1 + " vs " + s2
+				+ ". Make sure you removed all non-conference games before" + " setting conference schedule.");
+	}
 }
