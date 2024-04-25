@@ -526,6 +526,23 @@ public class ScheduleService {
 		return 0;
 	}
 
+	public void newAddRandomNonConferenceGames() {
+		List<School> schoolsThatNeedGames = findTooFewGames();
+		for (School school : schoolsThatNeedGames) {
+			List<School> possibleOpponents = schoolsThatNeedGames.stream()
+					.filter(opponent -> isEligibleNonConfMatchup(school, opponent)).collect(Collectors.toList());
+			if (!possibleOpponents.isEmpty()) {
+				Random rand = new Random();
+				School randomOpponent = possibleOpponents.get(rand.nextInt(possibleOpponents.size()));
+				// schedule game
+				// check if teams have enough games or not
+			} else {
+				// schedule FCS game
+				// TODO: finish this logic
+			}
+		}
+	}
+
 	public void addRandomGames(List<School> allSchools, List<School> needGames) {
 		for (int i = 0; i < needGames.size(); i++) {
 			School s1 = needGames.get(i);
