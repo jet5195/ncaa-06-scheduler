@@ -58,7 +58,7 @@ public class ScheduleService {
 	private int addRivalryGameTwoSchools(School school, School rival, boolean aggressive, int rivalRank) {
 		// School rival = school.getRivals().get(j);
 		int count = 0;
-		if (isEligibleNonConferenceMatchup(school, rival)) {
+		if (isEligibleNonConfMatchup(school, rival)) {
 			if (aggressive && rivalRank < 2) {
 				count += aggressiveAddRivalryGameHelper(school, rival);
 			}
@@ -180,7 +180,7 @@ public class ScheduleService {
 			throw new IllegalArgumentException("School not found with ID: " + tgid);
 		}
 
-		return input.getRivals().stream().filter(rival -> isEligibleNonConferenceMatchup(input, rival))
+		return input.getRivals().stream().filter(rival -> isEligibleNonConfMatchup(input, rival))
 				.filter(school -> getGameBySchoolAndWeek(school, week) == null).collect(Collectors.toList());
 	}
 
@@ -250,7 +250,7 @@ public class ScheduleService {
 		}
 
 		for (School rival : thisSchool.getRivals()) {
-			if (isEligibleNonConferenceMatchup(thisSchool, rival)) {
+			if (isEligibleNonConfMatchup(thisSchool, rival)) {
 				// should isPossibleOpponent check this instead?
 				if (getScheduleBySchool(rival).size() < 12) {
 					ArrayList<Integer> emptyWeeks = findEmptyWeeks(thisSchool, rival);
@@ -274,26 +274,21 @@ public class ScheduleService {
 		return null;
 	}
 
-	public int autoAddGames(boolean aggressive) {
-		int count = 0;
-		count += addRivalryGamesAll(schoolService.getAllSchools(), aggressive);
-		count -= removeExtraGames(schoolService.getAllSchools());
-		count += fillOpenGames(schoolService.getAllSchools());
-		return count;
+	public void autoAddGames(boolean aggressive) {
+		addRivalryGamesAll(schoolService.getAllSchools(), aggressive);
+		removeExtraGames(schoolService.getAllSchools());
+		fillOpenGames(schoolService.getAllSchools());
 	}
 
-	private int fillOpenGames(List<School> schoolList) {
-		int count = 0;
+	private void fillOpenGames(List<School> schoolList) {
 		List<School> tooFewGames = findTooFewGames();
-		count += addRivalryGamesAll(tooFewGames, false);
+		addRivalryGamesAll(tooFewGames, false);
 		// recalculate tooFewGames?
 		tooFewGames = findTooFewGames();
-		count += addRandomGames(schoolList, tooFewGames);
-		return count;
+		addRandomGames(schoolList, tooFewGames);
 	}
 
-	private int removeExtraGames(List<School> schoolList) {
-		int count = 0;
+	private void removeExtraGames(List<School> schoolList) {
 		List<School> tooManyGames = findTooManyGames();
 		for (int i = 0; i < tooManyGames.size(); i++) {
 			School school = tooManyGames.get(i);
@@ -301,7 +296,6 @@ public class ScheduleService {
 				Game removeMe = findNonConferenceNonRivalryGameForSchool(school);
 				if (removeMe != null) {
 					removeGame(removeMe);
-					count++;
 				} else {
 					// remove extra rivalry games
 					for (int j = school.getRivals().size() - 1; getScheduleBySchool(school).size() > 12; j--) {
@@ -310,14 +304,12 @@ public class ScheduleService {
 							removeMe = findFirstGameBetweenSchools(school, rival);
 							if (!removeMe.isConferenceGame()) {
 								removeGame(removeMe);
-								count++;
 							}
 						}
 					}
 				}
 			}
 		}
-		return count / 2;// it's returning 1 removed game as removed for both schools
 	}
 
 	// finds the FIRST game between 2 schools.
@@ -333,13 +325,13 @@ public class ScheduleService {
 				.findFirst().orElse(null);
 	}
 
-	private int addRivalryGamesAll(List<School> allSchools, boolean aggressive) {
+	public int addRivalryGamesAll(List<School> allSchools, boolean aggressive) {
 		int count = 0;
 		for (int j = 0; j <= 8; j++) {
 			for (int i = 0; i < allSchools.size(); i++) {
 				// go through all the schools
 				School s1 = allSchools.get(i);
-				if (s1.getNcaaDivision().equals("FBS") && j < s1.getRivals().size()) {
+				if (s1.getNcaaDivision().equals(NCAADivision.FBS) && j < s1.getRivals().size()) {
 					// new chance algorithm so you don't ALWAYS play your 5th rival.
 					// 1st rival: 100% chance
 					// 2nd rival: 70% chance
@@ -534,8 +526,7 @@ public class ScheduleService {
 		return 0;
 	}
 
-	private int addRandomGames(List<School> allSchools, List<School> needGames) {
-		int count = 0;
+	public void addRandomGames(List<School> allSchools, List<School> needGames) {
 		for (int i = 0; i < needGames.size(); i++) {
 			School s1 = needGames.get(i);
 			List<School> myOptions = findTooFewGames();
@@ -548,7 +539,7 @@ public class ScheduleService {
 				int range = max - min + 1;
 				int randomNum = (int) (Math.random() * range) + min;
 				School randomSchool = myOptions.get(randomNum);
-				if (isEligibleNonConferenceMatchup(s1, randomSchool) && getScheduleBySchool(randomSchool).size() < 12) {
+				if (isEligibleNonConfMatchup(s1, randomSchool) && getScheduleBySchool(randomSchool).size() < 12) {
 					ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, randomSchool);
 					if (!emptyWeeks.isEmpty()) {
 						// verify Alabama won't play Michigan to end the year. Instead they'll play LA
@@ -557,7 +548,7 @@ public class ScheduleService {
 								|| (s1.getConference().isPowerConf() ^ randomSchool.getConference().isPowerConf())) {
 							Game game = new GameBuilder().setTeamsWithRandomHomeIntelligently(s1, randomSchool)
 									.setWeek(emptyWeeks.get(0)).build();
-							count++;
+							addGame(game);
 						}
 					}
 					// remove randomSchool from myOptions regardless of whether or not it was added
@@ -600,7 +591,7 @@ public class ScheduleService {
 				// spreadsheet but not added to the conference spreadsheets are
 				// still included. On 2nd thought I might already be setting those
 				// to FCS... But I'll need to check.
-				if (!allSchools.get(i).getNcaaDivision().equals("FBS")) {
+				if (!allSchools.get(i).getNcaaDivision().equals(NCAADivision.FBS)) {
 					fcsSchoolList.add(allSchools.get(i));
 				}
 			}
@@ -628,7 +619,6 @@ public class ScheduleService {
 							Game game = new GameBuilder().setHomeTeam(s1).setAwayTeam(fcs).setWeek(emptyWeeks.get(0))
 									.setDay(DayOfWeek.SATURDAY).build();
 							addGame(game);
-							count++;
 						}
 					}
 				}
@@ -639,14 +629,11 @@ public class ScheduleService {
 				needGames.remove(i);
 			}
 		}
-		return count;
 	}
 
-	public int fixSchedule() {
-		int count = 0;
-		count += removeExtraGames(schoolService.getAllSchools());
+	public void fixSchedule() {
+		removeExtraGames(schoolService.getAllSchools());
 		// count += fillOpenGames(seasonSchedule, schoolList);
-		return count;
 	}
 
 	public void setAlignmentFile(MultipartFile alignmentFile) throws IOException {
@@ -668,7 +655,7 @@ public class ScheduleService {
 	public void downloadSchedule(Writer writer) {
 		try {
 			CsvExportService csvExportService = new CsvExportService();
-			List<List<String>> list = scheduleToList(true);
+			List<List> list = scheduleToList(true);
 			csvExportService.writeSchedule(writer, list);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -676,20 +663,6 @@ public class ScheduleService {
 		}
 		// return null;
 	}
-
-	public int autoAddRivalries() {
-		int count = 0;
-		count += addRivalryGamesAll(schoolService.getAllSchools(), false);
-		return count;
-	}
-
-	public int autoAddRandomly() {
-		int count = 0;
-		List<School> tooFewGames = findTooFewGames();
-		count += addRandomGames(schoolService.getAllSchools(), tooFewGames);
-		return count;
-	}
-
 //
 //    public void setAllYearlyGames() {
 //        /*
@@ -1019,10 +992,10 @@ public class ScheduleService {
 	/**
 	 * @return ArrayList of Strings of the SeasonSchedule
 	 */
-	public List<List<String>> scheduleToList(boolean header) {
-		List<List<String>> list = new ArrayList<>();
+	public List<List> scheduleToList(boolean header) {
+		List<List> list = new ArrayList<>();
 		if (header) {
-			ArrayList<String> firstLine = new ArrayList<String>();
+			List<String> firstLine = new ArrayList<String>();
 			firstLine.add("GSTA");
 			firstLine.add("GASC");
 			firstLine.add("GHSC");
@@ -1149,7 +1122,7 @@ public class ScheduleService {
 	 * @return true if schools are not in the same conference and don't already play
 	 *         one another
 	 */
-	public boolean isEligibleNonConferenceMatchup(School school, School opponent) {
+	public boolean isEligibleNonConfMatchup(School school, School opponent) {
 		return !school.isInConference(opponent) && !this.isOpponentForSchool(school, opponent);
 	}
 

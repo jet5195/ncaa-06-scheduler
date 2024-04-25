@@ -1,6 +1,7 @@
 package com.robotdebris.ncaaps2scheduler.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -193,8 +194,8 @@ public class Game implements Comparable {
 	 * @return an arrayList of all the data of a specific game, is used when
 	 *         creating the output excel file
 	 */
-	public ArrayList gameToList() {
-		ArrayList<Integer> list = new ArrayList();
+	public List<Integer> gameToList() {
+		List<Integer> list = new ArrayList<>();
 		int i = 0;
 		while (i < 14) {
 			if (i == 0) {

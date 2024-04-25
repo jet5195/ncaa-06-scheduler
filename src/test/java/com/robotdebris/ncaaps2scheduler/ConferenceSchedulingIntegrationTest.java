@@ -43,14 +43,14 @@ public class ConferenceSchedulingIntegrationTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		MockMultipartFile file = createMockMultipartFile("Default_06_07_Conferences.xlsx");
-		scheduleService.setAlignmentFile(file);
 		gameRepository.removeAll();
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideYears")
-	public void verifyConferenceGameCounts(int year) throws Exception {
+	public void verifyConferenceGameCountsForDefaultConferences(int year) throws Exception {
+		MockMultipartFile file = createMockMultipartFile("Default_06_07_Conferences.xlsx");
+		scheduleService.setAlignmentFile(file);
 		gameRepository.setYear(year);
 		scheduleService.addAllConferenceGames();
 		// Assert
@@ -58,6 +58,42 @@ public class ConferenceSchedulingIntegrationTest {
 		for (Conference conf : conferences) {
 			verifyConferenceGamesForYear(conf, year);
 		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideYears")
+	public void verifyConferenceGameCountsForRobotDebrisConferences(int year) throws Exception {
+		MockMultipartFile file = createMockMultipartFile("RobotDebris_Custom_Conf_V2.xlsx");
+		scheduleService.setAlignmentFile(file);
+		gameRepository.setYear(year);
+		scheduleService.addAllConferenceGames();
+		// Assert
+		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
+		for (Conference conf : conferences) {
+			verifyConferenceGamesForYear(conf, year);
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideYears")
+	public void verifyNonConferenceGameCounts(int year) throws Exception {
+		MockMultipartFile file = createMockMultipartFile("Default_06_07_Conferences.xlsx");
+		scheduleService.setAlignmentFile(file);
+		gameRepository.setYear(year);
+		scheduleService.addAllConferenceGames();
+		// Assert
+		scheduleService.autoAddGames(false);
+		List<School> schools = schoolRepository.findByNCAADivision(NCAADivision.FBS);
+		for (School school : schools) {
+			verifyNonConfGamesForYear(school);
+		}
+	}
+
+	private void verifyNonConfGamesForYear(School school) {
+		List<Game> schedule = gameRepository.findGamesByTeam(school);
+		String message = String.format("For school '%s' in year %d: expected %d games, found %d.", school.getName(),
+				gameRepository.getYear(), 12, schedule.size());
+		assertThat(schedule.size()).as(message).isEqualTo(12);
 	}
 
 	@Test
@@ -97,46 +133,8 @@ public class ConferenceSchedulingIntegrationTest {
 	}
 
 	public static IntStream provideYears() {
-		return IntStream.rangeClosed(1980, 2020);
+		return IntStream.rangeClosed(2000, 2010);
 	}
-
-	/////
-
-//	@Test
-//	public void testDefaultConferences() throws Exception {
-//		verifyConferenceGameCounts("Default_06_07_Conferences.xlsx");
-//	}
-//
-//	private void verifyConferenceGameCounts(String fileName) throws Exception {
-//		MockMultipartFile file = createMockMultipartFile(fileName);
-//		scheduleService.setAlignmentFile(file);
-//
-//		for (int i = 1980; i <= 2050; i++) {
-//			testConfScheduleByYear(i);
-//		}
-//	}
-//
-//	private void testConfScheduleByYear(int year) throws Exception {
-//		System.out.println("Setting schedule for year " + year);
-//		gameRepository.removeAll();
-//		// Act - perform the scheduling
-//		scheduleService.addAllConferenceGames();
-//		gameRepository.setYear(year);
-//		// Assert - for each conference all schools have correct number of games
-//		List<Conference> conferenceList = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
-//		for (Conference conf : conferenceList) {
-//			// TODO: Revisit this logic if you allow non round robin schedules for 11 or
-//			// fewer confs
-//			int numOfConfGames = conf.getNumOfConfGames() > 0 ? conf.getNumOfConfGames() : conf.getNumOfSchools() - 1;
-//			List<School> schools = schoolRepository.findByConference(conf);
-//			for (School school : schools) {
-//				List<Game> schedule = gameRepository.findGamesByTeam(school);
-//				System.out.println("Testing " + conf + " and school " + school + ". " + numOfConfGames + " expected, "
-//						+ schedule.size() + " actual.");
-//				assertEquals(numOfConfGames, schedule.size());
-//			}
-//		}
-//	}
 
 	private MockMultipartFile createMockMultipartFile(String fileName) throws IOException, URISyntaxException {
 		// Load the file from the classpath

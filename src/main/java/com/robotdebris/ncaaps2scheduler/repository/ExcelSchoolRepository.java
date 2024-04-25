@@ -3,11 +3,13 @@ package com.robotdebris.ncaaps2scheduler.repository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
+import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
 
 @Repository
@@ -51,6 +53,11 @@ public class ExcelSchoolRepository implements SchoolRepository {
 	@Override
 	public List<School> findByConference(Conference conference) {
 		return schools.stream().filter(school -> school.getConference().equals(conference)).toList();
+	}
+
+	@Override
+	public List<School> findByNCAADivision(NCAADivision div) {
+		return schools.stream().filter(school -> school.getNcaaDivision().equals(div)).collect(Collectors.toList());
 	}
 
 }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import com.robotdebris.ncaaps2scheduler.exception.SchoolNotFoundException;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
+import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
 
 /**
@@ -40,5 +41,7 @@ public interface SchoolRepository {
 	List<School> findByConference(Conference conference);
 
 	void saveAll(List<School> schools);
+
+	List<School> findByNCAADivision(NCAADivision div);
 
 }

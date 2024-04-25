@@ -71,22 +71,30 @@ public class ScheduleController {
 
 	@PostMapping(value = "auto-add-games")
 	public int autoAddGames() {
-		return scheduleService.autoAddGames(false);
+		int count = scheduleService.getSeasonSchedule().size();
+		scheduleService.autoAddGames(false);
+		return scheduleService.getSeasonSchedule().size() - count;
 	}
 
 	@PostMapping(value = "auto-add-games-aggressive")
 	public int autoAddGamesAgressive() {
-		return scheduleService.autoAddGames(true);
+		int count = scheduleService.getSeasonSchedule().size();
+		scheduleService.autoAddGames(true);
+		return scheduleService.getSeasonSchedule().size() - count;
 	}
 
 	@PostMapping(value = "auto-add-games-rivals")
 	public int autoAddRivalries() {
-		return scheduleService.autoAddRivalries();
+		int count = scheduleService.getSeasonSchedule().size();
+		scheduleService.addRivalryGamesAll(schoolService.getAllSchools(), false);
+		return scheduleService.getSeasonSchedule().size() - count;
 	}
 
 	@PostMapping(value = "auto-add-games-random")
 	public int autoAddGamesRandomly() {
-		return scheduleService.autoAddRandomly();
+		int count = scheduleService.getSeasonSchedule().size();
+		scheduleService.addRandomGames(schoolService.getAllSchools(), scheduleService.findTooFewGames());
+		return scheduleService.getSeasonSchedule().size() - count;
 	}
 
 	@PostMapping(value = "remove-all-games")
@@ -96,7 +104,9 @@ public class ScheduleController {
 
 	@PostMapping(value = "fix")
 	public int fixSchedule() {
-		return scheduleService.fixSchedule();
+		int count = scheduleService.getSeasonSchedule().size();
+		scheduleService.fixSchedule();
+		return scheduleService.getSeasonSchedule().size() - count;
 	}
 
 	@GetMapping(value = "download")

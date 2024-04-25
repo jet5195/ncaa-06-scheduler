@@ -8,23 +8,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.robotdebris.ncaaps2scheduler.model.School;
-import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 
 @Service
 public class SchoolService {
 
 	private final SchoolRepository schoolRepository;
-	private final GameRepository gameRepository;
 	private final Logger LOGGER = Logger.getLogger(SchoolService.class.getName());
 	@Autowired
 	public ScheduleService scheduleService;
 	@Autowired
 	ConferenceService conferenceService;
 
-	public SchoolService(SchoolRepository schoolRepository, GameRepository gameRepository) {
+	public SchoolService(SchoolRepository schoolRepository) {
 		this.schoolRepository = schoolRepository;
-		this.gameRepository = gameRepository;
 	}
 
 //	@PostConstruct
