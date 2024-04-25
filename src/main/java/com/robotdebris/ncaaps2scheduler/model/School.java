@@ -3,13 +3,20 @@ package com.robotdebris.ncaaps2scheduler.model;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 
 import lombok.Getter;
 import lombok.Setter;
 
+@Component
 public class School implements Comparable<School> {
+
+	@Autowired
+	private GameRepository gameRepository;
 
 	// TEAM tscs = conference ranking
 //0 = conf champ

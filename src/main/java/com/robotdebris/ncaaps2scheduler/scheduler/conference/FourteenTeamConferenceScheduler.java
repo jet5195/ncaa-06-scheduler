@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
+import com.robotdebris.ncaaps2scheduler.model.DayOfWeek;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
@@ -59,7 +60,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
 		for (School school : div1) {
 			School opponent = div2.get(i);
 			int week = scheduleService.findConfGameWeek(school, opponent);
-			addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), false);
+			addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY, gameRepository.getYear(), false);
 			i++;
 		}
 		// at this point all we have to do is alternate that 1 game.. home away SHOULD
@@ -87,9 +88,9 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
 			School opponent = div2.get(j);
 			int week = scheduleService.findConfGameWeek(school, opponent);
 			if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) < 4) {
-				addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
+				addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY, gameRepository.getYear(), true);
 			} else {
-				addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
+				addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY, gameRepository.getYear(), true);
 			}
 			j++;
 		}
@@ -113,7 +114,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
 			}
 			School opponent = div2.get(firstOpponent);
 			int week = scheduleService.findConfGameWeek(school, opponent);
-			addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
+			addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY, gameRepository.getYear(), true);
 
 			int secondOpponent = firstOpponent + 1;
 			if (secondOpponent >= 7) {
@@ -121,7 +122,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
 			}
 			School opponent2 = div2.get(secondOpponent);
 			int week2 = scheduleService.findConfGameWeek(school, opponent2);
-			addYearlySeriesHelper(opponent2, school, week2, 5, gameRepository.getYear(), true);
+			addYearlySeriesHelper(opponent2, school, week2, DayOfWeek.SATURDAY, gameRepository.getYear(), true);
 		}
 		/*
 		 *

@@ -20,12 +20,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.robotdebris.ncaaps2scheduler.model.AddGameRequest;
 import com.robotdebris.ncaaps2scheduler.model.Game;
+import com.robotdebris.ncaaps2scheduler.model.GameBuilder;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
+import com.robotdebris.ncaaps2scheduler.service.SchoolService;
 
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("schedule")
 public class ScheduleController {
+
+	@Autowired
+	private SchoolService schoolService;
 
 	@Autowired
 	private ScheduleService scheduleService;
@@ -56,10 +61,12 @@ public class ScheduleController {
 		return scheduleService.removeAllFcsGames();
 	}
 
-	// Change this to use a RequestGame object that doesn't exist yet
 	@PostMapping(value = "add-game")
 	public void addGame(@RequestBody AddGameRequest addGameRequest) {
-		scheduleService.addGame(addGameRequest);
+		Game game = new GameBuilder().setAwayTeam(schoolService.schoolSearch(addGameRequest.getAwayId()))
+				.setHomeTeam(schoolService.schoolSearch(addGameRequest.getHomeId())).setWeek(addGameRequest.getWeek())
+				.setDay(addGameRequest.getDay()).setGameResult(addGameRequest.getGameResult()).build();
+		scheduleService.addGame(game);
 	}
 
 	@PostMapping(value = "auto-add-games")
@@ -83,8 +90,8 @@ public class ScheduleController {
 	}
 
 	@PostMapping(value = "remove-all-games")
-	public int removeAllGames() {
-		return scheduleService.removeAllGames();
+	public void removeAllGames() {
+		scheduleService.removeAllGames();
 	}
 
 	@PostMapping(value = "fix")

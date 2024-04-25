@@ -7,41 +7,41 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AddGameRequest {
 
-    private int awayId;
+	private int awayId;
 
-    private int homeId;
+	private int homeId;
 
-    private int week;
-    
-    private int time;
-    
-    private int day;
-    
-    private GameResult gameResult;
+	private int week;
 
-    public int getAwayId() {
-        return awayId;
-    }
+	private int time;
 
-    public void setAwayId(int awayId) {
-        this.awayId = awayId;
-    }
+	private DayOfWeek day;
 
-    public int getHomeId() {
-        return homeId;
-    }
+	private GameResult gameResult;
 
-    public void setHomeId(int homeId) {
-        this.homeId = homeId;
-    }
+	public int getAwayId() {
+		return awayId;
+	}
 
-    public int getWeek() {
-        return week;
-    }
+	public void setAwayId(int awayId) {
+		this.awayId = awayId;
+	}
 
-    public void setWeek(int week) {
-        this.week = week;
-    }
+	public int getHomeId() {
+		return homeId;
+	}
+
+	public void setHomeId(int homeId) {
+		this.homeId = homeId;
+	}
+
+	public int getWeek() {
+		return week;
+	}
+
+	public void setWeek(int week) {
+		this.week = week;
+	}
 
 	public int getTime() {
 		return time;
@@ -59,12 +59,12 @@ public class AddGameRequest {
 		this.gameResult = gameResult;
 	}
 
-	public int getDay() {
+	public DayOfWeek getDay() {
 		return day;
 	}
 
-	public void setDay(int day) {
+	public void setDay(DayOfWeek day) {
 		this.day = day;
 	}
-    
+
 }

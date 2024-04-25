@@ -1,6 +1,7 @@
 package com.robotdebris.ncaaps2scheduler.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
@@ -27,5 +28,9 @@ public interface GameRepository {
 	void setYear(int year);
 
 	void removeAll();
+
+	Optional<Game> findGameByTeams(School school1, School school2);
+
+	Optional<Game> findByTeamAndWeek(School school, int week);
 
 }

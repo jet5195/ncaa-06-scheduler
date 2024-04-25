@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
+import com.robotdebris.ncaaps2scheduler.model.DayOfWeek;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
@@ -114,9 +115,9 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 			int week = scheduleService.findConfGameWeek(school, opponent);
 			// should be home or away game?
 			if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= div1.size() / 2) {
-				addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
+				addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY, gameRepository.getYear(), true);
 			} else {
-				addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
+				addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY, gameRepository.getYear(), true);
 			}
 
 		}
@@ -130,7 +131,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 		// Schedule the first opponent
 		School opponent = div2.get((index + 1) % div2.size());
 		int week = scheduleService.findConfGameWeek(school, opponent);
-		addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
+		addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY, gameRepository.getYear(), true);
 
 		// Find the next opponent, ensuring they're not the xDivRival
 		int opponent2Id = (index + 2) % div2.size();
@@ -139,7 +140,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 		}
 		opponent = div2.get(opponent2Id);
 		week = scheduleService.findConfGameWeek(school, opponent);
-		addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
+		addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY, gameRepository.getYear(), true);
 	}
 
 	private void schedule12Teams8GamesNoXDivRivals(Conference conf) throws Exception {
@@ -166,11 +167,14 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 					int week = scheduleService.findConfGameWeek(school, opponent);
 
 					if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= numOfConfGames / 2) {
-						addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
+						addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY, gameRepository.getYear(),
+								true);
 					} else if (scheduleService.getNumOfAwayConferenceGamesForSchool(school) >= numOfConfGames / 2) {
-						addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
+						addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY, gameRepository.getYear(),
+								true);
 					} else {
-						addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), false);
+						addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY, gameRepository.getYear(),
+								false);
 					}
 				}
 			} else {
@@ -179,11 +183,14 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 					int week = scheduleService.findConfGameWeek(school, opponent);
 
 					if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= numOfConfGames / 2) {
-						addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), true);
+						addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY, gameRepository.getYear(),
+								true);
 					} else if (scheduleService.getNumOfAwayConferenceGamesForSchool(school) >= numOfConfGames / 2) {
-						addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), true);
+						addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY, gameRepository.getYear(),
+								true);
 					} else {
-						addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), false);
+						addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY, gameRepository.getYear(),
+								false);
 					}
 				}
 			}
@@ -211,8 +218,8 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 				if (index % 2 == 0) {
 					isHomeGame = !isHomeGame;
 				}
-				addYearlySeriesHelper(isHomeGame ? opponent : school, isHomeGame ? school : opponent, week, 5,
-						gameRepository.getYear(), true);
+				addYearlySeriesHelper(isHomeGame ? opponent : school, isHomeGame ? school : opponent, week,
+						DayOfWeek.SATURDAY, gameRepository.getYear(), true);
 			}
 		}
 

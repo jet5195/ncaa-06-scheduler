@@ -17,7 +17,7 @@ public class CsvExportService {
 	 * @param seasonSchedule the schedule to write to a new csv file
 	 * @throws IOException
 	 */
-	public void writeSchedule(Writer writer, List<List> seasonSchedule) throws IOException {
+	public void writeSchedule(Writer writer, List<List<String>> seasonSchedule) throws IOException {
 
 		CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
 //        ArrayList<ArrayList> bowlList = new ArrayList<>();

@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
+import com.robotdebris.ncaaps2scheduler.model.DayOfWeek;
+import com.robotdebris.ncaaps2scheduler.model.Game;
+import com.robotdebris.ncaaps2scheduler.model.GameBuilder;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
@@ -38,20 +41,25 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 								|| scheduleService.getNumOfHomeConferenceGamesForSchool(opponent) >= numOfSchools / 2) {
 							// add a home game for school
 							if (gameRepository.getYear() % 2 == 0) {
-								addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), false);
+								addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY,
+										gameRepository.getYear(), false);
 							} else {
-								addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), false);
+								addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY,
+										gameRepository.getYear(), false);
 							}
 						} else if ((scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= numOfSchools / 2)
 								|| scheduleService.getNumOfAwayConferenceGamesForSchool(opponent) >= numOfSchools / 2) {
 							// add an away game for school
 							if (gameRepository.getYear() % 2 == 0) {
-								addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), false);
+								addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY,
+										gameRepository.getYear(), false);
 							} else {
-								addYearlySeriesHelper(opponent, school, week, 5, gameRepository.getYear(), false);
+								addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY,
+										gameRepository.getYear(), false);
 							}
 						} else {
-							addYearlySeriesHelper(school, opponent, week, 5, gameRepository.getYear(), false);
+							addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY, gameRepository.getYear(),
+									false);
 						}
 					}
 				}
@@ -73,21 +81,29 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 //        return addYearlySeriesHelper(school1, school2, week, day, year, specifyHome);
 //    }
 
-	void addYearlySeriesHelper(School school1, School school2, int week, int day, int year, boolean specifyHome)
-			throws Exception {
-		if (!scheduleService.isOpponentForSchool(school1, school2)
-				&& scheduleService.getScheduleBySchool(school1).size() < 12
-				&& scheduleService.getScheduleBySchool(school2).size() < 12
-				&& scheduleService.getGameBySchoolAndWeek(school1, week) == null
-				&& scheduleService.getGameBySchoolAndWeek(school2, week) == null) {
-			// check if out of division conf opponent here?
-			if (!specifyHome) {
-				scheduleService.addGameYearlySeries(school1, school2, week, day, year);
-			} else {
-				scheduleService.addGameSpecificHomeTeam(school1, school2, week, day);
-			}
+	/**
+	 * Adds a game to the schedule, alternating home and away teams based on the
+	 * year if not specified.
+	 * 
+	 * @param school1     The first school.
+	 * @param school2     The second school.
+	 * @param week        The week of the game.
+	 * @param day         The day of the week the game is on.
+	 * @param year        The current year.
+	 * @param specifyHome If true, school1 is away and school2 is home; if false,
+	 *                    alternates yearly.
+	 */
+	void addYearlySeriesHelper(School school1, School school2, int week, DayOfWeek day, int year, boolean specifyHome) {
+		GameBuilder builder = new GameBuilder().setWeek(week).setDay(day);
+
+		if (!specifyHome) {
+			builder.setTeamsWithYearlyRotation(school1, school2, year);
+		} else {
+			builder.setAwayTeam(school1).setHomeTeam(school2);
 		}
-		throw new Exception("tried to add duplicate game for " + school1 + " vs " + school2);
+
+		Game game = builder.build();
+		scheduleService.addGame(game);
 	}
 
 }

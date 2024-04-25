@@ -24,8 +24,9 @@ import com.robotdebris.ncaaps2scheduler.NoWeeksAvailableException;
 import com.robotdebris.ncaaps2scheduler.SchedulerUtils;
 import com.robotdebris.ncaaps2scheduler.model.AddGameRequest;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
+import com.robotdebris.ncaaps2scheduler.model.DayOfWeek;
 import com.robotdebris.ncaaps2scheduler.model.Game;
-import com.robotdebris.ncaaps2scheduler.model.GameResult;
+import com.robotdebris.ncaaps2scheduler.model.GameBuilder;
 import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SuggestedGameResponse;
@@ -40,7 +41,6 @@ public class ScheduleService {
 	private final GameRepository gameRepository;
 	private final SchoolRepository schoolRepository;
 	private final Logger LOGGER = Logger.getLogger(ScheduleService.class.getName());
-	int year = 2005;
 	@Autowired
 	SchoolService schoolService;
 	@Autowired
@@ -53,6 +53,54 @@ public class ScheduleService {
 	public ScheduleService(GameRepository gameRepository, SchoolRepository schoolRepository) {
 		this.gameRepository = gameRepository;
 		this.schoolRepository = schoolRepository;
+	}
+
+	private int addRivalryGameTwoSchools(School school, School rival, boolean aggressive, int rivalRank) {
+		// School rival = school.getRivals().get(j);
+		int count = 0;
+		if (isEligibleNonConferenceMatchup(school, rival)) {
+			if (aggressive && rivalRank < 2) {
+				count += aggressiveAddRivalryGameHelper(school, rival);
+			}
+			// if they don't play and aren't in the same conference
+			// go through all the rivals for a team
+			else if (getScheduleBySchool(rival).size() < 12 && getScheduleBySchool(school).size() < 12) {
+				// and stop if the seasonSchedule is full
+				count += addRivalryGameHelper(school, rival, rivalRank);
+			}
+		}
+		return count;
+	}
+
+	public void addGame(Game game) {
+		if (canScheduleGame(game)) {
+			gameRepository.saveGame(game);
+		}
+	}
+
+	public boolean canScheduleGame(Game game) {
+		// Check if the teams are the same
+		if (game.getHomeTeam().equals(game.getAwayTeam())) {
+			return false;
+		}
+		// Check if the home team already has a game scheduled in the same week
+		Optional<Game> existingHomeGame = gameRepository.findByTeamAndWeek(game.getHomeTeam(), game.getWeek());
+		if (existingHomeGame.isPresent()) {
+			return false;
+		}
+
+		// Check if the away team already has a game scheduled in the same week
+		Optional<Game> existingAwayGame = gameRepository.findByTeamAndWeek(game.getAwayTeam(), game.getWeek());
+		if (existingAwayGame.isPresent()) {
+			return false;
+		}
+
+		Optional<Game> existingMatchup = gameRepository.findGameByTeams(game.getHomeTeam(), game.getAwayTeam());
+		if (existingMatchup.isPresent()) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public ArrayList<Integer> findEmptyWeeks(School s1, School s2) {// returns list of empty weeks between 2 schools
@@ -82,11 +130,11 @@ public class ScheduleService {
 	}
 
 	public int getYear() {
-		return year;
+		return gameRepository.getYear();
 	}
 
 	public void setYear(int year) {
-		this.year = year;
+		gameRepository.setYear(year);
 	}
 
 	public void setScheduleFile(MultipartFile scheduleFile) throws IOException {
@@ -172,7 +220,9 @@ public class ScheduleService {
 					System.out.println("Moving game: " + game.getAwayTeam() + " at " + game.getHomeTeam()
 							+ ", because no available week was found for " + s1 + " vs " + s2);
 					removeGame(s1.getTgid(), game.getWeek());
-					addGame(game.getAwayTeam().getTgid(), game.getHomeTeam().getTgid(), randomizeWeek(jointEmptyWeeks));
+					Game newGame = new GameBuilder().setAwayTeam(game.getAwayTeam()).setHomeTeam(game.getHomeTeam())
+							.setWeek(randomizeWeek(jointEmptyWeeks)).build();
+					addGame(newGame);
 					break;
 				}
 			}
@@ -180,13 +230,6 @@ public class ScheduleService {
 		s1EmptyWeeks = findEmptyWeeks(s1);
 		s2EmptyWeeks = findEmptyWeeks(s2);
 		return SchedulerUtils.findEmptyWeeksHelper(s1EmptyWeeks, s2EmptyWeeks);
-	}
-
-	public void addGame(int awayId, int homeId, int week) {
-		School home = searchSchoolByTgid(homeId);
-		School away = searchSchoolByTgid(awayId);
-		int day = 5;
-		addGameSpecificHomeTeam(away, home, week, day);
 	}
 
 	public SuggestedGameResponse getSuggestedGame(int tgid) {
@@ -324,47 +367,41 @@ public class ScheduleService {
 		return count;
 	}
 
-	private int addRivalryGameTwoSchools(School school, School rival, boolean aggressive, int rivalRank) {
-		// School rival = school.getRivals().get(j);
-		int count = 0;
-		if (isEligibleNonConferenceMatchup(school, rival)) {
-			if (aggressive && rivalRank < 2) {
-				count += aggressiveAddRivalryGameHelper(school, rival);
-			}
-			// if they don't play and aren't in the same conference
-			// go through all the rivals for a team
-			else if (getScheduleBySchool(rival).size() < 12 && getScheduleBySchool(school).size() < 12) {
-				// and stop if the seasonSchedule is full
-				count += addRivalryGameHelper(school, rival, rivalRank);
-			}
-		}
-		return count;
-	}
-
 	private int addRivalryGameHelper(School s1, School rival, int rivalRank) {
+		int year = gameRepository.getYear();
 		ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
 		// TODO: move games if week 13 is taken (ie so FSU UF can be week 13 yearly
 		if (rivalRank < 2) {
 			if (emptyWeeks.contains(13)) {
-				addGame(s1, rival, 13, 5);
+				Game game = new GameBuilder().setTeamsWithYearlyRotation(s1, rival, year).setWeek(13)
+						.setDay(DayOfWeek.SATURDAY).build();
+				addGame(game);
 				return 1;
 				// week 13 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is
 				// referenced by 12
 			} else if (emptyWeeks.contains(12)) {
-				addGame(s1, rival, 12, 5);
+				Game game = new GameBuilder().setTeamsWithYearlyRotation(s1, rival, year).setWeek(12)
+						.setDay(DayOfWeek.SATURDAY).build();
+				addGame(game);
 				return 1;
 				// week 12 is empty
 			} else if (emptyWeeks.contains(11)) {
-				addGame(s1, rival, 11, 5);
+				Game game = new GameBuilder().setTeamsWithYearlyRotation(s1, rival, year).setWeek(11)
+						.setDay(DayOfWeek.SATURDAY).build();
+				addGame(game);
 				return 1;
 				// week 14 is empty
 			} else if (!emptyWeeks.isEmpty()) {
-				addGame(s1, rival, emptyWeeks.get(0), 5);
+				Game game = new GameBuilder().setTeamsWithYearlyRotation(s1, rival, year).setWeek(emptyWeeks.get(0))
+						.setDay(DayOfWeek.SATURDAY).build();
+				addGame(game);
 				return 1;
 				// add game at emptyWeeks.get(0);
 			}
 		} else if (!emptyWeeks.isEmpty()) {
-			addGame(s1, rival, emptyWeeks.get(0), 5);
+			Game game = new GameBuilder().setTeamsWithYearlyRotation(s1, rival, year).setWeek(emptyWeeks.get(0))
+					.setDay(DayOfWeek.SATURDAY).build();
+			addGame(game);
 			return 1;
 		}
 		return 0;
@@ -375,16 +412,22 @@ public class ScheduleService {
 		ArrayList<Integer> rweeks = findEmptyWeeks(rival);
 		ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
 		if (emptyWeeks.contains(12)) {
-			addGame(s1, rival, 12, 5);
+			Game game = new GameBuilder().setTeamsWithYearlyRotation(s1, rival, getYear()).setWeek(12)
+					.setDay(DayOfWeek.SATURDAY).build();
+			addGame(game);
 			return 1;
 			// week 13 is empty
 		} else if (emptyWeeks.contains(11)) {
-			addGame(s1, rival, 11, 5);
+			Game game = new GameBuilder().setTeamsWithYearlyRotation(s1, rival, getYear()).setWeek(11)
+					.setDay(DayOfWeek.SATURDAY).build();
+			addGame(game);
 			return 1;
 			// week 12 is empty
 		}
 		if (emptyWeeks.contains(13)) {
-			addGame(s1, rival, 13, 5);
+			Game game = new GameBuilder().setTeamsWithYearlyRotation(s1, rival, getYear()).setWeek(13)
+					.setDay(DayOfWeek.SATURDAY).build();
+			addGame(game);
 			return 1;
 			// week 14 is empty
 		}
@@ -479,7 +522,9 @@ public class ScheduleService {
 			}
 		}
 		if (!emptyWeeks.isEmpty()) {
-			addGame(s1, rival, emptyWeeks.get(0), 5);
+			Game game = new GameBuilder().setTeamsWithYearlyRotation(s1, rival, getYear()).setWeek(emptyWeeks.get(0))
+					.setDay(DayOfWeek.SATURDAY).build();
+			addGame(game);
 			return 1;
 			// add game at emptyWeeks.get(0);
 		}
@@ -507,7 +552,8 @@ public class ScheduleService {
 						// Monroe
 						if (emptyWeeks.get(0) < 11
 								|| (s1.getConference().isPowerConf() ^ randomSchool.getConference().isPowerConf())) {
-							addGame(s1, randomSchool, emptyWeeks.get(0), 5);
+							Game game = new GameBuilder().setTeamsWithRandomHomeIntelligently(s1, randomSchool)
+									.setWeek(emptyWeeks.get(0)).build();
 							count++;
 						}
 					}
@@ -576,7 +622,9 @@ public class ScheduleService {
 					if (!isOpponentForSchool(s1, fcs)) {
 						ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, fcs);
 						if (!emptyWeeks.isEmpty()) {
-							addGame(s1, fcs, emptyWeeks.get(0), 5);
+							Game game = new GameBuilder().setHomeTeam(s1).setAwayTeam(fcs).setWeek(emptyWeeks.get(0))
+									.setDay(DayOfWeek.SATURDAY).build();
+							addGame(game);
 							count++;
 						}
 					}
@@ -632,7 +680,7 @@ public class ScheduleService {
 	public void downloadSchedule(Writer writer) {
 		try {
 			CsvExportService csvExportService = new CsvExportService();
-			List<List> list = scheduleToList(true);
+			List<List<String>> list = scheduleToList(true);
 			csvExportService.writeSchedule(writer, list);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -758,17 +806,6 @@ public class ScheduleService {
 		return null;
 	}
 
-	public void addGame(AddGameRequest addGameRequest) {
-		if (addGameRequest.getGameResult() == null) {
-			addGame(addGameRequest.getAwayId(), addGameRequest.getHomeId(), addGameRequest.getWeek());
-		} else {
-			School home = schoolService.schoolSearch(addGameRequest.getHomeId());
-			School away = schoolService.schoolSearch(addGameRequest.getAwayId());
-			addGameSpecificHomeTeam(away, home, addGameRequest.getWeek(), addGameRequest.getDay(),
-					addGameRequest.getTime(), addGameRequest.getGameResult());
-		}
-	}
-
 	public void removeAllConferenceGames() {
 		for (Conference conf : conferenceService.getConferenceList()) {
 			this.removeConferenceGames(conf.getName());
@@ -874,76 +911,6 @@ public class ScheduleService {
 	}
 
 	/**
-	 * Adds game with a randomized home team
-	 *
-	 * @param s1   school 1
-	 * @param s2   school 2
-	 * @param week the week of the game
-	 * @param day  the day of the game
-	 */
-	public void addGame(School s1, School s2, int week, int day) {
-		randomizeHomeTeam(s1, s2, week, day, findNewGameNumber(week));
-	}
-
-	/**
-	 * Adds game to the schedule with the home team already selected
-	 *
-	 * @param away the away school
-	 * @param home the home school
-	 * @param week the week of the game
-	 * @param day  the day of the game
-	 */
-	public void addGameSpecificHomeTeam(School away, School home, int week, int day) {
-		addGame(away, home, week, day, findNewGameNumber(week));
-	}
-
-	public void addGameSpecificHomeTeam(School away, School home, int week, int day, int time, GameResult gameResult) {
-		addGame(away, home, week, day, findNewGameNumber(week), time, gameResult);
-	}
-
-	public void addGameYearlySeries(School s1, School s2, int week, int day, int year) {
-		// logic to decide home or away team here?
-		if (year % 2 == 0) {
-			addGame(s1, s2, week, day, findNewGameNumber(week));
-		} else {
-			addGame(s2, s1, week, day, findNewGameNumber(week));
-		}
-	}
-
-	/**
-	 * Adds game to schedule after the home team is selected, either randomly or via
-	 * addGameSpecificHomeTeam method
-	 *
-	 * @param away       the away school
-	 * @param home       the home school
-	 * @param week       the week of the game
-	 * @param day        the day of the game
-	 * @param gameNumber the game of the week
-	 */
-	private void addGame(School away, School home, int week, int day, int gameNumber) {
-		Game newGame = new Game(away, home, gameNumber, week, day);
-		addGame(newGame);
-		LOGGER.info("Adding game " + newGame.getAwayTeam().getName() + " at " + newGame.getHomeTeam().getName());
-		System.out.println("Adding game " + newGame.getAwayTeam().getName() + " at " + newGame.getHomeTeam().getName());
-	}
-
-	/**
-	 * Adds game to schedule after the home team is selected, either randomly or via
-	 * addGameSpecificHomeTeam method
-	 *
-	 * @param away       the away school
-	 * @param home       the home school
-	 * @param week       the week of the game
-	 * @param day        the day of the game
-	 * @param gameNumber the game of the week
-	 */
-	private void addGame(School away, School home, int week, int day, int gameNumber, int time, GameResult gameResult) {
-		Game newGame = new Game(away, home, gameNumber, week, day, time, gameResult);
-		getSeasonSchedule().add(newGame);
-		LOGGER.info("Adding game " + newGame.getAwayTeam().getName() + " at " + newGame.getHomeTeam().getName());
-	}
-
-	/**
 	 * Removes a game from the schedule and updates all affected game numbers
 	 *
 	 * @param theGame the game to be removed
@@ -970,40 +937,12 @@ public class ScheduleService {
 	public void replaceGame(Game theGame, School s1, School s2) {
 		int gameNumber = theGame.getGameNumber();
 		int weekNumber = theGame.getWeek();
-		int dayNumber = theGame.getDay();
+		DayOfWeek dayNumber = theGame.getDay();
 		getSeasonSchedule().remove(theGame);
 		LOGGER.info("Removing and replacing " + theGame.getAwayTeam() + " at " + theGame.getHomeTeam());
-		randomizeHomeTeam(s1, s2, weekNumber, dayNumber, gameNumber);
-	}
-
-	/**
-	 * Adds a game with a random home team. This does contain logic for P5 getting
-	 * home preference over G5 and FCS schools as well.
-	 *
-	 * @param s1   school 1
-	 * @param s2   school 2
-	 * @param week week of the game
-	 * @param day  day of the game
-	 * @param game game number of the week
-	 */
-	private void randomizeHomeTeam(School s1, School s2, int week, int day, int game) {
-		if (s1.isRival(s2) || s1.getConference().isPowerConf() == s2.getConference().isPowerConf()) {
-			int max = 2;
-			int min = 1;
-			int range = max - min + 1;
-			int random = (int) (Math.random() * range) + min;
-			if (random == 1 && (s1.isRival(s2) || s2.getNcaaDivision().isFBS())) {
-				addGame(s1, s2, week, day, game);
-			} else {
-				addGame(s2, s1, week, day, game);
-			}
-		} else {
-			if (s1.getConference().isPowerConf()) {
-				addGame(s2, s1, week, day, game);
-			} else {
-				addGame(s1, s2, week, day, game);
-			}
-		}
+		Game game = new GameBuilder().setTeamsWithRandomHomeIntelligently(s1, s2).setWeek(weekNumber).setDay(dayNumber)
+				.setGameNumber(gameNumber).build();
+		addGame(game);
 	}
 
 	/**
@@ -1095,24 +1034,17 @@ public class ScheduleService {
 		return count;
 	}
 
-	public int removeAllGames() {
-		int count = 0;
-		for (int i = 0; i < getSeasonSchedule().size(); i++) {
-			Game game = getSeasonSchedule().get(i);
-			this.removeGame(game);
-			count++;
-			i--;
-		}
-		return count;
+	public void removeAllGames() {
+		gameRepository.removeAll();
 	}
 
 	/**
 	 * @return ArrayList of Strings of the SeasonSchedule
 	 */
-	public ArrayList scheduleToList(boolean header) {
-		ArrayList<ArrayList> list = new ArrayList();
+	public List<List<String>> scheduleToList(boolean header) {
+		List<List<String>> list = new ArrayList<>();
 		if (header) {
-			ArrayList<String> firstLine = new ArrayList();
+			ArrayList<String> firstLine = new ArrayList<String>();
 			firstLine.add("GSTA");
 			firstLine.add("GASC");
 			firstLine.add("GHSC");
@@ -1153,10 +1085,6 @@ public class ScheduleService {
 			}
 		}
 		return weeklySchedule;
-	}
-
-	public void addGame(Game game) {
-		getSeasonSchedule().add(game);
 	}
 
 	/**
@@ -1227,13 +1155,12 @@ public class ScheduleService {
 	/**
 	 * Checks to see if this school plays an opponent
 	 *
-	 * @param possibleOpponent the opponent
+	 * @param opponent the opponent
 	 * @return true if these schools do play, false if else
 	 */
-	public boolean isOpponentForSchool(School school, School possibleOpponent) {
-		return gameRepository.findGamesByTeam(school).stream()
-				.anyMatch(game -> Objects.equals(game.getHomeTeam(), possibleOpponent)
-						|| Objects.equals(game.getAwayTeam(), possibleOpponent));
+	public boolean isOpponentForSchool(School school, School opponent) {
+		return gameRepository.findGamesByTeam(school).stream().anyMatch(
+				game -> Objects.equals(game.getHomeTeam(), opponent) || Objects.equals(game.getAwayTeam(), opponent));
 	}
 
 	/**
@@ -1313,7 +1240,8 @@ public class ScheduleService {
 
 		// If no weeks are available, throw a custom exception
 		if (emptyWeeks.isEmpty()) {
-			throw new NoWeeksAvailableException(school, opponent);
+			throw new NoWeeksAvailableException(school, opponent, gameRepository.findGamesByTeam(school),
+					gameRepository.findGamesByTeam(opponent));
 		}
 
 		// Randomize the week from the remaining available weeks

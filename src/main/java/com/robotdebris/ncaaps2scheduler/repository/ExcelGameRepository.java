@@ -3,6 +3,7 @@ package com.robotdebris.ncaaps2scheduler.repository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
@@ -62,5 +63,19 @@ public class ExcelGameRepository implements GameRepository {
 	@Override
 	public void removeAll() {
 		seasonSchedule.clear();
+	}
+
+	@Override
+	public Optional<Game> findGameByTeams(School school1, School school2) {
+		return seasonSchedule.stream().filter(game -> game.involvesTeam(school1) && game.involvesTeam(school2))
+				.findFirst();
+	}
+
+	@Override
+	public Optional<Game> findByTeamAndWeek(School school, int week) {
+		return seasonSchedule.stream()
+				.filter(game -> (game.getHomeTeam().equals(school) || game.getAwayTeam().equals(school))
+						&& game.getWeek() == week)
+				.findFirst();
 	}
 }

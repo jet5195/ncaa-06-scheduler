@@ -12,7 +12,7 @@ public class Game implements Comparable {
 //    private int homeScore = 0;//ghsc
 	// private GameTime gameTime;//gtod, gdat
 	private int time;// gtod 750 = 12:30 pm, 930 = 3:30 pm, 1080 = 6:00 pm, 1200 = 8:00 pm,
-	private int day;// gdat 5 sat.. etc
+	private DayOfWeek day;// gdat 5 sat.. etc
 	private int conferenceGame; // gmfx 0 if out of conference, 1 if conference
 	private int week; // sewn & sewt
 //    private int ot; //gfot
@@ -24,8 +24,8 @@ public class Game implements Comparable {
 
 	}
 
-	public Game(GameResult gameResult, int time, School awayTeam, School homeTeam, int gameNumber, int week, int day,
-			int userGame, int conferenceGame) {
+	public Game(GameResult gameResult, int time, School awayTeam, School homeTeam, int gameNumber, int week,
+			DayOfWeek day, int userGame, int conferenceGame) {
 		this.gameResult = gameResult;
 		this.time = time;
 		this.awayTeam = awayTeam;
@@ -37,7 +37,7 @@ public class Game implements Comparable {
 		this.conferenceGame = conferenceGame;
 	}
 
-	public Game(School awayTeam, School homeTeam, int gameNumber, int week, int day) {
+	public Game(School awayTeam, School homeTeam, int gameNumber, int week, DayOfWeek day) {
 		this.awayTeam = awayTeam;
 		this.homeTeam = homeTeam;
 		this.gameNumber = gameNumber;
@@ -71,7 +71,8 @@ public class Game implements Comparable {
 		}
 	}
 
-	public Game(School awayTeam, School homeTeam, int gameNumber, int week, int day, int time, GameResult gameResult) {
+	public Game(School awayTeam, School homeTeam, int gameNumber, int week, DayOfWeek day, int time,
+			GameResult gameResult) {
 		this.awayTeam = awayTeam;
 		this.homeTeam = homeTeam;
 		this.gameNumber = gameNumber;
@@ -122,11 +123,11 @@ public class Game implements Comparable {
 		this.time = time;
 	}
 
-	public int getDay() {
+	public DayOfWeek getDay() {
 		return day;
 	}
 
-	public void setDay(int day) {
+	public void setDay(DayOfWeek day) {
 		this.day = day;
 	}
 
@@ -229,7 +230,7 @@ public class Game implements Comparable {
 			} else if (i == 7) {
 				list.add(this.getWeek());
 			} else if (i == 8) {
-				list.add(this.getDay());
+				list.add(this.getDay().getDayIndex());
 			} else if (i == 10) {
 				if (this.getWeek() < 18) {
 					list.add(this.getWeek());
@@ -257,6 +258,7 @@ public class Game implements Comparable {
 	 * @return a negative number if this game is before game2 in terms of what week
 	 *         they play
 	 */
+	@Override
 	public int compareTo(@NotNull Object game2) {
 		int compareWeek = ((Game) game2).getWeek();
 		return this.getWeek() - compareWeek;
@@ -265,4 +267,10 @@ public class Game implements Comparable {
 	public boolean involvesTeam(School School) {
 		return homeTeam.equals(School) || awayTeam.equals(School);
 	}
+
+	@Override
+	public String toString() {
+		return awayTeam + " at " + homeTeam;
+	}
+
 }
