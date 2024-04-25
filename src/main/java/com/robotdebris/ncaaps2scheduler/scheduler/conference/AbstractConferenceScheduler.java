@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
-import com.robotdebris.ncaaps2scheduler.model.DayOfWeek;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.GameBuilder;
 import com.robotdebris.ncaaps2scheduler.model.School;
@@ -41,25 +40,20 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 								|| scheduleService.getNumOfHomeConferenceGamesForSchool(opponent) >= numOfSchools / 2) {
 							// add a home game for school
 							if (gameRepository.getYear() % 2 == 0) {
-								addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY,
-										gameRepository.getYear(), false);
+								addYearlySeriesHelper(opponent, school, week, false);
 							} else {
-								addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY,
-										gameRepository.getYear(), false);
+								addYearlySeriesHelper(school, opponent, week, false);
 							}
 						} else if ((scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= numOfSchools / 2)
 								|| scheduleService.getNumOfAwayConferenceGamesForSchool(opponent) >= numOfSchools / 2) {
 							// add an away game for school
 							if (gameRepository.getYear() % 2 == 0) {
-								addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY,
-										gameRepository.getYear(), false);
+								addYearlySeriesHelper(school, opponent, week, false);
 							} else {
-								addYearlySeriesHelper(opponent, school, week, DayOfWeek.SATURDAY,
-										gameRepository.getYear(), false);
+								addYearlySeriesHelper(opponent, school, week, false);
 							}
 						} else {
-							addYearlySeriesHelper(school, opponent, week, DayOfWeek.SATURDAY, gameRepository.getYear(),
-									false);
+							addYearlySeriesHelper(school, opponent, week, false);
 						}
 					}
 				}
@@ -88,16 +82,15 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 	 * @param school1     The first school.
 	 * @param school2     The second school.
 	 * @param week        The week of the game.
-	 * @param day         The day of the week the game is on.
 	 * @param year        The current year.
 	 * @param specifyHome If true, school1 is away and school2 is home; if false,
 	 *                    alternates yearly.
 	 */
-	void addYearlySeriesHelper(School school1, School school2, int week, DayOfWeek day, int year, boolean specifyHome) {
-		GameBuilder builder = new GameBuilder().setWeek(week).setDay(day);
+	void addYearlySeriesHelper(School school1, School school2, int week, boolean specifyHome) {
+		GameBuilder builder = new GameBuilder().setWeek(week);
 
 		if (!specifyHome) {
-			builder.setTeamsWithYearlyRotation(school1, school2, year);
+			builder.setTeamsWithYearlyRotation(school1, school2, scheduleService.getYear());
 		} else {
 			builder.setAwayTeam(school1).setHomeTeam(school2);
 		}

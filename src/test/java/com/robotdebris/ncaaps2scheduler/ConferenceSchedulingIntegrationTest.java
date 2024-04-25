@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.profiles.active=test")
 public class ConferenceSchedulingIntegrationTest {
 	@Autowired
 	private ScheduleService scheduleService;
@@ -59,6 +60,25 @@ public class ConferenceSchedulingIntegrationTest {
 		}
 	}
 
+	@Test
+	public void verifyConferenceGamesForTeamAndYears() throws Exception {
+		School school = schoolRepository.findByName("Boston College");
+		List<Integer> years = List.of(2005, 2006, 2007, 2008, 2009);
+		for (int year : years) {
+			gameRepository.removeAll();
+			gameRepository.setYear(year);
+			scheduleService.autoAddConferenceGames("ACC");
+			List<Game> schedule = gameRepository.findGamesByTeam(school);
+
+			System.out.println(year);
+			System.out.println(schedule);
+
+			String message = String.format("For school '%s' in year %d: expected %d games, found %d.", school.getName(),
+					year, 8, schedule.size());
+			assertThat(schedule.size()).as(message).isEqualTo(8);
+		}
+	}
+
 	private void verifyConferenceGamesForYear(Conference conf, int year) {
 		int expectedGames = calculateExpectedGames(conf);
 		List<School> schools = schoolRepository.findByConference(conf);
@@ -77,7 +97,7 @@ public class ConferenceSchedulingIntegrationTest {
 	}
 
 	public static IntStream provideYears() {
-		return IntStream.rangeClosed(2013, 2015);
+		return IntStream.rangeClosed(1980, 2020);
 	}
 
 	/////

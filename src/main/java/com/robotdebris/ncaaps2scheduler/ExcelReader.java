@@ -403,7 +403,9 @@ public class ExcelReader {
 			int gfot = 0;// game went into OT? 9
 			int sewt = 0;// game weight?? 10
 			int gffu = 0;// user game 11 12
+			boolean userGame = false;
 			int gmfx = 0;// conference game 13
+			boolean confGame = false;
 
 			int c = 0;
 			if (r > 0) {
@@ -444,9 +446,11 @@ public class ExcelReader {
 						break;
 					case 11:
 						gffu = Integer.parseInt(cellValue);
+						userGame = gffu == 1;
 						break;
 					case 13:
 						gmfx = Integer.parseInt(cellValue);
+						confGame = gmfx == 1;
 						break;
 					default:
 						break;
@@ -469,14 +473,14 @@ public class ExcelReader {
 					}
 					GameResult gameResult = new GameResult(gasc, ghsc, gfot);
 					Game newGame = new Game(gameResult, gtod, awaySchool, homeSchool, sgnm, sewn,
-							DayOfWeek.toEnum(gdat), gffu, gmfx);
+							DayOfWeek.toEnum(gdat), userGame, confGame);
 					seasonSchedule.add(newGame);
 				} else {
 					GameResult gameResult = new GameResult(gasc, ghsc, gfot);
 					// bowlSchedule.add(new Game(gameResult, gtod, bowlSchool, bowlSchool, sgnm,
 					// sewn, gdat, gffu, gmfx));
 					seasonSchedule.add(new Game(gameResult, gtod, bowlSchool, bowlSchool, sgnm, sewn,
-							DayOfWeek.toEnum(gdat), gffu, gmfx));
+							DayOfWeek.toEnum(gdat), userGame, confGame));
 				}
 			}
 			r++;

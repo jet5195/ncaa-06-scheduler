@@ -13,11 +13,11 @@ public class Game implements Comparable {
 	// private GameTime gameTime;//gtod, gdat
 	private int time;// gtod 750 = 12:30 pm, 930 = 3:30 pm, 1080 = 6:00 pm, 1200 = 8:00 pm,
 	private DayOfWeek day;// gdat 5 sat.. etc
-	private int conferenceGame; // gmfx 0 if out of conference, 1 if conference
+	private boolean conferenceGame; // gmfx 0 if out of conference, 1 if conference
 	private int week; // sewn & sewt
 //    private int ot; //gfot
 	private int weight; // sewt (usually = sewn, but not for bowls) if it's a bowlGame, it's week+12
-	private int userGame; // gffu & gfhu
+	private boolean userGame; // gffu & gfhu
 	private int gameNumber; // sgnm, must be unique per week, highest num I've seen is 55
 
 	public Game() {
@@ -25,7 +25,7 @@ public class Game implements Comparable {
 	}
 
 	public Game(GameResult gameResult, int time, School awayTeam, School homeTeam, int gameNumber, int week,
-			DayOfWeek day, int userGame, int conferenceGame) {
+			DayOfWeek day, boolean userGame, boolean conferenceGame) {
 		this.gameResult = gameResult;
 		this.time = time;
 		this.awayTeam = awayTeam;
@@ -59,16 +59,8 @@ public class Game implements Comparable {
 			}
 		}
 		this.gameResult = new GameResult(0, 0, 0);
-		if (awayTeam.isUserTeam() || homeTeam.isUserTeam()) {
-			this.userGame = 1;
-		} else {
-			this.userGame = 0;
-		}
-		if (awayTeam.getConference().equals(homeTeam.getConference())) {
-			this.conferenceGame = 1;
-		} else {
-			this.conferenceGame = 0;
-		}
+		this.userGame = awayTeam.isUserTeam() || homeTeam.isUserTeam();
+		this.conferenceGame = awayTeam.getConference().equals(homeTeam.getConference());
 	}
 
 	public Game(School awayTeam, School homeTeam, int gameNumber, int week, DayOfWeek day, int time,
@@ -81,16 +73,8 @@ public class Game implements Comparable {
 		// 750 = 12:30 pm, 930 = 3:30 pm, 1080 = 6:00 pm, 1200 = 8:00 pm,
 		this.time = time;
 		this.gameResult = gameResult;
-		if (awayTeam.isUserTeam() || homeTeam.isUserTeam()) {
-			this.userGame = 1;
-		} else {
-			this.userGame = 0;
-		}
-		if (awayTeam.getConference().equals(homeTeam.getConference())) {
-			this.conferenceGame = 1;
-		} else {
-			this.conferenceGame = 0;
-		}
+		this.userGame = awayTeam.isUserTeam() || homeTeam.isUserTeam();
+		this.conferenceGame = awayTeam.getConference().equals(homeTeam.getConference());
 	}
 
 	public School getHomeTeam() {
@@ -100,7 +84,7 @@ public class Game implements Comparable {
 	public void setHomeTeam(School homeTeam) {
 		this.homeTeam = homeTeam;
 		if (this.awayTeam != null) {
-			this.setConferenceGame(this.homeTeam.isInConference(this.awayTeam) ? 1 : 0);
+			this.setConferenceGame(this.homeTeam.isInConference(this.awayTeam));
 		}
 	}
 
@@ -111,7 +95,7 @@ public class Game implements Comparable {
 	public void setAwayTeam(School awayTeam) {
 		this.awayTeam = awayTeam;
 		if (this.homeTeam != null) {
-			this.setConferenceGame(this.homeTeam.isInConference(this.awayTeam) ? 1 : 0);
+			this.setConferenceGame(this.homeTeam.isInConference(this.awayTeam));
 		}
 	}
 
@@ -131,11 +115,11 @@ public class Game implements Comparable {
 		this.day = day;
 	}
 
-	public int getConferenceGame() {
+	public boolean isConferenceGame() {
 		return conferenceGame;
 	}
 
-	public void setConferenceGame(int conferenceGame) {
+	public void setConferenceGame(boolean conferenceGame) {
 		this.conferenceGame = conferenceGame;
 	}
 
@@ -147,11 +131,11 @@ public class Game implements Comparable {
 		this.week = week;
 	}
 
-	public int getUserGame() {
+	public boolean isUserGame() {
 		return userGame;
 	}
 
-	public void setUserGame(int userGame) {
+	public void setUserGame(boolean userGame) {
 		this.userGame = userGame;
 	}
 
@@ -194,7 +178,7 @@ public class Game implements Comparable {
 	 * @return true if a game is not a rivalry and not in conference, false if else
 	 */
 	public boolean isRemovableGame() {
-		return this.getConferenceGame() == 0 && !this.isRivalryGame();
+		return !this.isConferenceGame() && !this.isRivalryGame();
 	}
 
 	public School getWinner() {
@@ -238,11 +222,11 @@ public class Game implements Comparable {
 					list.add(this.getWeek() + 12);
 				}
 			} else if (i == 11) {
-				list.add(this.getUserGame());
+				list.add(this.isUserGame() ? 1 : 0);
 			} else if (i == 12) {
-				list.add(this.getUserGame());
+				list.add(this.isUserGame() ? 1 : 0);
 			} else if (i == 13) {
-				list.add(this.getConferenceGame());
+				list.add(this.isConferenceGame() ? 1 : 0);
 			} else {
 				list.add(0);
 			}

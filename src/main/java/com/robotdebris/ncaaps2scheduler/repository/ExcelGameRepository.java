@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
+import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.School;
 
@@ -77,5 +78,18 @@ public class ExcelGameRepository implements GameRepository {
 				.filter(game -> (game.getHomeTeam().equals(school) || game.getAwayTeam().equals(school))
 						&& game.getWeek() == week)
 				.findFirst();
+	}
+
+	@Override
+	public List<Game> findConfGamesByConference(Conference conference) {
+		return seasonSchedule.stream()
+				.filter(g -> g.getHomeTeam().getConference() == conference && g.isConferenceGame())
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public void removeGames(List<Game> games) {
+		seasonSchedule.removeAll(games);
+
 	}
 }

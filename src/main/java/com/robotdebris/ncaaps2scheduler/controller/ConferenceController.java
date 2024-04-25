@@ -21,6 +21,7 @@ import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.Swap;
 import com.robotdebris.ncaaps2scheduler.service.ConferenceService;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
+import com.robotdebris.ncaaps2scheduler.service.SchoolService;
 import com.robotdebris.ncaaps2scheduler.service.SwapService;
 
 @CrossOrigin(origins = "*")
@@ -34,6 +35,8 @@ public class ConferenceController {
 	private ScheduleService scheduleService;
 	@Autowired
 	private SwapService swapService;
+	@Autowired
+	private SchoolService schoolService;
 
 	@GetMapping
 	public List<Conference> getAllConferences() {
@@ -43,14 +46,17 @@ public class ConferenceController {
 
 	@GetMapping(value = "{name}")
 	public Conference getConferenceByName(@PathVariable String name) {
-		Conference conference = scheduleService.searchConferenceByName(name);
+		Conference conference = conferenceService.conferenceSearch(name);
 		return conference;
 	}
 
 	@GetMapping(value = "{name}/schools")
 	public List<School> getSchoolsByConference(@PathVariable String name) {
-		List<School> schools = scheduleService.getSchoolsByConference(name);
-		return schools;
+		if (name == "All") {
+			return schoolService.getAllSchools();
+		}
+		Conference conf = conferenceService.conferenceSearch(name);
+		return conf.getSchools();
 	}
 
 	@PostMapping(value = "swap-schools")
@@ -104,7 +110,8 @@ public class ConferenceController {
 
 	@PostMapping(value = "{name}/remove-games")
 	public int removeConferenceGames(@PathVariable String name) {
-		return scheduleService.removeConferenceGames(name);
+		Conference conf = conferenceService.conferenceSearch(name);
+		return scheduleService.removeConfGamesByConference(conf);
 	}
 
 	@PostMapping(value = "set-by-file")

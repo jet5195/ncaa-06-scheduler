@@ -40,7 +40,7 @@ public class ScheduleService {
 
 	private final GameRepository gameRepository;
 	private final SchoolRepository schoolRepository;
-	private final Logger LOGGER = Logger.getLogger(ScheduleService.class.getName());
+	private final Logger LOGGER = Logger.getLogger(ScheduleService.class);
 	@Autowired
 	SchoolService schoolService;
 	@Autowired
@@ -75,6 +75,9 @@ public class ScheduleService {
 	public void addGame(Game game) {
 		if (canScheduleGame(game)) {
 			gameRepository.saveGame(game);
+			LOGGER.info("Added game " + game);
+		} else {
+			LOGGER.warn("Cannot schedule game " + game);
 		}
 	}
 
@@ -305,7 +308,7 @@ public class ScheduleService {
 						School rival = school.getRivals().get(j);
 						if (isOpponentForSchool(school, rival)) {
 							removeMe = findFirstGameBetweenSchools(school, rival);
-							if (removeMe.getConferenceGame() == 0) {
+							if (!removeMe.isConferenceGame()) {
 								removeGame(removeMe);
 								count++;
 							}
@@ -646,21 +649,6 @@ public class ScheduleService {
 		return count;
 	}
 
-	public Conference searchConferenceByName(String name) {
-		return conferenceService.conferenceSearch(name);
-	}
-
-	public List<Conference> getConferenceList() {
-		return conferenceService.getConferenceList();
-	}
-
-	public List<School> getSchoolsByConference(String name) {
-		if (name.equalsIgnoreCase("All")) {
-			return schoolService.getAllSchools();
-		}
-		return schoolService.getAllSchoolsInConference(name);
-	}
-
 	public void setAlignmentFile(MultipartFile alignmentFile) throws IOException {
 		File file = excelReader.convertMultipartFileToFile(alignmentFile);
 		try {
@@ -791,10 +779,10 @@ public class ScheduleService {
 //        return null;
 //    }
 
-	public int removeConferenceGames(String name) {
-		Conference conf = conferenceService.conferenceSearch(name);
-		return removeAllConferenceGames(conf);
-	}
+//	public int removeConferenceGames(String name) {
+//		Conference conf = conferenceService.conferenceSearch(name);
+//		return removeAllConferenceGames(conf);
+//	}
 
 	public Game getGame(int week, int gameId) {
 		ArrayList<Game> weeklyGames = getScheduleByWeek(week);
@@ -808,7 +796,7 @@ public class ScheduleService {
 
 	public void removeAllConferenceGames() {
 		for (Conference conf : conferenceService.getConferenceList()) {
-			this.removeConferenceGames(conf.getName());
+			this.removeConfGamesByConference(conf);
 		}
 	}
 
@@ -987,20 +975,10 @@ public class ScheduleService {
 	 * @param conf to remove games from
 	 * @return count of removed games
 	 */
-	public int removeAllConferenceGames(Conference conf) {
-		int count = 0;
-		for (School school : conf.getSchools()) {
-			for (int i = 0; i < getScheduleBySchool(school).size(); i++) {
-				Game game = getScheduleBySchool(school).get(i);
-				if (game.getHomeTeam().getConference() != null && game.getAwayTeam().getConference() != null
-						&& game.getHomeTeam().getConference().getName()
-								.equalsIgnoreCase(game.getAwayTeam().getConference().getName())) {
-					this.removeGame(game);
-					i--;
-				}
-			}
-		}
-		return count;
+	public int removeConfGamesByConference(Conference conf) {
+		List<Game> confGames = gameRepository.findConfGamesByConference(conf);
+		gameRepository.removeGames(confGames);
+		return 0;
 	}
 
 	/**

@@ -7,10 +7,10 @@ public class GameBuilder {
 	private GameResult gameResult;
 	private int time;
 	private DayOfWeek day;
-	private int conferenceGame;
+	private boolean conferenceGame;
 	private int week;
 	private int weight;
-	private int userGame;
+	private boolean userGame;
 	private int gameNumber;
 
 	private static final int DEFAULT_TIME = 450; // Example default time
@@ -41,7 +41,7 @@ public class GameBuilder {
 		return this;
 	}
 
-	public GameBuilder setConferenceGame(int conferenceGame) {
+	public GameBuilder setConferenceGame(boolean conferenceGame) {
 		this.conferenceGame = conferenceGame;
 		return this;
 	}
@@ -56,7 +56,7 @@ public class GameBuilder {
 		return this;
 	}
 
-	public GameBuilder setUserGame(int userGame) {
+	public GameBuilder setUserGame(boolean userGame) {
 		this.userGame = userGame;
 		return this;
 	}
