@@ -3,6 +3,7 @@ package com.robotdebris.ncaaps2scheduler.repository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
@@ -47,7 +48,8 @@ public class ExcelSchoolRepository implements SchoolRepository {
 
 	@Override
 	public void saveAll(List<School> schools) {
-		this.schools = schools;
+		//TODO: possibly need to look into the cause here
+		this.schools = schools.stream().filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	@Override

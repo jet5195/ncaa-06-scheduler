@@ -32,7 +32,7 @@ public class ConferenceSchedulerFactory {
 		case 13:
 			return new ThirteenTeamConferenceScheduler();
 		case 14:
-			return new FourteenTeamConferenceScheduler();
+			return context.getBean(FourteenTeamConferenceScheduler.class);
 		case 15:
 			return new FifteenTeamConferenceScheduler();
 		case 16:
