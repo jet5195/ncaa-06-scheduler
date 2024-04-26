@@ -105,7 +105,9 @@ public class ConferenceController {
 
 	@PostMapping(value = "{name}/add-games")
 	public int autoAddConferenceGames(@PathVariable String name) throws Exception {
-		return scheduleService.autoAddConferenceGames(name);
+		int count = scheduleService.getSeasonSchedule().size();
+		scheduleService.autoAddConferenceGames(name);
+        return scheduleService.getSeasonSchedule().size() - count;
 	}
 
 	@PostMapping(value = "{name}/remove-games")

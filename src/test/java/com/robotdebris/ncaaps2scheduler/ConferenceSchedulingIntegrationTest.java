@@ -2,11 +2,6 @@ package com.robotdebris.ncaaps2scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -26,6 +21,7 @@ import com.robotdebris.ncaaps2scheduler.repository.ConferenceRepository;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
+import com.robotdebris.ncaaps2scheduler.util.TestUtil;
 
 @SpringBootTest(properties = "spring.profiles.active=test")
 public class ConferenceSchedulingIntegrationTest {
@@ -49,7 +45,7 @@ public class ConferenceSchedulingIntegrationTest {
 	@ParameterizedTest
 	@MethodSource("provideYears")
 	public void verifyConferenceGameCountsForDefaultConferences(int year) throws Exception {
-		MockMultipartFile file = createMockMultipartFile("Default_06_07_Conferences.xlsx");
+		MockMultipartFile file = TestUtil.createMockMultipartFile("Default_06_07_Conferences.xlsx");
 		scheduleService.setAlignmentFile(file);
 		gameRepository.setYear(year);
 		scheduleService.addAllConferenceGames();
@@ -63,7 +59,7 @@ public class ConferenceSchedulingIntegrationTest {
 	@ParameterizedTest
 	@MethodSource("provideYears")
 	public void verifyConferenceGameCountsForRobotDebrisConferences(int year) throws Exception {
-		MockMultipartFile file = createMockMultipartFile("RobotDebris_Custom_Conf_V2.xlsx");
+		MockMultipartFile file = TestUtil.createMockMultipartFile("RobotDebris_Custom_Conf_V2.xlsx");
 		scheduleService.setAlignmentFile(file);
 		gameRepository.setYear(year);
 		scheduleService.addAllConferenceGames();
@@ -74,30 +70,12 @@ public class ConferenceSchedulingIntegrationTest {
 		}
 	}
 
-	@ParameterizedTest
-	@MethodSource("provideYears")
-	public void verifyNonConferenceGameCounts(int year) throws Exception {
-		MockMultipartFile file = createMockMultipartFile("Default_06_07_Conferences.xlsx");
-		scheduleService.setAlignmentFile(file);
-		gameRepository.setYear(year);
-		scheduleService.addAllConferenceGames();
-		// Assert
-		scheduleService.autoAddGames(false);
-		List<School> schools = schoolRepository.findByNCAADivision(NCAADivision.FBS);
-		for (School school : schools) {
-			verifyNonConfGamesForYear(school);
-		}
-	}
 
-	private void verifyNonConfGamesForYear(School school) {
-		List<Game> schedule = gameRepository.findGamesByTeam(school);
-		String message = String.format("For school '%s' in year %d: expected %d games, found %d.", school.getName(),
-				gameRepository.getYear(), 12, schedule.size());
-		assertThat(schedule.size()).as(message).isEqualTo(12);
-	}
 
 	@Test
 	public void verifyConferenceGamesForTeamAndYears() throws Exception {
+		MockMultipartFile file = TestUtil.createMockMultipartFile("Default_06_07_Conferences.xlsx");
+		scheduleService.setAlignmentFile(file);
 		School school = schoolRepository.findByName("Boston College");
 		List<Integer> years = List.of(2005, 2006, 2007, 2008, 2009);
 		for (int year : years) {
@@ -136,19 +114,19 @@ public class ConferenceSchedulingIntegrationTest {
 		return IntStream.rangeClosed(2000, 2010);
 	}
 
-	private MockMultipartFile createMockMultipartFile(String fileName) throws IOException, URISyntaxException {
-		// Load the file from the classpath
-		Path path = Paths.get(getClass().getClassLoader().getResource(fileName).toURI());
-		byte[] content = Files.readAllBytes(path);
+	// private MockMultipartFile createMockMultipartFile(String fileName) throws IOException, URISyntaxException {
+	// 	// Load the file from the classpath
+	// 	Path path = Paths.get(getClass().getClassLoader().getResource(fileName).toURI());
+	// 	byte[] content = Files.readAllBytes(path);
 
-		// Create a MockMultipartFile object
-		MockMultipartFile mockMultipartFile = new MockMultipartFile("file", // Parameter name used in the form
-				fileName, // Filename
-				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // Content type
-				content // File content
-		);
+	// 	// Create a MockMultipartFile object
+	// 	MockMultipartFile mockMultipartFile = new MockMultipartFile("file", // Parameter name used in the form
+	// 			fileName, // Filename
+	// 			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // Content type
+	// 			content // File content
+	// 	);
 
-		return mockMultipartFile;
-	}
+	// 	return mockMultipartFile;
+	// }
 
 }

@@ -646,12 +646,10 @@ public class ScheduleService {
 //        addYearlySeriesHelper("Navy", "Army", 14, 5, getYear(), false);
 //    }
 
-    public int autoAddConferenceGames(String name) throws Exception {
+    public void autoAddConferenceGames(String name) throws Exception {
         Conference conf = conferenceService.conferenceSearch(name);
-        // setAllYearlyGames();
         ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
         scheduler.generateConferenceSchedule(conf, gameRepository);
-        return 0;
     }
 
     public List<Game> getBowlGames() {
