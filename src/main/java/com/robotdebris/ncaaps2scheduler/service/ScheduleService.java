@@ -140,14 +140,6 @@ public class ScheduleService {
         }
     }
 
-    public List<School> getSchoolList() {
-        return schoolService.getAllSchools();
-    }
-
-    public School searchSchoolByTgid(int tgid) {
-        return schoolService.schoolSearch(tgid);
-    }
-
     public List<School> findOpenOpponentsForWeek(int tgid, int week) {
         School input = schoolService.schoolSearch(tgid);
         if (input == null) {
@@ -171,21 +163,6 @@ public class ScheduleService {
         return input.getRivals().stream().filter(rival -> isEligibleNonConfMatchup(input, rival))
                 .filter(school -> getGameBySchoolAndWeek(school, week) == null).collect(Collectors.toList());
     }
-
-    public int removeAllOocNonRivalGames() {
-        return removeAllNonConferenceGames(false);
-    }
-
-    public int removeAllOocGames() {
-        return removeAllNonConferenceGames(true);
-    }
-
-    public void removeGame(int tgid, int week) {
-        School input = schoolService.schoolSearch(tgid);
-        Game game = getGameBySchoolAndWeek(input, week);
-        removeGame(game);
-    }
-
     private ArrayList<Integer> fixNoEmptyWeeksForConfGame(School s1, School s2) {
 
         // trying to schedule WVU vs PSU
@@ -210,9 +187,9 @@ public class ScheduleService {
                 if (!jointEmptyWeeks.isEmpty()) {
                     System.out.println("Moving game: " + game.getAwayTeam() + " at " + game.getHomeTeam()
                             + ", because no available week was found for " + s1 + " vs " + s2);
-                    removeGame(s1.getTgid(), game.getWeek());
+                    removeGame(game);
                     Game newGame = new GameBuilder().setAwayTeam(game.getAwayTeam()).setHomeTeam(game.getHomeTeam())
-                            .setWeek(randomizeWeek(jointEmptyWeeks)).build();
+                            .setWeek(randomIntFromList(jointEmptyWeeks)).build();
                     addGame(newGame);
                     break;
                 }
@@ -271,10 +248,7 @@ public class ScheduleService {
     private void fillOpenGames(List<School> schoolList) {
         List<School> tooFewGames = findTooFewGames();
         addRivalryGamesAll(tooFewGames, false);
-        // recalculate tooFewGames?
-//        tooFewGames = findTooFewGames();
-//        addRandomGames(schoolList, tooFewGames);
-        newAddRandomNonConferenceGames();
+        addRandomNonConfGames();
     }
 
     private void removeExtraGames(List<School> schoolList) {
@@ -515,7 +489,7 @@ public class ScheduleService {
         return 0;
     }
 
-    public void newAddRandomNonConferenceGames() {
+    public void addRandomNonConfGames() {
         List<School> schoolsThatNeedGames = findTooFewGames();
         while (!schoolsThatNeedGames.isEmpty()) {
             School school = schoolsThatNeedGames.remove(0);
@@ -556,7 +530,6 @@ public class ScheduleService {
 
     public void fixSchedule() {
         removeExtraGames(schoolService.getAllSchools());
-        // count += fillOpenGames(seasonSchedule, schoolList);
     }
 
     public void setAlignmentFile(MultipartFile alignmentFile) throws IOException {
@@ -566,8 +539,6 @@ public class ScheduleService {
             conferenceService.setConferenceList(conferenceList);
             excelReader.setAlignmentData(file);
             conferenceService.setConferencesSchoolList(schoolService.getAllSchools());
-            // TODO: probably need to reimplement this as well.
-            // Collections.sort(schoolService.getAllSchools());
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -1074,15 +1045,15 @@ public class ScheduleService {
         if (emptyWeeks.size() > 1) {
             emptyWeeks.remove(Integer.valueOf(14));
         }
-        return randomizeWeek(emptyWeeks);
+        return randomIntFromList(emptyWeeks);
     }
 
-    public int randomizeWeek(ArrayList<Integer> weeks) {
-        int max = weeks.size() - 1;
+    public int randomIntFromList(ArrayList<Integer> num) {
+        int max = num.size() - 1;
         int min = 0;
         int range = max - min + 1;
         int randomNum = (int) (Math.random() * range) + min;
-        return weeks.get(randomNum);
+        return num.get(randomNum);
     }
 
     public int findConfGameWeek(School school, School opponent) {
@@ -1092,7 +1063,7 @@ public class ScheduleService {
         }
 
         // Check for mutual top rivalry and attempt to schedule for week 13 or 12
-        if (isTopRivals(school, opponent)) {
+        if (isTopRival(school, opponent)) {
             return scheduleTopRivalGame(emptyWeeks);
         }
 
@@ -1108,10 +1079,10 @@ public class ScheduleService {
         }
 
         // Randomize the week from the remaining available weeks
-        return randomizeWeek(emptyWeeks);
+        return randomIntFromList(emptyWeeks);
     }
 
-    private boolean isTopRivals(School school, School opponent) {
+    private boolean isTopRival(School school, School opponent) {
         return !CollectionUtils.isEmpty(school.getRivals()) && !CollectionUtils.isEmpty(opponent.getRivals())
                 && school.getRivals().get(0).equals(opponent);
     }
@@ -1122,7 +1093,7 @@ public class ScheduleService {
         } else if (emptyWeeks.contains(12)) {
             return 12;
         } else {
-            return randomizeWeek(emptyWeeks);
+            return randomIntFromList(emptyWeeks);
         }
     }
 

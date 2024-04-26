@@ -52,7 +52,7 @@ public class ConferenceController {
 
 	@GetMapping(value = "{name}/schools")
 	public List<School> getSchoolsByConference(@PathVariable String name) {
-		if (name == "All") {
+		if (name.equalsIgnoreCase("all")) {
 			return schoolService.getAllSchools();
 		}
 		Conference conf = conferenceService.conferenceSearch(name);
@@ -107,7 +107,7 @@ public class ConferenceController {
 	public int autoAddConferenceGames(@PathVariable String name) throws Exception {
 		int count = scheduleService.getSeasonSchedule().size();
 		scheduleService.autoAddConferenceGames(name);
-        return scheduleService.getSeasonSchedule().size() - count;
+		return scheduleService.getSeasonSchedule().size() - count;
 	}
 
 	@PostMapping(value = "{name}/remove-games")

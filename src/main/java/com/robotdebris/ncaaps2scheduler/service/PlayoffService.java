@@ -23,6 +23,8 @@ public class PlayoffService {
 	BowlService bowlService;
 	@Autowired
 	List<Bowl> bowlList;
+	@Autowired
+	SchoolService schoolService;
 	List<PlayoffSchool> playoffSchools;
 
 	int placeholderTgid = 120;
@@ -42,7 +44,7 @@ public class PlayoffService {
 		this.playoffSchools = new ArrayList<>();
 		int seed = 1;
 		for (Integer tgid : tgids) {
-			School school = scheduleService.searchSchoolByTgid(tgid);
+			School school = schoolService.schoolSearch(tgid);
 			PlayoffSchool playoffSchool = new PlayoffSchoolBuilder().setSchool(school).setSeed(seed)
 					.createPlayoffSchool();
 			this.playoffSchools.add(playoffSchool);
@@ -53,7 +55,7 @@ public class PlayoffService {
 
 	public void updateBowlCsv() {
 		List<PlayoffGame> playoffGames = new ArrayList<>();
-		School placeholder = scheduleService.searchSchoolByTgid(placeholderTgid);
+		School placeholder = schoolService.schoolSearch(placeholderTgid);
 
 		// null check
 		if (this.playoffSchools == null || this.playoffSchools.isEmpty()) {

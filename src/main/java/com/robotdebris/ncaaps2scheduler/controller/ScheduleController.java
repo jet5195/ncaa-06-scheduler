@@ -37,12 +37,12 @@ public class ScheduleController {
 
     @PostMapping(value = "remove-all-ooc-games")
     public int removeAllOocGames() {
-        return scheduleService.removeAllOocGames();
+        return scheduleService.removeAllNonConferenceGames(true);
     }
 
     @PostMapping(value = "remove-all-ooc-games-but-rivalry")
     public int removeAllOocNonRivalGames() {
-        return scheduleService.removeAllOocNonRivalGames();
+        return scheduleService.removeAllNonConferenceGames(false);
     }
 
     @PostMapping(value = "remove-all-fcs-games")
@@ -84,7 +84,7 @@ public class ScheduleController {
     public int autoAddGamesRandomly() {
         int count = scheduleService.getSeasonSchedule().size();
 //		scheduleService.addRandomGames(schoolService.getAllSchools(), scheduleService.findTooFewGames());
-        scheduleService.newAddRandomNonConferenceGames();
+        scheduleService.addRandomNonConfGames();
         return scheduleService.getSeasonSchedule().size() - count;
     }
 
