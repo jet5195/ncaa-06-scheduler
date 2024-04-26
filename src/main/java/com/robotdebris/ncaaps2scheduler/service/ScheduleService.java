@@ -518,21 +518,21 @@ public class ScheduleService {
     public void newAddRandomNonConferenceGames() {
         List<School> schoolsThatNeedGames = findTooFewGames();
         while (!schoolsThatNeedGames.isEmpty()) {
-            School school = schoolsThatNeedGames.get(0);
+            School school = schoolsThatNeedGames.remove(0);
             boolean needGames = true;
             while (needGames) {
-                List<School> possibleOpponents = schoolsThatNeedGames.stream()
-                        .filter(opponent -> isEligibleNonConfMatchupWithEmptyWeeks(school, opponent)).toList();
-                if (!possibleOpponents.isEmpty()) {
-                    Random rand = new Random();
-                    School randomOpponent = possibleOpponents.get(rand.nextInt(possibleOpponents.size()));
-                    int week = randomizeWeek(school, randomOpponent);
-                    Game game = new GameBuilder().setTeamsWithRandomHomeIntelligently(school, randomOpponent)
+                Collections.shuffle(schoolsThatNeedGames);
+                Optional<School> optionalOpponent = schoolsThatNeedGames.stream()
+                        .filter(opponent -> isEligibleNonConfMatchupWithEmptyWeeks(school, opponent)).findFirst();
+                if (optionalOpponent.isPresent()) {
+                    School opponent = optionalOpponent.get();
+                    int week = randomizeWeek(school, opponent);
+                    Game game = new GameBuilder().setTeamsWithRandomHomeIntelligently(school, opponent)
                             .setWeek(week).build();
                     addGame(game);
                     // check if teams have enough games or not
-                    if (getScheduleBySchool(randomOpponent).size() >= 12) {
-                        schoolsThatNeedGames.remove(randomOpponent);
+                    if (getScheduleBySchool(opponent).size() >= 12) {
+                        schoolsThatNeedGames.remove(opponent);
                     }
                 } else {
                     // schedule FCS game
@@ -551,7 +551,6 @@ public class ScheduleService {
                     needGames = false;
                 }
             }
-            schoolsThatNeedGames.remove(school);
         }
     }
 
