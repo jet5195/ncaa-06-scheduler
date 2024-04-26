@@ -120,6 +120,9 @@ public class GameBuilder {
 		if (this.day == null) {
 			this.day = DEFAULT_DAY;
 		}
+		if (this.gameResult == null) {
+			this.gameResult = new GameResult();
+		}
 		// Create the Game object with the builder's field values
 		return new Game(gameResult, time, awayTeam, homeTeam, gameNumber, week, day, userGame, conferenceGame);
 		// TODO: either remove weight from this class or add to
