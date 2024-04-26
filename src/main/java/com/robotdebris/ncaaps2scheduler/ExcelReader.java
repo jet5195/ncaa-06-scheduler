@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -58,6 +57,7 @@ public class ExcelReader {
 			List<School> schoolList = populateSchoolsFromExcel(schoolsFile);
 			Collections.sort(schoolList);
 			schoolService.setSchoolList(schoolList);
+			populateRivalsFromExcel(schoolsFile);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -325,18 +325,29 @@ public class ExcelReader {
 			} // end of row iterator
 			r++;
 		}
+
+		return schoolList;
+	}
+
+	public void populateRivalsFromExcel(String path) throws IOException {
+		Workbook workbook = readExcel(path);
+		// Getting the Sheet at index zero
+		Sheet sheet = workbook.getSheetAt(0);
+		DataFormatter dataFormatter = new DataFormatter();
 		int iterator = 0;
 		for (Row row : sheet) {
 			List<School> rivals = new ArrayList<School>();
 			if (iterator != 0 && dataFormatter.formatCellValue(row.getCell(0)) != "") {
 				int i = 0;
-				int tgid = 0;
+				School school = null;
 				for (Cell cell : row) {
 					if (i == 0) {
 						String cellValue = dataFormatter.formatCellValue(cell);
-						tgid = Integer.parseInt(cellValue);
+						int tgid = Integer.parseInt(cellValue);
+						school = schoolService.schoolSearch(tgid);
+						i = 6;
 					}
-					if (i >= 6 && dataFormatter.formatCellValue(cell) != "") {
+					if (i >= 7 && dataFormatter.formatCellValue(cell) != "") {
 						String cellValue = dataFormatter.formatCellValue(cell);
 						School rival = schoolService.schoolSearch(cellValue);
 						if (rival != null) {
@@ -345,14 +356,12 @@ public class ExcelReader {
 					}
 					i++;
 				}
-				int finalTgid = tgid;
-				Optional<School> matchingSchool = schoolList.stream().filter(school -> school.getTgid() == finalTgid)
-						.findFirst();
-				matchingSchool.get().setRivals(rivals);
+				if (school != null) {
+					school.setRivals(rivals);
+				}
 			}
 			iterator++;
 		}
-		return schoolList;
 	}
 
 	/**

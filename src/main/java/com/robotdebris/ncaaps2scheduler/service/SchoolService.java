@@ -52,7 +52,12 @@ public class SchoolService {
 	 * @return School with the same name as the parameter inputted
 	 */
 	public School schoolSearch(String name) {
-		return schoolRepository.findByName(name);
+		//TODO: consider returning optional<school>
+		School school = schoolRepository.findByName(name);
+		if (school == null){
+			LOGGER.warn("No school found for name: " + name);
+		}
+		return school;
 	}
 
 	/**

@@ -288,12 +288,12 @@ public class ScheduleService {
                 .findFirst().orElse(null);
     }
 
-    public int addRivalryGamesAll(List<School> allSchools, boolean aggressive) {
-        int count = 0;
+    public void addRivalryGamesAll(List<School> schools, boolean aggressive) {
         for (int j = 0; j <= 8; j++) {
-            for (int i = 0; i < allSchools.size(); i++) {
+            for (int i = 0; i < schools.size(); i++) {
                 // go through all the schools
-                School s1 = allSchools.get(i);
+                School s1 = schools.get(i);
+                //TODO: fix issue here due to rivals always being empty
                 if (s1.getNcaaDivision().equals(NCAADivision.FBS) && j < s1.getRivals().size()) {
                     // new chance algorithm so you don't ALWAYS play your 5th rival.
                     // 1st rival: 100% chance
@@ -317,12 +317,11 @@ public class ScheduleService {
 
                     if (scheduleGame) {
                         School rival = s1.getRivals().get(j);
-                        count += addRivalryGameTwoSchools(s1, rival, aggressive, j);
+                        addRivalryGameTwoSchools(s1, rival, aggressive, j);
                     }
                 }
             }
         }
-        return count;
     }
 
     private int addRivalryGameHelper(School s1, School rival, int rivalRank) {
