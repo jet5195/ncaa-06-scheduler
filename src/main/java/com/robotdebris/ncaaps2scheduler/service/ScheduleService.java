@@ -163,6 +163,7 @@ public class ScheduleService {
         return input.getRivals().stream().filter(rival -> isEligibleNonConfMatchup(input, rival))
                 .filter(school -> getGameBySchoolAndWeek(school, week) == null).collect(Collectors.toList());
     }
+
     private ArrayList<Integer> fixNoEmptyWeeksForConfGame(School s1, School s2) {
 
         // trying to schedule WVU vs PSU
@@ -626,9 +627,7 @@ public class ScheduleService {
         List<Game> bowlGames = new ArrayList<>();
         for (int i = 16; i <= 23; i++) {
             List<Game> weeklySchedule = this.getScheduleByWeek(i);
-            for (Game game : weeklySchedule) {
-                bowlGames.add(game);
-            }
+            bowlGames.addAll(weeklySchedule);
         }
         return bowlGames;
     }
@@ -730,15 +729,9 @@ public class ScheduleService {
 
         // remove original game from season schedule, and add to new lists to iterate
         // through
-        ArrayList<Game> s1Schedule = new ArrayList<>();
-        for (Game game : getScheduleBySchool(s1)) {
-            s1Schedule.add(game);
-        }
+        List<Game> s1Schedule = new ArrayList<>(getScheduleBySchool(s1));
 
-        ArrayList<Game> s2Schedule = new ArrayList<>();
-        for (Game game : getScheduleBySchool(s2)) {
-            s2Schedule.add(game);
-        }
+        List<Game> s2Schedule = new ArrayList<>(getScheduleBySchool(s2));
 
         for (Game game : s1Schedule) {
             removeGame(game);
