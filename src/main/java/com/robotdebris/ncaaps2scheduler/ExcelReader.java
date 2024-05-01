@@ -29,6 +29,7 @@ import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.GameResult;
 import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
+import com.robotdebris.ncaaps2scheduler.service.CollegeFootballDataService;
 import com.robotdebris.ncaaps2scheduler.service.ConferenceService;
 import com.robotdebris.ncaaps2scheduler.service.SchoolService;
 import com.robotdebris.ncaaps2scheduler.service.SwapService;
@@ -46,6 +47,8 @@ public class ExcelReader {
 	List<Bowl> bowlList;
 	@Autowired
 	SwapService swapService;
+	@Autowired
+	CollegeFootballDataService dataService;
 
 	@PostConstruct
 	public void init() {
@@ -58,6 +61,7 @@ public class ExcelReader {
 			Collections.sort(schoolList);
 			schoolService.setSchoolList(schoolList);
 			populateRivalsFromExcel(schoolsFile);
+			dataService.loadSchoolData();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

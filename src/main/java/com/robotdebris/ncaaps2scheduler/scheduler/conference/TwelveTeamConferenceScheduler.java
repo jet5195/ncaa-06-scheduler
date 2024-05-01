@@ -48,7 +48,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 			scheduleRoundRobinConfGames(div2, conf.getConfGamesStartWeek());
 
 			// order by cross div rivals
-			boolean xDivRivals = div1.get(0).getXDivRival() != null;
+			boolean xDivRivals = div1.get(0).getxDivRival() != null;
 			int numOfConfGames = conf.getNumOfConfGames();
 			int year = gameRepository.getYear();
 
@@ -120,7 +120,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 		if (opponent1Id > 5) {
 			opponent1Id = 0;
 		}
-		if (div2.get(opponent1Id) == school.getXDivRival()) {
+		if (div2.get(opponent1Id) == school.getxDivRival()) {
 			opponent1Id = opponent1Id + 1;
 			if (opponent1Id > 5) {
 				opponent1Id = 0;
@@ -134,7 +134,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 		if (opponent2Id > 5) {
 			opponent2Id = 0;
 		}
-		if (div2.get(opponent2Id) == school.getXDivRival()) {
+		if (div2.get(opponent2Id) == school.getxDivRival()) {
 			opponent2Id = opponent2Id + 1;
 			if (opponent2Id > 5) {
 				opponent2Id = 0;
@@ -147,7 +147,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
 	private void scheduleCrossDivisionalRival8Games(List<School> div1, List<School> div2, School school)
 			throws Exception {
-		School opponent = school.getXDivRival();
+		School opponent = school.getxDivRival();
 		int week = scheduleService.findConfGameWeek(school, opponent);
 		// should be home or away game?
 		if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= div1.size() / 2) {
@@ -162,7 +162,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 		List<School> div2 = conf.getSchoolsByDivision(conf.getDivisions().get(1));
 
 		// order by cross div rivals
-		boolean xDivRivals = div1.get(0).getXDivRival() != null;
+		boolean xDivRivals = div1.get(0).getxDivRival() != null;
 		int numOfConfGames = conf.getNumOfConfGames();
 		int year = scheduleService.getYear();
 		int i = 0;
@@ -253,7 +253,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 	 * @throws Exception
 	 */
 	private void schedule8GamesXDivRivals(List<School> div1, List<School> div2, School school) throws Exception {
-		School opponent = school.getXDivRival();
+		School opponent = school.getxDivRival();
 		int week = scheduleService.findConfGameWeek(school, opponent);
 		// should be home or away game?
 		if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= div1.size() / 2) {
@@ -275,7 +275,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
 		// Find the next opponent, ensuring they're not the xDivRival
 		int opponent2Id = (index + 2) % div2.size();
-		if (div2.get(opponent2Id).equals(school.getXDivRival())) {
+		if (div2.get(opponent2Id).equals(school.getxDivRival())) {
 			opponent2Id = (opponent2Id + 1) % div2.size();
 		}
 		opponent = div2.get(opponent2Id);
