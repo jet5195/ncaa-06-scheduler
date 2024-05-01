@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -113,7 +113,7 @@ public class ScheduleController {
     }
 
     @GetMapping(value = "week/{week}")
-    public ArrayList<Game> getScheduleByWeek(@PathVariable("week") int week) {
+    public ArrayList<Game> getScheduleByWeek(@PathVariable int week) {
         return scheduleService.getScheduleByWeek(week);
     }
 
@@ -123,7 +123,7 @@ public class ScheduleController {
     }
 
     @GetMapping(value = "week/{week}/{gameNumber}")
-    public Game getGame(@PathVariable("week") int week, @PathVariable("gameNumber") int gameNumber) {
+    public Game getGame(@PathVariable int week, @PathVariable int gameNumber) {
         return scheduleService.getGame(week, gameNumber);
     }
 

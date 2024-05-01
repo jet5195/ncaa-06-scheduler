@@ -15,7 +15,7 @@ public class Conference implements Comparable<Conference> {
 	@Setter
 	private int conferenceID;
 	private String name;
-	private ArrayList<String> divisions;
+	private List<String> divisions;
 	private boolean powerConf;
 	private boolean fbs;
 	// private String color;
@@ -70,7 +70,7 @@ public class Conference implements Comparable<Conference> {
 		this.name = name;
 	}
 
-	public ArrayList<String> getDivisions() {
+	public List<String> getDivisions() {
 		return divisions;
 	}
 
