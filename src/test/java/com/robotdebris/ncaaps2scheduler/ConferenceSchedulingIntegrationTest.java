@@ -87,8 +87,8 @@ public class ConferenceSchedulingIntegrationTest {
 			System.out.println(year);
 			System.out.println(schedule);
 
-			String message = String.format("For school '%s' in year %d: expected %d games, found %d.", school.getName(),
-					year, 8, schedule.size());
+			String message = "For school '%s' in year %d: expected %d games, found %d.".formatted(school.getName(),
+                    year, 8, schedule.size());
 			assertThat(schedule.size()).as(message).isEqualTo(8);
 		}
 	}
@@ -99,9 +99,9 @@ public class ConferenceSchedulingIntegrationTest {
 
 		for (School school : schools) {
 			List<Game> schedule = gameRepository.findGamesByTeam(school);
-			String message = String.format(
-					"For conference '%s' and school '%s' in year %d: expected %d games, found %d.", conf.getName(),
-					school.getName(), year, expectedGames, schedule.size());
+			String message = 
+                    "For conference '%s' and school '%s' in year %d: expected %d games, found %d.".formatted(conf.getName(),
+                    school.getName(), year, expectedGames, schedule.size());
 			assertThat(schedule.size()).as(message).isEqualTo(expectedGames);
 		}
 	}

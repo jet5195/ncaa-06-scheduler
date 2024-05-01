@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.robotdebris.ncaaps2scheduler.model.School;
+import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 
 @Service
@@ -15,13 +16,16 @@ public class SchoolService {
 
 	private final SchoolRepository schoolRepository;
 	private final Logger LOGGER = Logger.getLogger(SchoolService.class.getName());
-	@Autowired
-	public ScheduleService scheduleService;
+//	@Autowired
+//	public ScheduleService scheduleService;
 	@Autowired
 	ConferenceService conferenceService;
+	@Autowired
+	GameRepository gameRepository;
 
-	public SchoolService(SchoolRepository schoolRepository) {
+	public SchoolService(SchoolRepository schoolRepository, GameRepository gameRepository) {
 		this.schoolRepository = schoolRepository;
+		this.gameRepository = gameRepository;
 	}
 
 //	@PostConstruct
@@ -52,9 +56,9 @@ public class SchoolService {
 	 * @return School with the same name as the parameter inputted
 	 */
 	public School schoolSearch(String name) {
-		//TODO: consider returning optional<school>
+		// TODO: consider returning optional<school>
 		School school = schoolRepository.findByName(name);
-		if (school == null){
+		if (school == null) {
 			LOGGER.warn("No school found for name: " + name);
 		}
 		return school;
@@ -101,7 +105,7 @@ public class SchoolService {
 	public void populateUserSchools() {
 		List<School> allSchools = schoolRepository.findAll();
 		for (School school : allSchools) {
-			long numOfUserGames = scheduleService.getScheduleBySchool(school).stream().filter(game -> game.isUserGame())
+			long numOfUserGames = gameRepository.findGamesByTeam(school).stream().filter(game -> game.isUserGame())
 					.count();
 			if (numOfUserGames >= 10) {
 				school.setUserTeam(true);

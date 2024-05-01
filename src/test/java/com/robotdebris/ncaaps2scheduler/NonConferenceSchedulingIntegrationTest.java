@@ -57,7 +57,7 @@ public class NonConferenceSchedulingIntegrationTest {
 
     private void verifyNonConfGamesForYear(School school) {
         List<Game> schedule = gameRepository.findGamesByTeam(school);
-        String message = String.format("For school '%s' in year %d: expected %d games, found %d.", school.getName(),
+        String message = "For school '%s' in year %d: expected %d games, found %d.".formatted(school.getName(),
                 gameRepository.getYear(), 12, schedule.size());
         assertThat(schedule.size()).as(message).isEqualTo(12);
     }

@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
 
+@Entity
 public class Conference implements Comparable<Conference> {
 
 	@Getter
 	@Setter
 	private int conferenceID;
 	private String name;
-	private ArrayList<String> divisions;
+	private List<String> divisions;
 	private boolean powerConf;
 	private boolean fbs;
 	// private String color;
@@ -24,7 +26,8 @@ public class Conference implements Comparable<Conference> {
 	private int numOfConfGames;
 	private int confGamesStartWeek;
 	private int numOfSchools;
-	@JsonIgnore
+
+	@JsonManagedReference
 	private List<School> schools;
 
 	public Conference() {
@@ -70,7 +73,7 @@ public class Conference implements Comparable<Conference> {
 		this.name = name;
 	}
 
-	public ArrayList<String> getDivisions() {
+	public List<String> getDivisions() {
 		return divisions;
 	}
 
