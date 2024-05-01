@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,8 +24,6 @@ public class Conference implements Comparable<Conference> {
 	private int numOfConfGames;
 	private int confGamesStartWeek;
 	private int numOfSchools;
-
-	@JsonManagedReference
 	private List<School> schools;
 
 	public Conference() {

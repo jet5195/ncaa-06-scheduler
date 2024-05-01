@@ -3,8 +3,9 @@ package com.robotdebris.ncaaps2scheduler.model;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 
 import jakarta.persistence.Entity;
@@ -12,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "tgid")
 public class School implements Comparable<School> {
 
 	// TEAM tscs = conference ranking
@@ -32,7 +34,6 @@ public class School implements Comparable<School> {
 	private String state;
 	@Getter
 	@Setter
-	@JsonBackReference
 	private Conference conference;
 	@Getter
 	@Setter
