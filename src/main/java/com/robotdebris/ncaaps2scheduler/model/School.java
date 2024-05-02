@@ -19,6 +19,7 @@ public class School implements Comparable<School> {
 	private int tgid;
 	private String name;
 	private String nickname;
+    private String conferenceName;
 	@JsonBackReference
 	private Conference conference;
 	private String division;
@@ -34,16 +35,9 @@ public class School implements Comparable<School> {
 	private String state;
 	private String city;
 	private double stadiumCapacity;
-
 	@JsonIgnore
 	private List<School> rivals;
-
 	private boolean userTeam;
-	// @Getter
-//	@Setter
-//	@JsonIgnore
-//	private SchoolSchedule schedule = new SchoolSchedule();
-
 	@JsonIgnore
 	private School xDivRival;
 
@@ -86,12 +80,21 @@ public class School implements Comparable<School> {
 		this.state = state;
 	}
 
+    public String getConferenceName() {
+        return conferenceName;
+    }
+
+    public void setConferenceName(String conferenceName) {
+        this.conferenceName = conferenceName;
+    }
+
 	public Conference getConference() {
 		return conference;
 	}
 
 	public void setConference(Conference conference) {
 		this.conference = conference;
+        this.conferenceName = conference.getName();
 	}
 
 	public String getDivision() {
@@ -275,7 +278,7 @@ public class School implements Comparable<School> {
 	}
 
 	public void updateAlignment(Conference conference, String division, NCAADivision ncaaDivision, School xDivRival) {
-		this.conference = conference;
+		this.setConference(conference);
 		this.division = division;
 		this.ncaaDivision = ncaaDivision;
 		this.xDivRival = xDivRival;

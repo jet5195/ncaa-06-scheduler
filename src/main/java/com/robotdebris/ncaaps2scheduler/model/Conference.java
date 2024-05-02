@@ -26,7 +26,6 @@ public class Conference implements Comparable<Conference> {
 	private int numOfConfGames;
 	private int confGamesStartWeek;
 	private int numOfSchools;
-
 	@JsonManagedReference
 	private List<School> schools;
 
