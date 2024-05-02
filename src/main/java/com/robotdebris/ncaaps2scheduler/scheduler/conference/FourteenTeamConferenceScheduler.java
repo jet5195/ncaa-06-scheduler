@@ -36,7 +36,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
 		scheduleRoundRobinConfGames(div1, conf.getConfGamesStartWeek());
 		scheduleRoundRobinConfGames(div2, conf.getConfGamesStartWeek());
 
-		boolean xDivRivals = div1.get(0).getXDivRival() != null;
+		boolean xDivRivals = div1.get(0).getxDivRival() != null;
 		int numOfConfGames = conf.getNumOfConfGames();
 		int yearOffset = Math.abs(gameRepository.getYear() - 2005);
 

@@ -3,75 +3,152 @@ package com.robotdebris.ncaaps2scheduler.model;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 
 import jakarta.persistence.Entity;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "tgid")
 public class School implements Comparable<School> {
 
 	// TEAM tscs = conference ranking
 //0 = conf champ
 //TBRK = bcs bowl ranking
 //tmrk = media poll rank
-	@Getter
-	@Setter
 	private int tgid;
-	@Getter
-	@Setter
 	private String name;
-	@Getter
-	@Setter
 	private String nickname;
-	@Getter
-	@Setter
 	private String state;
-	@Getter
-	@Setter
+	private String conferenceName;
+	@JsonBackReference
 	private Conference conference;
-	@Getter
-	@Setter
 	private String division;
-	@Getter
-	@Setter
 	private NCAADivision ncaaDivision;
-	@Getter
-	@Setter
 	private String color;
-	@Getter
-	@Setter
 	private String altColor;
-	@Getter
-	@Setter
 	private String logo;
-	@Getter
-	@Setter
 	@JsonIgnore
 	private List<School> rivals;
-	@Getter
-	@Setter
 	private boolean userTeam;
-	// @Getter
-//	@Setter
-//	@JsonIgnore
-//	private SchoolSchedule schedule = new SchoolSchedule();
-	@Getter
-	@Setter
 	@JsonIgnore
 	private School xDivRival;
 
 	School() {
 	}
 
-//	public void addGame(Game theGame) {
-//		this.schedule.add(theGame);
-//	}
+	public int getTgid() {
+		return tgid;
+	}
+
+	public void setTgid(int tgid) {
+		this.tgid = tgid;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getNickname() {
+		return nickname;
+	}
+
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public String getConferenceName() {
+		return conferenceName;
+	}
+
+	public void setConferenceName(String conferenceName) {
+		this.conferenceName = conferenceName;
+	}
+
+	public Conference getConference() {
+		return conference;
+	}
+
+	public void setConference(Conference conference) {
+		this.conference = conference;
+		this.conferenceName = conference.getName();
+	}
+
+	public String getDivision() {
+		return division;
+	}
+
+	public void setDivision(String division) {
+		this.division = division;
+	}
+
+	public NCAADivision getNcaaDivision() {
+		return ncaaDivision;
+	}
+
+	public void setNcaaDivision(NCAADivision ncaaDivision) {
+		this.ncaaDivision = ncaaDivision;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
+	}
+
+	public String getAltColor() {
+		return altColor;
+	}
+
+	public void setAltColor(String altColor) {
+		this.altColor = altColor;
+	}
+
+	public String getLogo() {
+		return logo;
+	}
+
+	public void setLogo(String logo) {
+		this.logo = logo;
+	}
+
+	public List<School> getRivals() {
+		return rivals;
+	}
+
+	public void setRivals(List<School> rivals) {
+		this.rivals = rivals;
+	}
+
+	public boolean isUserTeam() {
+		return userTeam;
+	}
+
+	public void setUserTeam(boolean userTeam) {
+		this.userTeam = userTeam;
+	}
+
+	public School getxDivRival() {
+		return xDivRival;
+	}
+
+	public void setxDivRival(School xDivRival) {
+		this.xDivRival = xDivRival;
+	}
 
 	/**
 	 * Checks to see if this school is in the same conference as another
@@ -142,7 +219,7 @@ public class School implements Comparable<School> {
 	}
 
 	public void updateAlignment(Conference conference, String division, NCAADivision ncaaDivision, School xDivRival) {
-		this.conference = conference;
+		this.setConference(conference);
 		this.division = division;
 		this.ncaaDivision = ncaaDivision;
 		this.xDivRival = xDivRival;

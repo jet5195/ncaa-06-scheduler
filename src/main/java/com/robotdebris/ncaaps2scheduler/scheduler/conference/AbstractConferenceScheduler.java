@@ -64,7 +64,7 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 	List<School> orderDivByXDivRivals(List<School> div1) {
 		List<School> orderedDiv = new ArrayList<>();
 		for (School school : div1) {
-			orderedDiv.add(school.getXDivRival());
+			orderedDiv.add(school.getxDivRival());
 		}
 		return orderedDiv;
 	}
