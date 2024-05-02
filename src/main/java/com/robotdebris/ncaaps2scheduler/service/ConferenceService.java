@@ -34,7 +34,7 @@ public class ConferenceService {
 		return conferenceRepository.findAll();
 	}
 
-	public void setConferenceList(List<Conference> conferenceList) {
+	public void saveConferences(List<Conference> conferenceList) {
 		conferenceRepository.saveAll(conferenceList);
 	}
 

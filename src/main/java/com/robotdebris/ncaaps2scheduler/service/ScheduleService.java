@@ -536,7 +536,7 @@ public class ScheduleService {
         File file = excelReader.convertMultipartFileToFile(alignmentFile);
         try {
             List<Conference> conferenceList = excelReader.populateConferencesFromExcel(file);
-            conferenceService.setConferenceList(conferenceList);
+            conferenceService.saveConferences(conferenceList);
             excelReader.setAlignmentData(file);
             conferenceService.setConferencesSchoolList(schoolService.getAllSchools());
         } catch (IOException e) {

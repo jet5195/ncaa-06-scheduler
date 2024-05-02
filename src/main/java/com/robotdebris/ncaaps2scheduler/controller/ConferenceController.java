@@ -3,13 +3,12 @@ package com.robotdebris.ncaaps2scheduler.controller;
 import java.io.IOException;
 import java.util.List;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +22,8 @@ import com.robotdebris.ncaaps2scheduler.service.ConferenceService;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 import com.robotdebris.ncaaps2scheduler.service.SchoolService;
 import com.robotdebris.ncaaps2scheduler.service.SwapService;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -119,6 +120,12 @@ public class ConferenceController {
 	@PostMapping(value = "set-by-file")
 	public void setAlignmentFile(@RequestParam("file") MultipartFile alignmentFile) throws IOException {
 		scheduleService.setAlignmentFile(alignmentFile);
+	}
+
+	@PutMapping()
+	public void saveConferences(@RequestBody List<Conference> conferences) {
+		// TODO: probably will have to map conferences for each school
+		conferenceService.saveConferences(conferences);
 	}
 
 }
