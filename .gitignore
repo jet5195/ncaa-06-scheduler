@@ -33,3 +33,4 @@ build/
 .vscode/
 output.xlsx
 /bin/
+src/main/resources/api.properties
