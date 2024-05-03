@@ -14,12 +14,9 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.robotdebris.ncaaps2scheduler.model.CollegeFootballDataTeam;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
-import com.robotdebris.ncaaps2scheduler.serializer.ApiSchoolDeserializer;
-
-import jakarta.validation.constraints.NotNull;
 
 @Service
 @PropertySource(ignoreResourceNotFound = true, value = "classpath:api.properties")
@@ -28,20 +25,21 @@ public class CollegeFootballDataService {
 	SchoolRepository schoolRepository;
 	private RestTemplate restTemplate = new RestTemplate();
 
-	@NotNull
 	@Value("${collegefootballdata.api.url}")
 	private String apiUrl;
 
-	@NotNull
 	@Value("${collegefootballdata.api.key}")
 	private String apiKey;
+
+	@Autowired
+	ObjectMapper mapper;
 
 	private ResponseEntity<String> fetchData() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", "Bearer " + apiKey); // Replace 'yourApiKey' with the actual key
 		HttpEntity<String> entity = new HttpEntity<>(headers);
 
-		return restTemplate.exchange(apiUrl + "/teams", HttpMethod.GET, entity, String.class);
+		return restTemplate.exchange(apiUrl + "/teams/fbs", HttpMethod.GET, entity, String.class);
 	}
 
 	public void loadSchoolData() throws JsonProcessingException {
@@ -49,31 +47,42 @@ public class CollegeFootballDataService {
 			System.out.println("apiUrl or apiKey are null");
 		} else {
 			try {
-				SimpleModule module = new SimpleModule();
-				module.addDeserializer(School.class, new ApiSchoolDeserializer());
-				ObjectMapper mapper = new ObjectMapper();
-				mapper.registerModule(module);
-				School[] schoolData = mapper.readValue(fetchData().getBody(), School[].class);
+//				SimpleModule module = new SimpleModule();
+//				module.addDeserializer(School.class, new ApiSchoolDeserializer());
+//				ObjectMapper mapper = new ObjectMapper();
+//				mapper.registerModule(module);
+				CollegeFootballDataTeam[] apiData = mapper.readValue(fetchData().getBody(),
+						CollegeFootballDataTeam[].class);
 				List<School> schools = schoolRepository.findAll();
 
 				for (School school : schools) {
-					for (School data : schoolData) {
-						if (school.getName().equals(data.getName())) {
+					for (CollegeFootballDataTeam data : apiData) {
+						if (matchSchool(school, data)) {
 							school.setAbbreviation(data.getAbbreviation());
-							school.setCity(data.getCity());
-							school.setLogo(data.getLogo());
+							school.setCity(data.getLocation().getCity());
+							school.setLogo(data.getLogos().getFirst());
 							school.setColor(data.getColor());
 							school.setAltColor(data.getAltColor());
-							school.setLatitude(data.getLatitude());
-							school.setLongitude(data.getLongitude());
-							school.setStadiumCapacity(data.getStadiumCapacity());
-							school.setStadiumName(data.getStadiumName());
+							school.setLatitude(data.getLocation().getLatitude());
+							school.setLongitude(data.getLocation().getLongitude());
+							school.setStadiumCapacity(data.getLocation().getCapacity());
+							school.setStadiumName(data.getLocation().getName());
 						}
 					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+	}
+
+	private boolean matchSchool(School school, CollegeFootballDataTeam data) {
+		if (school.getName().equalsIgnoreCase(data.getSchool()) || school.getName().equalsIgnoreCase(data.getAltName1())
+				|| school.getName().equalsIgnoreCase(data.getAltName2())
+				|| school.getName().equalsIgnoreCase(data.getAltName3())) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 }
