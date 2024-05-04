@@ -7,25 +7,21 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Id;
 
 @Entity
 public class Conference implements Comparable<Conference> {
 
-	@Getter
-	@Setter
+	@Id
 	private int conferenceID;
 	private String name;
+	private String shortName;
 	private List<String> divisions;
 	private boolean powerConf;
 	private boolean fbs;
-	// private String color;
-//	private String altColor;
 	private String logo;
 	private int numOfConfGames;
 	private int confGamesStartWeek;
-	private int numOfSchools;
 	@JsonManagedReference
 	private List<School> schools;
 
@@ -42,8 +38,6 @@ public class Conference implements Comparable<Conference> {
 			divisions.add(division1);
 			divisions.add(division2);
 		}
-//		this.color = color;
-//		this.altColor = altColor;
 		this.logo = logo;
 		this.numOfConfGames = numOfConfGames;
 		this.confGamesStartWeek = confGamesStartWeek;
@@ -64,6 +58,14 @@ public class Conference implements Comparable<Conference> {
 		this.conferenceID = conferenceID;
 	}
 
+	public int getConferenceID() {
+		return conferenceID;
+	}
+
+	public void setConferenceID(int conferenceID) {
+		this.conferenceID = conferenceID;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -72,16 +74,12 @@ public class Conference implements Comparable<Conference> {
 		this.name = name;
 	}
 
-	public List<String> getDivisions() {
-		return divisions;
+	public String getShortName() {
+		return shortName;
 	}
 
-	public void setDivisions(ArrayList<String> divisions) {
-		this.divisions = divisions;
-	}
-
-	public void setDivision(ArrayList<String> divisions) {
-		this.divisions = divisions;
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
 	}
 
 	public boolean isPowerConf() {
@@ -92,18 +90,6 @@ public class Conference implements Comparable<Conference> {
 		this.powerConf = powerConf;
 	}
 
-	// public String getColor() {
-//		return color;
-//	}
-//	public void setColor(String color) {
-//		this.color = color;
-//	}
-//	public String getAltColor() {
-//		return altColor;
-//	}
-//	public void setAltColor(String altColor) {
-//		this.altColor = altColor;
-//	}
 	public String getLogo() {
 		return logo;
 	}
@@ -118,7 +104,6 @@ public class Conference implements Comparable<Conference> {
 
 	public void setSchools(List<School> schools) {
 		this.schools = schools;
-		this.numOfSchools = schools.size();
 		this.fbs = schools.get(0).getNcaaDivision().isFBS();
 	}
 
@@ -159,13 +144,22 @@ public class Conference implements Comparable<Conference> {
 		this.confGamesStartWeek = confGamesStartWeek;
 	}
 
-	public int getNumOfSchools() {
-		return numOfSchools;
+	public List<String> getDivisions(){
+		return divisions;
+	}
+
+	public void setDivisions(List<String> divisions) {
+		this.divisions = divisions;
+	}
+
+	public void setFbs(boolean fbs) {
+		this.fbs = fbs;
 	}
 
 	public boolean isFbs() {
 		return fbs;
 	}
+
 
 	@Override
 	public String toString() {
