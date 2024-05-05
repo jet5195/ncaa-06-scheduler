@@ -1,6 +1,7 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
+import com.robotdebris.ncaaps2scheduler.model.Division;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -26,39 +27,74 @@ public class XlsxExportService {
         // Create header row
         Row headerRow = sheet.createRow(0);
         Cell headerCell = headerRow.createCell(0);
-        headerCell.setCellValue("Conference Name");
+        headerCell.setCellValue("Conference ID");
         headerCell = headerRow.createCell(1);
-        headerCell.setCellValue("Logo");
+        headerCell.setCellValue("Conference Name");
         headerCell = headerRow.createCell(2);
-        headerCell.setCellValue("Power Conference");
+        headerCell.setCellValue("Short Name");
         headerCell = headerRow.createCell(3);
-        headerCell.setCellValue("Conf Games");
+        headerCell.setCellValue("Abbreviation");
         headerCell = headerRow.createCell(4);
-        headerCell.setCellValue("Start Week");
+        headerCell.setCellValue("Classification");
         headerCell = headerRow.createCell(5);
-        headerCell.setCellValue("Division");
+        headerCell.setCellValue("Power Conference");
         headerCell = headerRow.createCell(6);
-        headerCell.setCellValue("Division");
+        headerCell.setCellValue("Conf Games");
+        headerCell = headerRow.createCell(7);
+        headerCell.setCellValue("Start Week");
+        headerCell = headerRow.createCell(8);
+        headerCell.setCellValue("Logo");
 
         // Fill data
         int rowNum = 1;
         for (Conference conference : conferenceList) {
             Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(conference.getName());
-            row.createCell(1).setCellValue(conference.getLogo());
-            row.createCell(2).setCellValue(conference.isPowerConf());
-            row.createCell(3).setCellValue(conference.getNumOfConfGames());
-            row.createCell(4).setCellValue(conference.getConfGamesStartWeek());
-            if (conference.getDivisions() != null && conference.getDivisions().size() == 2) {
-                row.createCell(5).setCellValue(conference.getDivisions().get(0));
-                row.createCell(6).setCellValue(conference.getDivisions().get(1));
-            }
+            row.createCell(0).setCellValue(conference.getConferenceID());
+            row.createCell(1).setCellValue(conference.getName());
+            row.createCell(2).setCellValue(conference.getShortName());
+            row.createCell(3).setCellValue(conference.getAbbreviation());
+            row.createCell(4).setCellValue(conference.getClassification().toString());
+            row.createCell(5).setCellValue(conference.isPowerConf());
+            row.createCell(6).setCellValue(conference.getNumOfConfGames());
+            row.createCell(7).setCellValue(conference.getConfGamesStartWeek());
+            row.createCell(8).setCellValue(conference.getLogo());
+//            if (conference.getDivisions() != null && conference.getDivisions().size() == 2) {
+//                row.createCell(5).setCellValue(conference.getDivisions().get(0));
+//                row.createCell(6).setCellValue(conference.getDivisions().get(1));
+//            }
+        }
+    }
+
+
+    private static void writeDivisionsSheet(List<Division> divisionList, Workbook workbook) {
+        Sheet sheet = workbook.createSheet("Divisions");
+        // Create header row
+        Row headerRow = sheet.createRow(0);
+        Cell headerCell = headerRow.createCell(0);
+        headerCell.setCellValue("Division ID");
+        headerCell = headerRow.createCell(1);
+        headerCell.setCellValue("Conference ID");
+        headerCell = headerRow.createCell(2);
+        headerCell.setCellValue("Name");
+        headerCell = headerRow.createCell(3);
+        headerCell.setCellValue("Short Name");
+
+        // Fill data
+        int rowNum = 1;
+        for (Division division : divisionList) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(division.getDivisionId());
+            row.createCell(1).setCellValue(division.getConference().getConferenceID());
+            row.createCell(2).setCellValue(division.getName());
+            row.createCell(3).setCellValue(division.getShortName());
         }
     }
 
     public ResponseEntity<Resource> writeConferenceAlignment(List<Conference> conferenceList, List<School> schoolList) {
         Workbook workbook = new XSSFWorkbook();
         writeConferencesSheet(conferenceList, workbook);
+        List<Division> divisionList = conferenceList.stream().map(Conference::getDivisions).flatMap(List::stream).toList();
+        writeDivisionsSheet(divisionList, workbook);
         writeAlignmentSheet(schoolList, workbook);
 
         // Write the output to a file
@@ -109,12 +145,12 @@ public class XlsxExportService {
             row.createCell(0).setCellValue(school.getTgid());
             row.createCell(1).setCellValue(school.getName());
             row.createCell(2).setCellValue(school.getConferenceName());
-            row.createCell(3).setCellValue(school.getDivision());
+            row.createCell(3).setCellValue(school.getDivision().getName());
             if (school.getxDivRival() != null) {
                 row.createCell(4).setCellValue(school.getxDivRival().getName());
             }
-            if (school.getNcaaDivision() != null) {
-                row.createCell(5).setCellValue(school.getNcaaDivision().toString());
+            if (school.getConference().getClassification() != null) {
+                row.createCell(5).setCellValue(school.getConference().getClassification().toString());
             }
         }
     }

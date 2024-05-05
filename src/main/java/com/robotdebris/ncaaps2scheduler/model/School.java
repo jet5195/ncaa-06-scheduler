@@ -3,7 +3,6 @@ package com.robotdebris.ncaaps2scheduler.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.serializer.SchoolIdDeserializer;
 import com.robotdebris.ncaaps2scheduler.serializer.SchoolIdSerializer;
 import jakarta.persistence.Entity;
@@ -26,8 +25,8 @@ public class School implements Comparable<School> {
     private String conferenceName;
     @JsonBackReference
     private Conference conference;
-    private String division;
-    private NCAADivision ncaaDivision;
+    @JsonBackReference
+    private Division division;
     // data we can pull from collegefootballdata api
     private String color;
     private String altColor;
@@ -99,20 +98,12 @@ public class School implements Comparable<School> {
         this.conferenceName = conference.getName();
     }
 
-    public String getDivision() {
+    public Division getDivision() {
         return division;
     }
 
-    public void setDivision(String division) {
+    public void setDivision(Division division) {
         this.division = division;
-    }
-
-    public NCAADivision getNcaaDivision() {
-        return ncaaDivision;
-    }
-
-    public void setNcaaDivision(NCAADivision ncaaDivision) {
-        this.ncaaDivision = ncaaDivision;
     }
 
     public String getColor() {
@@ -279,10 +270,9 @@ public class School implements Comparable<School> {
         return this.getName();
     }
 
-    public void updateAlignment(Conference conference, String division, NCAADivision ncaaDivision, School xDivRival) {
+    public void updateAlignment(Conference conference, Division division, School xDivRival) {
         this.setConference(conference);
         this.division = division;
-        this.ncaaDivision = ncaaDivision;
         this.xDivRival = xDivRival;
 
     }
@@ -317,26 +307,17 @@ public class School implements Comparable<School> {
         private String nickname;
         private String state;
         private Conference conference;
-        private String division;
-        private NCAADivision ncaaDivision;
+        private Division division;
         private String color;
         private String altColor;
         private String logo;
         private List<School> rivals;
         private boolean userTeam;
         private School xDivRival;
-        // Fields identical to the ones in School
-        private GameRepository gameRepository;
         // Other fields...
 
         public Builder() {
             // Initialize with default values if necessary
-        }
-
-        // Setter methods for each field that return the Builder itself
-        public Builder withScheduleRepository(GameRepository gameRepository) {
-            this.gameRepository = gameRepository;
-            return this;
         }
 
         public Builder withTgid(int tgid) {
@@ -364,13 +345,8 @@ public class School implements Comparable<School> {
             return this;
         }
 
-        public Builder withDivision(String division) {
+        public Builder withDivision(Division division) {
             this.division = division;
-            return this;
-        }
-
-        public Builder withNCAADivision(NCAADivision ncaaDivision) {
-            this.ncaaDivision = ncaaDivision;
             return this;
         }
 
@@ -412,7 +388,6 @@ public class School implements Comparable<School> {
             school.state = this.state;
             school.conference = this.conference;
             school.division = this.division;
-            school.ncaaDivision = this.ncaaDivision;
             school.color = this.color;
             school.altColor = this.altColor;
             school.logo = this.logo;

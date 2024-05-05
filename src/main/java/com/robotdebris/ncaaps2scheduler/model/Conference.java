@@ -1,190 +1,187 @@
 package com.robotdebris.ncaaps2scheduler.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-
 @Entity
 public class Conference implements Comparable<Conference> {
 
-	@Id
-	private int conferenceID;
-	private String name;
-	private String shortName;
-	private List<String> divisions;
-	private boolean powerConf;
-	private boolean fbs;
-	private String logo;
-	private int numOfConfGames;
-	private int confGamesStartWeek;
-	@JsonManagedReference
-	private List<School> schools;
+    @Id
+    private Integer conferenceID;
+    private String name;
+    private String shortName;
+    private String abbreviation;
+    private NCAADivision classification;
+    @JsonManagedReference
+    private List<Division> divisions;
+    private boolean powerConf;
+    private String logo;
+    private int numOfConfGames;
+    private int confGamesStartWeek;
+    @JsonManagedReference
+    private List<School> schools;
 
-	public Conference() {
+    public static Conference blankConference = new Conference(null, "", "", "", NCAADivision.FANTASY, false, 0, 0, "");
 
-	}
+    public Conference() {
 
-	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo,
-			int numOfConfGames, int confGamesStartWeek) {
-		this.name = conferenceName;
-		this.powerConf = powerConf;
-		if (division1 != null && !division1.trim().isEmpty()) {
-			divisions = new ArrayList<>();
-			divisions.add(division1);
-			divisions.add(division2);
-		}
-		this.logo = logo;
-		this.numOfConfGames = numOfConfGames;
-		this.confGamesStartWeek = confGamesStartWeek;
-	}
+    }
 
-	public Conference(String conferenceName, boolean powerConf, String division1, String division2, String logo,
-			int numOfConfGames, int confGamesStartWeek, int conferenceID) {
-		this.name = conferenceName;
-		this.powerConf = powerConf;
-		if (division1 != null && !division1.trim().isEmpty()) {
-			divisions = new ArrayList<>();
-			divisions.add(division1);
-			divisions.add(division2);
-		}
-		this.logo = logo;
-		this.numOfConfGames = numOfConfGames;
-		this.confGamesStartWeek = confGamesStartWeek;
-		this.conferenceID = conferenceID;
-	}
+    public Conference(Integer conferenceID, String conferenceName, String shortName, String abbreviation, NCAADivision classification, boolean powerConf, int numOfConfGames, int confGamesStartWeek, String logo) {
+        this.conferenceID = conferenceID;
+        this.name = conferenceName;
+        this.shortName = shortName;
+        this.abbreviation = abbreviation;
+        this.classification = classification;
+        this.powerConf = powerConf;
+        this.numOfConfGames = numOfConfGames;
+        this.confGamesStartWeek = confGamesStartWeek;
+        this.logo = logo;
+        this.divisions = new ArrayList<>();
+    }
 
-	public int getConferenceID() {
-		return conferenceID;
-	}
+    public Integer getConferenceID() {
+        return conferenceID;
+    }
 
-	public void setConferenceID(int conferenceID) {
-		this.conferenceID = conferenceID;
-	}
+    public void setConferenceID(Integer conferenceID) {
+        this.conferenceID = conferenceID;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getShortName() {
-		return shortName;
-	}
+    public String getShortName() {
+        return shortName;
+    }
 
-	public void setShortName(String shortName) {
-		this.shortName = shortName;
-	}
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
 
-	public boolean isPowerConf() {
-		return powerConf;
-	}
+    public String getAbbreviation() {
+        return abbreviation;
+    }
 
-	public void setPowerConf(boolean powerConf) {
-		this.powerConf = powerConf;
-	}
+    public void setAbbreviation(String abbreviation) {
+        this.abbreviation = abbreviation;
+    }
 
-	public String getLogo() {
-		return logo;
-	}
+    public NCAADivision getClassification() {
+        return classification;
+    }
 
-	public void setLogo(String logo) {
-		this.logo = logo;
-	}
+    public void setClassification(NCAADivision classification) {
+        this.classification = classification;
+    }
 
-	public List<School> getSchools() {
-		return schools;
-	}
+    public boolean isPowerConf() {
+        return powerConf;
+    }
 
-	public void setSchools(List<School> schools) {
-		this.schools = schools;
-		this.fbs = schools.get(0).getNcaaDivision().isFBS();
-	}
+    public void setPowerConf(boolean powerConf) {
+        this.powerConf = powerConf;
+    }
 
-	public List<School> getSchoolsByDivision(String division) {
-		List<School> divSchools = new ArrayList<School>();
-		for (School school : this.getSchools()) {
-			if (school.getDivision().equalsIgnoreCase(division)) {
-				divSchools.add(school);
-			}
-		}
-		return divSchools;
-	}
+    public String getLogo() {
+        return logo;
+    }
 
-	public int getNumOfConfGames() {
-		return numOfConfGames;
-	}
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
 
-	public void setNumOfConfGames(int numOfConfGames) {
-		this.numOfConfGames = numOfConfGames;
-	}
+    public List<School> getSchools() {
+        return schools;
+    }
 
-	// big 10 1
-	// pac-12 2
-	// sec 2
-	// acc 3
-	// big 12 3
-	// c-usa 3
-	// mwc 3
-	// mac 4
-	// sun belt 4
-	// aac 4
+    public void setSchools(List<School> schools) {
+        this.schools = schools;
+    }
 
-	public int getConfGamesStartWeek() {
-		return confGamesStartWeek;
-	}
+    public List<School> getSchoolsByDivision(Division division) {
+        List<School> divSchools = new ArrayList<>();
+        for (School school : this.getSchools()) {
+            if (school.getDivision().equals(division)) {
+                divSchools.add(school);
+            }
+        }
+        return divSchools;
+    }
 
-	public void setConfGamesStartWeek(int confGamesStartWeek) {
-		this.confGamesStartWeek = confGamesStartWeek;
-	}
+    public int getNumOfConfGames() {
+        return numOfConfGames;
+    }
 
-	public List<String> getDivisions(){
-		return divisions;
-	}
+    public void setNumOfConfGames(int numOfConfGames) {
+        this.numOfConfGames = numOfConfGames;
+    }
 
-	public void setDivisions(List<String> divisions) {
-		this.divisions = divisions;
-	}
+    // big 10 1
+    // pac-12 2
+    // sec 2
+    // acc 3
+    // big 12 3
+    // c-usa 3
+    // mwc 3
+    // mac 4
+    // sun belt 4
+    // aac 4
 
-	public void setFbs(boolean fbs) {
-		this.fbs = fbs;
-	}
+    public int getConfGamesStartWeek() {
+        return confGamesStartWeek;
+    }
 
-	public boolean isFbs() {
-		return fbs;
-	}
+    public void setConfGamesStartWeek(int confGamesStartWeek) {
+        this.confGamesStartWeek = confGamesStartWeek;
+    }
 
+    public List<Division> getDivisions() {
+        return divisions;
+    }
 
-	@Override
-	public String toString() {
-		return this.getName();
-	}
+    public void setDivisions(List<Division> divisions) {
+        this.divisions = divisions;
+    }
 
-	@Override
-	public int compareTo(Conference o) {
-		return this.name.compareTo(o.name);
-	}
+    public boolean isFBS() {
+        return this.classification.isFBS();
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true; // Same reference, so they are equal
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false; // Different classes or null, not equal
-		}
-		Conference otherConference = (Conference) o;
-		return Objects.equals(name, otherConference.name); // Compare names using equals
-	}
+    @Override
+    public String toString() {
+        return this.getName();
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(name);
-	}
+    @Override
+    public int compareTo(Conference o) {
+        return this.name.compareTo(o.name);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true; // Same reference, so they are equal
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false; // Different classes or null, not equal
+        }
+        Conference otherConference = (Conference) o;
+        return Objects.equals(conferenceID, otherConference.conferenceID); // Compare names using equals
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
+    }
 }

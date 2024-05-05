@@ -5,5 +5,5 @@ import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 
 public interface ConferenceScheduler {
 
-    void generateConferenceSchedule(Conference conference, GameRepository gameRepository);
+    void generateConferenceSchedule(Conference conference, GameRepository gameRepository) throws Exception;
 }

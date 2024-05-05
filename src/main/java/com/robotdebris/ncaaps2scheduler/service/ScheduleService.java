@@ -37,6 +37,8 @@ public class ScheduleService {
     ExcelReader excelReader;
     @Autowired
     ConferenceSchedulerFactory conferenceSchedulerFactory;
+    @Autowired
+    DivisionService divisionService;
 
     public ScheduleService(GameRepository gameRepository, SchoolRepository schoolRepository) {
         this.gameRepository = gameRepository;
@@ -44,7 +46,6 @@ public class ScheduleService {
     }
 
     private int addRivalryGameTwoSchools(School school, School rival, boolean aggressive, int rivalRank) {
-        // School rival = school.getRivals().get(j);
         int count = 0;
         if (isEligibleNonConfMatchup(school, rival)) {
             if (aggressive && rivalRank < 2) {
@@ -295,7 +296,7 @@ public class ScheduleService {
                 // go through all the schools
                 School s1 = schools.get(i);
                 //TODO: fix issue here due to rivals always being empty
-                if (s1.getNcaaDivision().equals(NCAADivision.FBS) && j < s1.getRivals().size()) {
+                if (s1.getConference().isFBS() && j < s1.getRivals().size()) {
                     // new chance algorithm so you don't ALWAYS play your 5th rival.
                     // 1st rival: 100% chance
                     // 2nd rival: 70% chance
@@ -537,10 +538,14 @@ public class ScheduleService {
         try {
             List<Conference> conferenceList = excelReader.populateConferencesFromExcel(file);
             conferenceService.saveConferences(conferenceList);
-            excelReader.setAlignmentData(file);
-            conferenceService.setConferencesSchoolList(schoolService.getAllSchools());
+            List<Division> divisionList = excelReader.populateDivisionsFromExcel(file);
+            divisionService.saveDivisions(divisionList);
+            excelReader.populateAlignmentFromExcel(file);
+            conferenceService.setConferencesSchoolList();
+            divisionService.setDivisionsSchoolList();
         } catch (IOException e) {
             // TODO Auto-generated catch block
+            LOGGER.error("there was an error setting alignment");
             e.printStackTrace();
         }
 
@@ -617,8 +622,7 @@ public class ScheduleService {
 //        addYearlySeriesHelper("Navy", "Army", 14, 5, getYear(), false);
 //    }
 
-    public void autoAddConferenceGames(String name) throws Exception {
-        Conference conf = conferenceService.conferenceSearch(name);
+    public void autoAddConferenceGames(Conference conf) throws Exception {
         ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
         scheduler.generateConferenceSchedule(conf, gameRepository);
     }
@@ -668,8 +672,8 @@ public class ScheduleService {
             // if conference is FBS...
             List<School> schools = conf.getSchools();
             if (schools != null) {
-                if (Objects.equals(schools.get(0).getNcaaDivision(), NCAADivision.FBS)) {
-                    this.autoAddConferenceGames(conf.getName());
+                if (schools.getFirst().getConference().isFBS()) {
+                    this.autoAddConferenceGames(conf);
                 }
             }
         }
@@ -705,24 +709,6 @@ public class ScheduleService {
         }
     }
 
-    // TODO: these are the methods removed from SeasonSchedule
-    /**
-     *
-     * @return the bowl schedule
-     */
-//   public SeasonSchedule getBowlSchedule() {
-//       return bowlSchedule;
-//   }
-
-    /**
-     * Sets the bowl schedule. Currently this is only called once when the excel
-     * file is being read
-     *
-     * @param bowlSchedule
-     */
-//   public void setBowlSchedule(SeasonSchedule bowlSchedule) {
-//       this.bowlSchedule = bowlSchedule;
-//   }
     public void swapSchedule(int tgid1, int tgid2) {
         School s1 = schoolService.schoolSearch(tgid1);
         School s2 = schoolService.schoolSearch(tgid2);
@@ -814,10 +800,7 @@ public class ScheduleService {
         int count = 0;
         for (int i = 0; i < getSeasonSchedule().size(); i++) {
             Game game = getSeasonSchedule().get(i);
-            if (game.getHomeTeam().getNcaaDivision() == null || game.getAwayTeam().getNcaaDivision() == null) {
-                i = i;
-            }
-            if (!game.getHomeTeam().getNcaaDivision().isFBS() || !game.getAwayTeam().getNcaaDivision().isFBS()) {
+            if (!game.getHomeTeam().getConference().getClassification().isFBS() || !game.getAwayTeam().getConference().getClassification().isFBS()) {
                 this.removeGame(game);
                 count++;
                 i--;
@@ -962,7 +945,7 @@ public class ScheduleService {
         int divisionalGames = 0;
         for (Game game : getScheduleBySchool(school)) {
             if (game.getHomeTeam().isInConference(game.getAwayTeam())
-                    && game.getHomeTeam().getDivision().equalsIgnoreCase(game.getAwayTeam().getDivision())) {
+                    && game.getHomeTeam().getDivision().equals(game.getAwayTeam().getDivision())) {
                 divisionalGames++;
             }
         }
@@ -1101,7 +1084,7 @@ public class ScheduleService {
     public List<School> findTooFewGames() {
         List<School> allSchools = schoolRepository.findAll();
         return allSchools.stream()
-                .filter(school -> school.getNcaaDivision().isFBS() && getScheduleBySchool(school).size() < 12)
+                .filter(school -> school.getConference().isFBS() && getScheduleBySchool(school).size() < 12)
                 .collect(Collectors.toList());
     }
 
@@ -1113,7 +1096,7 @@ public class ScheduleService {
     public List<School> findTooManyGames() {
         List<School> allSchools = schoolRepository.findAll();
         return allSchools.stream()
-                .filter(school -> school.getNcaaDivision().isFBS() && getScheduleBySchool(school).size() > 12)
+                .filter(school -> school.getConference().isFBS() && getScheduleBySchool(school).size() > 12)
                 .collect(Collectors.toList());
     }
 }

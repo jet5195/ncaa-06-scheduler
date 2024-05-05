@@ -1,6 +1,7 @@
 package com.robotdebris.ncaaps2scheduler.controller;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
+import com.robotdebris.ncaaps2scheduler.model.Division;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.Swap;
 import com.robotdebris.ncaaps2scheduler.service.*;
@@ -29,6 +30,8 @@ public class ConferenceController {
     private SchoolService schoolService;
     @Autowired
     private XlsxExportService exportService;
+    @Autowired
+    private DivisionService divisionService;
 
     @GetMapping
     public List<Conference> getAllConferences() {
@@ -38,7 +41,7 @@ public class ConferenceController {
 
     @GetMapping(value = "{name}")
     public Conference getConferenceByName(@PathVariable String name) {
-        Conference conference = conferenceService.conferenceSearch(name);
+        Conference conference = conferenceService.findByShortName(name);
         return conference;
     }
 
@@ -47,7 +50,7 @@ public class ConferenceController {
         if (name.equalsIgnoreCase("all")) {
             return schoolService.getAllSchools();
         }
-        Conference conf = conferenceService.conferenceSearch(name);
+        Conference conf = conferenceService.findByShortName(name);
         return conf.getSchools();
     }
 
@@ -66,17 +69,6 @@ public class ConferenceController {
         conferenceService.addSchool(name, s1);
     }
 
-    @PostMapping(value = "{name}/rename/{newName}")
-    private void renameConference(@PathVariable String name, @PathVariable String newName) {
-        conferenceService.renameConference(name, newName);
-    }
-
-    @PostMapping(value = "{name}/division/{divisionName}/rename/{newName}")
-    private void renameDivision(@PathVariable String name, @PathVariable String divisionName,
-                                @PathVariable String newName) {
-        conferenceService.renameDivision(name, divisionName, newName);
-    }
-
     @GetMapping(value = "swap")
     private List<Swap> getSwapList() {
         return swapService.getSwapList();
@@ -84,7 +76,8 @@ public class ConferenceController {
 
     @GetMapping(value = "{name}/division/{division}/schools")
     public List<School> getSchoolsByDivision(@PathVariable String name, @PathVariable String division) {
-        return conferenceService.getSchoolsByDivision(name, division);
+        Division divisionObj = divisionService.findByName(division);
+        return conferenceService.getSchoolsByDivision(name, divisionObj);
     }
 
     @PostMapping(value = "download")
@@ -108,13 +101,14 @@ public class ConferenceController {
     @PostMapping(value = "{name}/add-games")
     public int autoAddConferenceGames(@PathVariable String name) throws Exception {
         int count = scheduleService.getSeasonSchedule().size();
-        scheduleService.autoAddConferenceGames(name);
+        Conference conf = conferenceService.findByShortName(name);
+        scheduleService.autoAddConferenceGames(conf);
         return scheduleService.getSeasonSchedule().size() - count;
     }
 
     @PostMapping(value = "{name}/remove-games")
     public int removeConferenceGames(@PathVariable String name) {
-        Conference conf = conferenceService.conferenceSearch(name);
+        Conference conf = conferenceService.findByShortName(name);
         return scheduleService.removeConfGamesByConference(conf);
     }
 
