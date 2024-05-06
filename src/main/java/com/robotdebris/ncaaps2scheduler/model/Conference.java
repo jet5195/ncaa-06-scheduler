@@ -17,13 +17,13 @@ public class Conference implements Comparable<Conference> {
     private String shortName;
     private String abbreviation;
     private NCAADivision classification;
-    @JsonManagedReference
+    @JsonManagedReference("conference-divisions-ref")
     private List<Division> divisions;
     private boolean powerConf;
     private String logo;
     private int numOfConfGames;
     private int confGamesStartWeek;
-    @JsonManagedReference
+    @JsonManagedReference("conference-schools-ref")
     private List<School> schools;
 
     public static Conference blankConference = new Conference(null, "", "", "", NCAADivision.FANTASY, false, 0, 0, "");

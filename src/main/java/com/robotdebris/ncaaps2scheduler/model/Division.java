@@ -1,6 +1,7 @@
 package com.robotdebris.ncaaps2scheduler.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
@@ -13,8 +14,9 @@ public class Division {
     private int divisionId;
     private String name;
     private String shortName;
-    @JsonBackReference
+    @JsonBackReference("conference-divisions-ref")
     private Conference conference;
+    @JsonManagedReference("division-schools-ref")
     private List<School> schools;
 
     public Division(int divisionId, String name, String shortName, Conference conference) {

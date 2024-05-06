@@ -23,9 +23,10 @@ public class School implements Comparable<School> {
     private String name;
     private String nickname;
     private String conferenceName;
-    @JsonBackReference
+    @JsonBackReference("conference-schools-ref")
     private Conference conference;
-    @JsonBackReference
+    private String divisionName;
+    @JsonBackReference("division-schools-ref")
     private Division division;
     // data we can pull from collegefootballdata api
     private String color;
@@ -98,12 +99,25 @@ public class School implements Comparable<School> {
         this.conferenceName = conference.getName();
     }
 
+    public String getDivisionName() {
+        return divisionName;
+    }
+
+    public void setDivisionName(String divisionName) {
+        this.divisionName = divisionName;
+    }
+
     public Division getDivision() {
         return division;
     }
 
     public void setDivision(Division division) {
         this.division = division;
+        if (division != null) {
+            this.divisionName = division.getName();
+        } else {
+            this.divisionName = null;
+        }
     }
 
     public String getColor() {
@@ -272,9 +286,8 @@ public class School implements Comparable<School> {
 
     public void updateAlignment(Conference conference, Division division, School xDivRival) {
         this.setConference(conference);
-        this.division = division;
+        this.setDivision(division);
         this.xDivRival = xDivRival;
-
     }
 
     @Override
