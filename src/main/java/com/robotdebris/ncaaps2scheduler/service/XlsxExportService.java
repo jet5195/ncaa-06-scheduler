@@ -49,7 +49,7 @@ public class XlsxExportService {
         int rowNum = 1;
         for (Conference conference : conferenceList) {
             Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(conference.getConferenceID());
+            row.createCell(0).setCellValue(conference.getConferenceId());
             row.createCell(1).setCellValue(conference.getName());
             row.createCell(2).setCellValue(conference.getShortName());
             row.createCell(3).setCellValue(conference.getAbbreviation());
@@ -84,7 +84,7 @@ public class XlsxExportService {
         for (Division division : divisionList) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(division.getDivisionId());
-            row.createCell(1).setCellValue(division.getConference().getConferenceID());
+            row.createCell(1).setCellValue(division.getConference().getConferenceId());
             row.createCell(2).setCellValue(division.getName());
             row.createCell(3).setCellValue(division.getShortName());
         }

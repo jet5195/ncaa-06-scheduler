@@ -24,7 +24,7 @@ public class ExcelConferenceRepository implements ConferenceRepository {
     @Override
     public Conference findById(int id) {
         return conferenceList.stream()
-                .filter(conference -> conference.getConferenceID() == id)
+                .filter(conference -> conference.getConferenceId() == id)
                 .findFirst().orElse(null);
     }
 
