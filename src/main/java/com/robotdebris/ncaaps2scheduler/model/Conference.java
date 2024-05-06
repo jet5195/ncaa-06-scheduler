@@ -22,7 +22,7 @@ public class Conference implements Comparable<Conference> {
 	private List<Division> divisions;
 	private boolean powerConf;
 	private String logo;
-	private int numOfConfGames;
+	private Integer numOfConfGames;
 	private int confGamesStartWeek;
 	@JsonManagedReference("conference-schools-ref")
 	private List<School> schools;
@@ -121,11 +121,11 @@ public class Conference implements Comparable<Conference> {
 		return divSchools;
 	}
 
-	public int getNumOfConfGames() {
+	public Integer getNumOfConfGames() {
 		return numOfConfGames;
 	}
 
-	public void setNumOfConfGames(int numOfConfGames) {
+	public void setNumOfConfGames(Integer numOfConfGames) {
 		this.numOfConfGames = numOfConfGames;
 	}
 

@@ -171,9 +171,7 @@ public class ExcelReader {
 								try {
 									confGames = Integer.parseInt(cellValue);
 								} catch (Exception e) {
-									confGames = 0;
-									LOGGER.warn("No integer found for " + conferenceShortName
-											+ " confGames. Defaulting to 0");
+									LOGGER.warn("No integer found for " + conferenceShortName);
 								}
 							}
 						}
