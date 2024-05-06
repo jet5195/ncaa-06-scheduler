@@ -1,11 +1,15 @@
 package com.robotdebris.ncaaps2scheduler.model;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
-@AllArgsConstructor
-@NoArgsConstructor
 public class AddGameRequest {
+
+	public AddGameRequest(int awayId, int homeId, int week, int time, DayOfWeek day, GameResult gameResult) {
+		this.awayId = awayId;
+		this.homeId = homeId;
+		this.week = week;
+		this.time = time;
+		this.day = day;
+		this.gameResult = gameResult;
+	}
 
 	private int awayId;
 

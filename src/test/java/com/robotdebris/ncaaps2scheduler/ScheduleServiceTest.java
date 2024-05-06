@@ -1,7 +1,7 @@
 package com.robotdebris.ncaaps2scheduler;
 
+import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Game;
-import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
@@ -33,13 +33,14 @@ public class ScheduleServiceTest {
     @Test
     public void whenFindTooFewGames_thenReturnSchoolsWithLessThanTwelveGames() {
         // Arrange
-        School schoolWithFewGames = new School.Builder().withTgid(1).withNCAADivision(NCAADivision.FBS).build();
+        School schoolWithFewGames = new School.Builder().withTgid(1).build();
         List<Game> fewGames = Arrays.asList(new Game[11]); // Mocking a list with 11 games
 
-        School schoolWithEnoughGames = new School.Builder().withTgid(2).withNCAADivision(NCAADivision.FBS).build();
+        School schoolWithEnoughGames = new School.Builder().withTgid(2).build();
         List<Game> enoughGames = Arrays.asList(new Game[12]); // Mocking a list with 12 games
 
-        School fcsSchool = new School.Builder().withTgid(2).withNCAADivision(NCAADivision.FCS).build();
+        School fcsSchool = new School.Builder().withTgid(2).build();
+        fcsSchool.setConference(Conference.blankConference);
         List<Game> fcsGames = Arrays.asList(new Game[12]); // Mocking a list with 12 games
 
         when(schoolRepository.findAll()).thenReturn(Arrays.asList(schoolWithFewGames, schoolWithEnoughGames, fcsSchool));
@@ -59,13 +60,14 @@ public class ScheduleServiceTest {
     @Test
     public void whenFindTooManyGames_thenReturnSchoolsWithMoreThanTwelveGames() {
         // Arrange
-        School schoolWithTooManyGames = new School.Builder().withTgid(1).withNCAADivision(NCAADivision.FBS).build();
+        School schoolWithTooManyGames = new School.Builder().withTgid(1).build();
         List<Game> fewGames = Arrays.asList(new Game[13]); // Mocking a list with 11 games
 
-        School schoolWithEnoughGames = new School.Builder().withTgid(2).withNCAADivision(NCAADivision.FBS).build();
+        School schoolWithEnoughGames = new School.Builder().withTgid(2).build();
         List<Game> enoughGames = Arrays.asList(new Game[12]); // Mocking a list with 12 games
 
-        School fcsSchool = new School.Builder().withTgid(2).withNCAADivision(NCAADivision.FCS).build();
+        School fcsSchool = new School.Builder().withTgid(2).build();
+        fcsSchool.setConference(Conference.blankConference);
         List<Game> fcsGames = Arrays.asList(new Game[12]); // Mocking a list with 12 games
 
         when(schoolRepository.findAll()).thenReturn(Arrays.asList(schoolWithTooManyGames, schoolWithEnoughGames, fcsSchool));
@@ -85,7 +87,7 @@ public class ScheduleServiceTest {
     @Test
     public void whenGetGameBySchoolAndWeek_thenReturnCorrectGame() {
         // Arrange
-        School testSchool = new School.Builder().withTgid(1).withNCAADivision(NCAADivision.FBS).build();
+        School testSchool = new School.Builder().withTgid(1).build();
         Game expectedGame = new Game(); // Set up the expected game with the correct week
         expectedGame.setWeek(3); // Assuming week 3 is the week we're testing for
         List<Game> games = Arrays.asList(new Game(), new Game(), expectedGame);
@@ -111,7 +113,7 @@ public class ScheduleServiceTest {
         when(awayConferenceGame.getAwayTeam()).thenReturn(testSchool);
         when(awayConferenceGame.getHomeTeam()).thenReturn(conferenceSchool);
         when(conferenceSchool.isInConference(testSchool)).thenReturn(true);
-        
+
         awayConferenceGame.setAwayTeam(testSchool);
         awayConferenceGame.setHomeTeam(conferenceSchool);
 

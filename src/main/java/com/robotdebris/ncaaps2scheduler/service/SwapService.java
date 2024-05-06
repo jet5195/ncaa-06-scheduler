@@ -1,9 +1,6 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
-import com.robotdebris.ncaaps2scheduler.model.Conference;
-import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
-import com.robotdebris.ncaaps2scheduler.model.School;
-import com.robotdebris.ncaaps2scheduler.model.Swap;
+import com.robotdebris.ncaaps2scheduler.model.*;
 import com.robotdebris.ncaaps2scheduler.repository.SwapRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class SwapService {
@@ -55,25 +53,23 @@ public class SwapService {
 
     public void swapSchools(School s1, School s2) {
         // if the conferences & divisions aren't already the same...
-        if (!(s1.getConference().getName() == s2.getConference().getName() && s1.getDivision() == s2.getDivision())) {
+        if (!(Objects.equals(s1.getConference().getName(), s2.getConference().getName()) && s1.getDivision() == s2.getDivision())) {
             Conference tempConf = s1.getConference();
-            String tempDiv = s1.getDivision();
-            NCAADivision tempNcaaDiv = s1.getNcaaDivision();
+            Division tempDiv = s1.getDivision();
+            NCAADivision tempNcaaDiv = s1.getConference().getClassification();
 
             s1.setConference(s2.getConference());
             s1.setDivision(s2.getDivision());
-            s1.setNcaaDivision(s2.getNcaaDivision());
             // this could also be done recursively like conf swap
             s2.setConference(tempConf);
             s2.setDivision(tempDiv);
-            s2.setNcaaDivision(tempNcaaDiv);
 
             // need to add schedule stuff here
             // need to reset the conferenceList, it isn't updating
             // in the future, optimize this by making it only set the updated confs instead
             // of all
             // TODO: this is ugly
-            conferenceService.setConferencesSchoolList(schoolService.getAllSchools());
+            conferenceService.setConferencesSchoolList();
 
             getSwapList().add(new Swap(s1, s2));
         }

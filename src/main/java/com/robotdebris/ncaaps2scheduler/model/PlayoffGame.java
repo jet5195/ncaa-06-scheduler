@@ -1,15 +1,9 @@
 package com.robotdebris.ncaaps2scheduler.model;
-
-import lombok.Getter;
-import lombok.Setter;
-
 //@AllArgsConstructor
 //@NoArgsConstructor
 //@Component
 public class PlayoffGame extends Game {
 
-	@Getter
-	@Setter
 	private int round;
 //    @Getter
 //    @Setter
@@ -18,6 +12,14 @@ public class PlayoffGame extends Game {
 	public PlayoffGame(Game game, int round) {
 		super(game.getGameResult(), game.getTime(), game.getAwayTeam(), game.getHomeTeam(), game.getGameNumber(),
 				game.getWeek(), game.getDay(), game.isUserGame(), game.isConferenceGame());
+		this.round = round;
+	}
+
+	public int getRound() {
+		return round;
+	}
+
+	public void setRound(int round) {
 		this.round = round;
 	}
 }
