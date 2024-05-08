@@ -1,7 +1,6 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -11,7 +10,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -90,7 +88,8 @@ public class XlsxExportService {
 		}
 	}
 
-	public ResponseEntity<Resource> writeConferenceAlignment(List<Conference> conferenceList, List<School> schoolList) {
+	public ResponseEntity<ByteArrayResource> writeConferenceAlignment(List<Conference> conferenceList,
+			List<School> schoolList) {
 		Workbook workbook = new XSSFWorkbook();
 		writeConferencesSheet(conferenceList, workbook);
 		List<Division> divisionList = conferenceList.stream().map(Conference::getDivisions).flatMap(List::stream)
@@ -98,16 +97,14 @@ public class XlsxExportService {
 		writeDivisionsSheet(divisionList, workbook);
 		writeAlignmentSheet(schoolList, workbook);
 
-		// Write the output to a file
-		try (FileOutputStream outputStream = new FileOutputStream("ConferenceAlignment.xlsx")) {
+		// Write the output to a byte array
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		try {
 			workbook.write(outputStream);
 		} catch (IOException e) {
 			e.printStackTrace();
 			// Handle exceptions properly
 		}
-
-		// Write the output to a byte array
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 		// Create a ByteArrayResource from the byte array
 		ByteArrayResource resource = new ByteArrayResource(outputStream.toByteArray());
@@ -135,21 +132,18 @@ public class XlsxExportService {
 		headerCell.setCellValue("Division");
 		headerCell = headerRow.createCell(4);
 		headerCell.setCellValue("X-Div Rival");
-		headerCell = headerRow.createCell(5);
-		headerCell.setCellValue("NcaaDivision");
 
 		int rowNum = 1;
 		for (School school : schoolList) {
 			Row row = sheet.createRow(rowNum++);
 			row.createCell(0).setCellValue(school.getTgid());
 			row.createCell(1).setCellValue(school.getName());
-			row.createCell(2).setCellValue(school.getConference().getName());
-			row.createCell(3).setCellValue(school.getDivision().getName());
+			row.createCell(2).setCellValue(school.getConference().getShortName());
+			if (school.getDivision() != null) {
+				row.createCell(3).setCellValue(school.getDivision().getName());
+			}
 			if (school.getxDivRival() != null) {
 				row.createCell(4).setCellValue(school.getxDivRival().getName());
-			}
-			if (school.getConference().getClassification() != null) {
-				row.createCell(5).setCellValue(school.getConference().getClassification().toString());
 			}
 		}
 	}
