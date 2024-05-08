@@ -1,13 +1,14 @@
 package com.robotdebris.ncaaps2scheduler.repository;
 
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
 import com.robotdebris.ncaaps2scheduler.exception.SchoolNotFoundException;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Division;
 import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 /**
  * Repository interface for School entities.
@@ -15,34 +16,36 @@ import java.util.List;
 @Repository
 public interface SchoolRepository {
 
-    /**
-     * Finds all School entities.
-     *
-     * @return a list of all schools
-     */
-    List<School> findAll();
+	/**
+	 * Finds all School entities.
+	 *
+	 * @return a list of all schools
+	 */
+	List<School> findAll();
 
-    /**
-     * Finds a single School entity by its ID.
-     *
-     * @param id the ID of the school to find
-     * @return the found School or null if not found
-     */
-    School findById(int id) throws SchoolNotFoundException;
+	/**
+	 * Finds a single School entity by its ID.
+	 *
+	 * @param id the ID of the school to find
+	 * @return the found School or null if not found
+	 */
+	School findById(int id) throws SchoolNotFoundException;
 
-    /**
-     * Finds a single School entity by its name.
-     *
-     * @param name the name of the school to find
-     * @return the found School or null if not found
-     */
-    School findByName(String name) throws SchoolNotFoundException;
+	/**
+	 * Finds a single School entity by its name.
+	 *
+	 * @param name the name of the school to find
+	 * @return the found School or null if not found
+	 */
+	School findByName(String name) throws SchoolNotFoundException;
 
-    List<School> findByConference(Conference conference);
+	List<School> findByConference(Conference conference);
 
-    void saveAll(List<School> schools);
+	void saveAll(List<School> schools);
 
-    List<School> findByNCAADivision(NCAADivision div);
+	List<School> findByNCAADivision(NCAADivision div);
 
-    List<School> findByDivision(Division div);
+	List<School> findByDivision(Division div);
+
+	void save(School school);
 }

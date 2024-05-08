@@ -2,6 +2,7 @@ package com.robotdebris.ncaaps2scheduler.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -136,13 +137,21 @@ public class ConferenceController {
 
 	@PutMapping()
 	public void saveConferences(@RequestBody List<Conference> conferences) {
-//        for (Conference c : conferences) {
-//            for (School s : c.getSchools()) {
-//                s.setConference(c);
-//            }
-//        }
-		// TODO: probably will have to map conferences for each school
 		conferenceService.saveConferences(conferences);
+		List<Division> divisionList = conferences.stream().flatMap(c -> c.getDivisions().stream()).toList();
+		divisionService.saveDivisions(divisionList);
+		for (Conference conference : conferences) {
+			for (School school : conference.getSchools()) {
+				// why don't we have to do this for conference???? unsure
+				Optional<Division> optionalDiv = divisionService.findById(school.getDivisionId());
+				if (optionalDiv.isPresent()) {
+					school.setDivision(optionalDiv.get());
+				} else {
+					school.setDivision(null);
+				}
+				schoolService.saveSchool(school);
+			}
+		}
 	}
 
 }
