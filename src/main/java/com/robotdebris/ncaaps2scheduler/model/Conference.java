@@ -114,7 +114,7 @@ public class Conference implements Comparable<Conference> {
 	public List<School> getSchoolsByDivision(Division division) {
 		List<School> divSchools = new ArrayList<>();
 		for (School school : this.getSchools()) {
-			if (school.getDivision().equals(division)) {
+			if (school.getDivision() != null && school.getDivision().equals(division)) {
 				divSchools.add(school);
 			}
 		}
