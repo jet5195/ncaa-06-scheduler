@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -31,48 +30,28 @@ import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.GameResult;
 import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
+import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 import com.robotdebris.ncaaps2scheduler.service.CollegeFootballDataService;
 import com.robotdebris.ncaaps2scheduler.service.ConferenceService;
 import com.robotdebris.ncaaps2scheduler.service.DivisionService;
-import com.robotdebris.ncaaps2scheduler.service.SchoolService;
-import com.robotdebris.ncaaps2scheduler.service.SwapService;
-
-import jakarta.annotation.PostConstruct;
 
 @Component
 public class ExcelReader {
 
-	@Autowired
 	ConferenceService conferenceService;
-	@Autowired
-	SchoolService schoolService;
-	@Autowired
-	List<Bowl> bowlList;
-	@Autowired
-	SwapService swapService;
-	@Autowired
+	SchoolRepository schoolRepository;
 	CollegeFootballDataService dataService;
 
 	private final Logger LOGGER = Logger.getLogger(ExcelReader.class.getName());
-	@Autowired
 	private DivisionService divisionService;
 
-	@PostConstruct
-	public void init() {
-
-		// final String schoolsFile = "src/main/resources/School_Data.xlsx";
-		final String schoolsFile = "resources/app/School_Data.xlsx";
-
-		try {
-			List<School> schoolList = populateSchoolsFromExcel(schoolsFile);
-			Collections.sort(schoolList);
-			schoolService.setSchoolList(schoolList);
-			populateRivalsFromExcel(schoolsFile);
-			dataService.loadSchoolData();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	@Autowired
+	public ExcelReader(SchoolRepository schoolRepostiory, ConferenceService conferenceService,
+			DivisionService divisionService, CollegeFootballDataService dataService) {
+		this.schoolRepository = schoolRepostiory;
+		this.conferenceService = conferenceService;
+		this.divisionService = divisionService;
+		this.dataService = dataService;
 	}
 
 	private Workbook readExcel(String path) throws IOException {
@@ -93,7 +72,7 @@ public class ExcelReader {
 		// workbook.close();
 	}
 
-	public Workbook convertCsvToXLSX(File file) {
+	private Workbook convertCsvToXLSX(File file) {
 		try {
 			String csvFileAddress = file.getPath(); // csv file address
 			String xlsxFileAddress = file.getPath() + ".xlsx"; // xlsx file address
@@ -242,11 +221,11 @@ public class ExcelReader {
 						}// end of switch
 						c++;
 					} // end col iterator
-					School school = schoolService.schoolSearch(tgid);
+					School school = schoolRepository.findById(tgid);
 					if (school != null) {
 						School xDivRivalSchool = null;
 						if (!xDivRival.isEmpty()) {
-							xDivRivalSchool = schoolService.schoolSearch(xDivRival);
+							xDivRivalSchool = schoolRepository.findByName(xDivRival);
 						}
 						Conference conference = conferenceService.findByShortName(conferenceShortName);
 						Division division = divisionService.findByName(divisionName);
@@ -260,7 +239,7 @@ public class ExcelReader {
 			r++;
 		}
 		Conference blankConference = Conference.blankConference;
-		for (School school : schoolService.getAllSchools()) {
+		for (School school : schoolRepository.findAll()) {
 			if (school.getConference() == null) {
 				school.updateAlignment(blankConference, null, null);
 			}
@@ -274,9 +253,9 @@ public class ExcelReader {
 	 * @return List<School> of all schools in your excel file
 	 * @throws IOException
 	 */
-	public List<School> populateSchoolsFromExcel(String path) throws IOException {
+	public List<School> populateSchoolsFromExcel(File file) throws IOException {
 		List<School> schoolList = new ArrayList<School>();
-		Workbook workbook = readExcel(path);
+		Workbook workbook = readExcel(file);
 		// Getting the Sheet at index zero
 		Sheet sheet = workbook.getSheetAt(0);
 
@@ -339,8 +318,8 @@ public class ExcelReader {
 		return schoolList;
 	}
 
-	public void populateRivalsFromExcel(String path) throws IOException {
-		Workbook workbook = readExcel(path);
+	public void populateRivalsFromExcel(File file) throws IOException {
+		Workbook workbook = readExcel(file);
 		// Getting the Sheet at index zero
 		Sheet sheet = workbook.getSheetAt(0);
 		DataFormatter dataFormatter = new DataFormatter();
@@ -354,11 +333,11 @@ public class ExcelReader {
 					if (i == 0) {
 						String cellValue = dataFormatter.formatCellValue(cell);
 						int tgid = Integer.parseInt(cellValue);
-						school = schoolService.schoolSearch(tgid);
+						school = schoolRepository.findById(tgid);
 					}
 					if (i >= 7 && dataFormatter.formatCellValue(cell) != "") {
 						String cellValue = dataFormatter.formatCellValue(cell);
-						School rival = schoolService.schoolSearch(cellValue);
+						School rival = schoolRepository.findByName(cellValue);
 						if (rival != null) {
 							rivals.add(rival);
 						}
@@ -475,8 +454,8 @@ public class ExcelReader {
 					}
 					c++;
 				}
-				awaySchool = schoolService.schoolSearch(gatg);
-				homeSchool = schoolService.schoolSearch(ghtg);
+				awaySchool = schoolRepository.findById(gatg);
+				homeSchool = schoolRepository.findById(ghtg);
 				Conference blankConference = Conference.blankConference;
 				if (sewn <= 15 || awaySchool != null) {// only add bowl games if games already are set!
 					if (awaySchool == null) {
@@ -503,9 +482,6 @@ public class ExcelReader {
 			}
 			r++;
 		}
-
-		schoolService.populateUserSchools();
-		// seasonSchedule.setBowlSchedule(bowlSchedule);
 		return seasonSchedule;
 	}
 
@@ -518,7 +494,7 @@ public class ExcelReader {
 	 */
 	public List<Bowl> populateBowlsFromExcel(File file) throws IOException, NumberFormatException {
 
-		bowlList = new ArrayList<>();
+		List<Bowl> bowlList = new ArrayList<>();
 		Workbook workbook = readExcel(file);
 		// Getting the Sheet at index zero
 		Sheet sheet = workbook.getSheetAt(0);

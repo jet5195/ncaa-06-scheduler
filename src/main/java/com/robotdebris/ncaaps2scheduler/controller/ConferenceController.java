@@ -22,15 +22,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Division;
 import com.robotdebris.ncaaps2scheduler.model.School;
-import com.robotdebris.ncaaps2scheduler.model.Swap;
 import com.robotdebris.ncaaps2scheduler.service.ConferenceService;
 import com.robotdebris.ncaaps2scheduler.service.DivisionService;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 import com.robotdebris.ncaaps2scheduler.service.SchoolService;
-import com.robotdebris.ncaaps2scheduler.service.SwapService;
 import com.robotdebris.ncaaps2scheduler.service.XlsxExportService;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -41,8 +37,6 @@ public class ConferenceController {
 	private ConferenceService conferenceService;
 	@Autowired
 	private ScheduleService scheduleService;
-	@Autowired
-	private SwapService swapService;
 	@Autowired
 	private SchoolService schoolService;
 	@Autowired
@@ -71,24 +65,9 @@ public class ConferenceController {
 		return conf.getSchools();
 	}
 
-	@PostMapping(value = "swap-schools")
-	private void swapSchools(@RequestBody School s1, @RequestBody School s2) {
-		swapService.swapSchools(s1, s2);
-	}
-
-	@PostMapping(value = "swap-schools/{tgid1}/{tgid2}")
-	private void swapSchools(@PathVariable int tgid1, @PathVariable int tgid2) {
-		swapService.swapSchools(tgid1, tgid2);
-	}
-
 	@PostMapping(value = "{name}/add-school")
 	private void addSchool(@PathVariable String name, @RequestBody School s1) {
 		conferenceService.addSchool(name, s1);
-	}
-
-	@GetMapping(value = "swap")
-	private List<Swap> getSwapList() {
-		return swapService.getSwapList();
 	}
 
 	@GetMapping(value = "{name}/division/{division}/schools")
@@ -107,13 +86,6 @@ public class ConferenceController {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 		}
-	}
-
-	@GetMapping(value = "swap-download")
-	public void downloadSwapList(HttpServletResponse response) throws IOException {
-		response.setContentType("text/csv");
-		response.setHeader("Content-Disposition", "attachment; filename=swaplist.csv");
-		swapService.downloadSwapFile(response.getWriter());
 	}
 
 	@PostMapping(value = "{name}/add-games")

@@ -1,12 +1,16 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
@@ -15,33 +19,18 @@ import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 public class SchoolService {
 
 	private final SchoolRepository schoolRepository;
-	private final Logger LOGGER = Logger.getLogger(SchoolService.class.getName());
-	// @Autowired
-//	public ScheduleService scheduleService;
-	@Autowired
-	ConferenceService conferenceService;
-	@Autowired
-	GameRepository gameRepository;
+	private final GameRepository gameRepository;
+	private final ExcelReader excelReader;
+	private final CollegeFootballDataService dataService;
 
-	public SchoolService(SchoolRepository schoolRepository, GameRepository gameRepository) {
+	@Autowired
+	public SchoolService(SchoolRepository schoolRepository, GameRepository gameRepository, ExcelReader excelReader,
+			CollegeFootballDataService dataService) {
 		this.schoolRepository = schoolRepository;
 		this.gameRepository = gameRepository;
+		this.excelReader = excelReader;
+		this.dataService = dataService;
 	}
-
-//	@PostConstruct
-//	public void init() {
-//
-//		final String schoolsFile = "src/main/resources/School_Data.xlsx";
-//		// final String schoolsFile = "resources/app/School_Data.xlsx";
-//
-//		try {
-//			List<School> schoolList = excelReader.populateSeasonScheduleFromExcel(schoolsFile);
-//			Collections.sort(schoolList);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
 
 	public List<School> getAllSchools() {
 		return schoolRepository.findAll();
@@ -73,21 +62,6 @@ public class SchoolService {
 	}
 
 	/**
-	 *
-	 * @return ArrayList<String> a list of all conferences in the list
-	 */
-//    public ArrayList<String> getConferences() {
-//        ArrayList<String> conferences = new ArrayList();
-//        for (int i = 0; i < schoolList.size(); i++) {
-//            School school = schoolList.get(i);
-//            if (!conferences.contains(school.getConference())) {
-//                conferences.add(school.getConference());
-//            }
-//        }
-//        return conferences;
-//    }
-
-	/**
 	 * @param tgid the tgid of the school you are searching for
 	 * @return School with the same tgid as the parameter inputted
 	 */
@@ -112,5 +86,21 @@ public class SchoolService {
 
 	public void saveSchool(School school) {
 		schoolRepository.save(school);
+	}
+
+	public void loadSchoolDataFromFile(MultipartFile multipartFile) throws IOException {
+
+		File file = excelReader.convertMultipartFileToFile(multipartFile);
+
+		try {
+			List<School> schoolList = excelReader.populateSchoolsFromExcel(file);
+			Collections.sort(schoolList);
+			setSchoolList(schoolList);
+			excelReader.populateRivalsFromExcel(file);
+			dataService.loadSchoolData();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
