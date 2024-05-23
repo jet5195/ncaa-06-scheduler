@@ -34,3 +34,4 @@ build/
 output.xlsx
 /bin/
 src/main/resources/api.properties
+*.xlsx
