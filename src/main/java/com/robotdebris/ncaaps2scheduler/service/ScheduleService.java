@@ -311,7 +311,7 @@ public class ScheduleService {
 				// go through all the schools
 				School s1 = schools.get(i);
 				// TODO: fix issue here due to rivals always being empty
-				if (s1.getConference().isFBS() && j < s1.getRivals().size()) {
+				if (s1.getConference() != null && s1.getConference().isFBS() && j < s1.getRivals().size()) {
 					// new chance algorithm so you don't ALWAYS play your 5th rival.
 					// 1st rival: 100% chance
 					// 2nd rival: 70% chance
@@ -575,65 +575,69 @@ public class ScheduleService {
 		}
 		// return null;
 	}
-//
-//    public void setAllYearlyGames() {
-//        /*
-//         *
-//         * week 14 army navy (only game of the week)
-//         *
-//         * week 13 Ole Miss Miss St UNC NC St? USF UCF EMU CMU WSU Wash UGA GT (Sat) OU
-//         * OKST Bama Auburn PSU MSU OSU Oregon ND Stanford? UK UL LSU A&M/Ark? Pitt Cuse
-//         * IU Purdue FSU Florida Clem USC Vandy UT ILL NW Wisc Minn Mich OSU ULM ULL Cal
-//         * UCLA Zona ASU WKU Marshall? Col Utah? VT UVA Mizzou Kansas OU Nebraska UT
-//         * Vandy Duke Wake Cuse BC
-//         *
-//         *
-//         * week 10 LSU Bama ? UK UT
-//         *
-//         * week 9 Mich MSU? FSU Clem? UGA UF
-//         *
-//         * Week 8 Bama UT LSU Ole Miss? probs not
-//         *
-//         * Week 7 SDSU SJSU? Pitt VT?
-//         *
-//         * Week 6 OU Texas UGA Auburn? probs not
-//         *
-//         *
-//         */
-//        // week 6
-//        addYearlySeriesHelper("Oklahoma", "Texas", 6, 5, getYear(), false);
-//
-//        // week 8
-//        addYearlySeriesHelper("Alabama", "Tennessee", 8, 5, getYear(), false);
-//
-//        // week 9
-//        addYearlySeriesHelper("Georgia", "Florida", 9, 5, getYear(), false);
-//
-//        // week 12
-//        addYearlySeriesHelper("Tennessee", "Kentucky", 12, 5, getYear(), false);
-//
-//        // week 13 (rivalry week)
-//        addYearlySeriesHelper("Virginia", "Virginia Tech", 13, 5, getYear(), false);
-//        addYearlySeriesHelper("North Carolina", "North Carolina State", 13, 5, getYear(), false);
-//        for (School school : schoolService.getAllSchools()) {
-//            if (school.getNcaaDivision().isFBS()) {
-//                boolean endLoop = false;
-//                int i = 0;
-//                while (!endLoop) {
-//                    if (school.getRivals().size() > i) {
-//                        School rival = school.getRivals().get(i);
-//                        endLoop = addYearlySeriesHelper(school, rival, 13, 5, getYear(), false);
-//                        i++;
-//                    } else {
-//                        endLoop = true;
-//                    }
-//                }
-//            }
-//        }
-//
-//        // week 14
-//        addYearlySeriesHelper("Navy", "Army", 14, 5, getYear(), false);
-//    }
+	//
+	// public void setAllYearlyGames() {
+	// /*
+	// *
+	// * week 14 army navy (only game of the week)
+	// *
+	// * week 13 Ole Miss Miss St UNC NC St? USF UCF EMU CMU WSU Wash UGA GT (Sat)
+	// OU
+	// * OKST Bama Auburn PSU MSU OSU Oregon ND Stanford? UK UL LSU A&M/Ark? Pitt
+	// Cuse
+	// * IU Purdue FSU Florida Clem USC Vandy UT ILL NW Wisc Minn Mich OSU ULM ULL
+	// Cal
+	// * UCLA Zona ASU WKU Marshall? Col Utah? VT UVA Mizzou Kansas OU Nebraska UT
+	// * Vandy Duke Wake Cuse BC
+	// *
+	// *
+	// * week 10 LSU Bama ? UK UT
+	// *
+	// * week 9 Mich MSU? FSU Clem? UGA UF
+	// *
+	// * Week 8 Bama UT LSU Ole Miss? probs not
+	// *
+	// * Week 7 SDSU SJSU? Pitt VT?
+	// *
+	// * Week 6 OU Texas UGA Auburn? probs not
+	// *
+	// *
+	// */
+	// // week 6
+	// addYearlySeriesHelper("Oklahoma", "Texas", 6, 5, getYear(), false);
+	//
+	// // week 8
+	// addYearlySeriesHelper("Alabama", "Tennessee", 8, 5, getYear(), false);
+	//
+	// // week 9
+	// addYearlySeriesHelper("Georgia", "Florida", 9, 5, getYear(), false);
+	//
+	// // week 12
+	// addYearlySeriesHelper("Tennessee", "Kentucky", 12, 5, getYear(), false);
+	//
+	// // week 13 (rivalry week)
+	// addYearlySeriesHelper("Virginia", "Virginia Tech", 13, 5, getYear(), false);
+	// addYearlySeriesHelper("North Carolina", "North Carolina State", 13, 5,
+	// getYear(), false);
+	// for (School school : schoolService.getAllSchools()) {
+	// if (school.getNcaaDivision().isFBS()) {
+	// boolean endLoop = false;
+	// int i = 0;
+	// while (!endLoop) {
+	// if (school.getRivals().size() > i) {
+	// School rival = school.getRivals().get(i);
+	// endLoop = addYearlySeriesHelper(school, rival, 13, 5, getYear(), false);
+	// i++;
+	// } else {
+	// endLoop = true;
+	// }
+	// }
+	// }
+	// }
+	//
+	// // week 14
+	// addYearlySeriesHelper("Navy", "Army", 14, 5, getYear(), false);
+	// }
 
 	public void autoAddConferenceGames(Conference conf) throws Exception {
 		ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
@@ -649,20 +653,20 @@ public class ScheduleService {
 		return bowlGames;
 	}
 
-//    public Game getBowlGame(int week, int gameId) {
-//        ArrayList<Game> weeklyGames = seasonSchedule.getBowlScheduleByWeek(week);
-//        for (Game game : weeklyGames) {
-//            if (game.getGameNumber() == gameId) {
-//                return game;
-//            }
-//        }
-//        return null;
-//    }
+	// public Game getBowlGame(int week, int gameId) {
+	// ArrayList<Game> weeklyGames = seasonSchedule.getBowlScheduleByWeek(week);
+	// for (Game game : weeklyGames) {
+	// if (game.getGameNumber() == gameId) {
+	// return game;
+	// }
+	// }
+	// return null;
+	// }
 
-//	public int removeConferenceGames(String name) {
-//		Conference conf = conferenceService.conferenceSearch(name);
-//		return removeAllConferenceGames(conf);
-//	}
+	// public int removeConferenceGames(String name) {
+	// Conference conf = conferenceService.conferenceSearch(name);
+	// return removeAllConferenceGames(conf);
+	// }
 
 	public Game getGame(int week, int gameId) {
 		ArrayList<Game> weeklyGames = getScheduleByWeek(week);
@@ -899,15 +903,15 @@ public class ScheduleService {
 		return list;
 	}
 
-//   public ArrayList<Game> getBowlScheduleByWeek(int week) {
-//       ArrayList<Game> weeklySchedule = new ArrayList<>();
-//       for (Game game : this.getBowlSchedule()) {
-//           if (game.getWeek() == week) {
-//               weeklySchedule.add(game);
-//           }
-//       }
-//       return weeklySchedule;
-//   }
+	// public ArrayList<Game> getBowlScheduleByWeek(int week) {
+	// ArrayList<Game> weeklySchedule = new ArrayList<>();
+	// for (Game game : this.getBowlSchedule()) {
+	// if (game.getWeek() == week) {
+	// weeklySchedule.add(game);
+	// }
+	// }
+	// return weeklySchedule;
+	// }
 
 	public ArrayList<Game> getScheduleByWeek(int week) {
 		ArrayList<Game> weeklySchedule = new ArrayList<>();
@@ -1096,7 +1100,8 @@ public class ScheduleService {
 	public List<School> findTooFewGames() {
 		List<School> allSchools = schoolRepository.findAll();
 		return allSchools.stream()
-				.filter(school -> school.getConference().isFBS() && getScheduleBySchool(school).size() < 12)
+				.filter(school -> school.getConference() != null && school.getConference().isFBS()
+						&& getScheduleBySchool(school).size() < 12)
 				.collect(Collectors.toList());
 	}
 
@@ -1108,7 +1113,8 @@ public class ScheduleService {
 	public List<School> findTooManyGames() {
 		List<School> allSchools = schoolRepository.findAll();
 		return allSchools.stream()
-				.filter(school -> school.getConference().isFBS() && getScheduleBySchool(school).size() > 12)
+				.filter(school -> school.getConference() != null && school.getConference().isFBS()
+						&& getScheduleBySchool(school).size() > 12)
 				.collect(Collectors.toList());
 	}
 }
