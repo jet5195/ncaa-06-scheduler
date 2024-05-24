@@ -25,10 +25,10 @@ public class CollegeFootballDataService {
 	SchoolRepository schoolRepository;
 	private RestTemplate restTemplate = new RestTemplate();
 
-	@Value("${collegefootballdata.api.url}")
+	@Value("${collegefootballdata.api.url:''}")
 	private String apiUrl;
 
-	@Value("${collegefootballdata.api.key}")
+	@Value("${collegefootballdata.api.key:''}")
 	private String apiKey;
 
 	@Autowired
