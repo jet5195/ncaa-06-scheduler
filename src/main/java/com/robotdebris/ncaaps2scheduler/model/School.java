@@ -1,5 +1,6 @@
 package com.robotdebris.ncaaps2scheduler.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,9 +17,9 @@ import jakarta.persistence.Id;
 public class School implements Comparable<School> {
 
 	// TEAM tscs = conference ranking
-//0 = conf champ
-//TBRK = bcs bowl ranking
-//tmrk = media poll rank
+	// 0 = conf champ
+	// TBRK = bcs bowl ranking
+	// tmrk = media poll rank
 	@Id
 	private int tgid;
 	private String name;
@@ -87,7 +88,7 @@ public class School implements Comparable<School> {
 		return conferenceId;
 	}
 
-	public void setConferenceName(Integer conferenceId) {
+	public void setConferenceId(Integer conferenceId) {
 		this.conferenceId = conferenceId;
 	}
 
@@ -151,6 +152,13 @@ public class School implements Comparable<School> {
 
 	public void setRivals(List<School> rivals) {
 		this.rivals = rivals;
+	}
+
+	public void addRival(School school) {
+		if (this.rivals == null) {
+			this.rivals = new ArrayList<>();
+		}
+		this.rivals.add(school);
 	}
 
 	public boolean isUserTeam() {
@@ -235,30 +243,31 @@ public class School implements Comparable<School> {
 	/**
 	 * Prints the schedule of a school
 	 */
-//	public void printSchedule() {
-//		int i = 0;
-//		int lastWeek = -1;
-//		while (i < this.getSchedule().size()) {
-//			int nextWeek = 100;// random high number
-//			for (int j = 0; j < this.getSchedule().size(); j++) {
-//				if (this.getSchedule().get(j).getWeek() < nextWeek && this.getSchedule().get(j).getWeek() > lastWeek) {
-//					nextWeek = this.getSchedule().get(j).getWeek();
-//				}
-//			}
-//
-//			System.out.print(i + 1 + ". ");
-//			Game game = this.getSchedule().getGame(nextWeek);
-//			System.out.print(this);
-//			if (this.getTgid() == game.getHomeTeam().getTgid()) {
-//				System.out.print(" vs " + game.getAwayTeam());
-//			} else {
-//				System.out.print(" at " + game.getHomeTeam());
-//			}
-//			System.out.println(" (week " + (nextWeek + 1) + ")");
-//			i++;
-//			lastWeek = nextWeek;
-//		}
-//	}
+	// public void printSchedule() {
+	// int i = 0;
+	// int lastWeek = -1;
+	// while (i < this.getSchedule().size()) {
+	// int nextWeek = 100;// random high number
+	// for (int j = 0; j < this.getSchedule().size(); j++) {
+	// if (this.getSchedule().get(j).getWeek() < nextWeek &&
+	// this.getSchedule().get(j).getWeek() > lastWeek) {
+	// nextWeek = this.getSchedule().get(j).getWeek();
+	// }
+	// }
+	//
+	// System.out.print(i + 1 + ". ");
+	// Game game = this.getSchedule().getGame(nextWeek);
+	// System.out.print(this);
+	// if (this.getTgid() == game.getHomeTeam().getTgid()) {
+	// System.out.print(" vs " + game.getAwayTeam());
+	// } else {
+	// System.out.print(" at " + game.getHomeTeam());
+	// }
+	// System.out.println(" (week " + (nextWeek + 1) + ")");
+	// i++;
+	// lastWeek = nextWeek;
+	// }
+	// }
 
 	/**
 	 * Returns true if opponent is a rival, false if else
