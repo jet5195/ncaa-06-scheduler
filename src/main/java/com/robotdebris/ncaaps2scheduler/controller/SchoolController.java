@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +24,7 @@ import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.SuggestedGameResponse;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 import com.robotdebris.ncaaps2scheduler.service.SchoolService;
+import com.robotdebris.ncaaps2scheduler.service.XlsxExportService;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -32,6 +36,9 @@ public class SchoolController {
 
 	@Autowired
 	private SchoolService schoolService;
+
+	@Autowired
+	private XlsxExportService exportService;
 
 	@GetMapping
 	public List<School> getAllSchools() throws JsonMappingException, JsonProcessingException {
@@ -95,5 +102,17 @@ public class SchoolController {
 	@PostMapping(value = "set-by-file")
 	public void uploadSchoolData(@RequestParam("file") MultipartFile file) throws IOException {
 		schoolService.loadSchoolDataFromFile(file);
+	}
+
+	@GetMapping(value = "download")
+	public ResponseEntity<?> downloadSchoolData() {
+		try {
+			ResponseEntity<ByteArrayResource> response = exportService
+					.writeSchoolData(schoolService.getAllSchools());
+			return response;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+		}
 	}
 }
