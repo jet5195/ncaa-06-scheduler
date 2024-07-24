@@ -39,7 +39,7 @@ public class CollegeFootballDataService {
 		headers.set("Authorization", "Bearer " + apiKey); // Replace 'yourApiKey' with the actual key
 		HttpEntity<String> entity = new HttpEntity<>(headers);
 
-		return restTemplate.exchange(apiUrl + "/teams/fbs", HttpMethod.GET, entity, String.class);
+		return restTemplate.exchange(apiUrl + "/teams", HttpMethod.GET, entity, String.class);
 	}
 
 	public void loadSchoolData() throws JsonProcessingException {
@@ -47,10 +47,10 @@ public class CollegeFootballDataService {
 			System.out.println("apiUrl or apiKey are null");
 		} else {
 			try {
-//				SimpleModule module = new SimpleModule();
-//				module.addDeserializer(School.class, new ApiSchoolDeserializer());
-//				ObjectMapper mapper = new ObjectMapper();
-//				mapper.registerModule(module);
+				// SimpleModule module = new SimpleModule();
+				// module.addDeserializer(School.class, new ApiSchoolDeserializer());
+				// ObjectMapper mapper = new ObjectMapper();
+				// mapper.registerModule(module);
 				CollegeFootballDataTeam[] apiData = mapper.readValue(fetchData().getBody(),
 						CollegeFootballDataTeam[].class);
 				List<School> schools = schoolRepository.findAll();
