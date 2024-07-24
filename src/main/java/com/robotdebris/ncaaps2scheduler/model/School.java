@@ -337,6 +337,12 @@ public class School implements Comparable<School> {
 		private List<School> rivals;
 		private boolean userTeam;
 		private School xDivRival;
+		private double latitude;
+		private double longitude;
+		private String abbreviation;
+		private String stadiumName;
+		private String city;
+		private double stadiumCapacity;
 		// Other fields...
 
 		public Builder() {
@@ -403,6 +409,36 @@ public class School implements Comparable<School> {
 			return this;
 		}
 
+		public Builder withLatitude(double latitude) {
+			this.latitude = latitude;
+			return this;
+		}
+
+		public Builder withLongitude(double longitude) {
+			this.longitude = longitude;
+			return this;
+		}
+
+		public Builder withAbbreviation(String abbreviation) {
+			this.abbreviation = abbreviation;
+			return this;
+		}
+
+		public Builder withStadiumName(String stadiumName) {
+			this.stadiumName = stadiumName;
+			return this;
+		}
+
+		public Builder withCity(String city) {
+			this.city = city;
+			return this;
+		}
+
+		public Builder withStadiumCapacity(double stadiumCapacity) {
+			this.stadiumCapacity = stadiumCapacity;
+			return this;
+		}
+
 		public School build() {
 			School school = new School();
 			school.tgid = this.tgid;
@@ -417,6 +453,12 @@ public class School implements Comparable<School> {
 			school.rivals = this.rivals;
 			school.userTeam = this.userTeam;
 			school.xDivRival = this.xDivRival;
+			school.latitude = this.latitude;
+			school.longitude = this.longitude;
+			school.abbreviation = this.abbreviation;
+			school.stadiumName = this.stadiumName;
+			school.city = this.city;
+			school.stadiumCapacity = this.stadiumCapacity;
 			return school;
 		}
 	}

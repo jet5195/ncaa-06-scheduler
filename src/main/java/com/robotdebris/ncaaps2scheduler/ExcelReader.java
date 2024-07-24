@@ -139,6 +139,16 @@ public class ExcelReader {
 		}
 	}
 
+	private double parseDouble(DataFormatter formatter, Row row, int cellIndex, String context) {
+		try {
+			return Double.parseDouble(formatter.formatCellValue(row.getCell(cellIndex)));
+		} catch (NumberFormatException e) {
+			LOGGER.warn(
+					"Invalid double for " + context + " in cell " + cellIndex + ". Found " + row.getCell(cellIndex));
+			return 0;
+		}
+	}
+
 	// String.isBlank doesn't work on older versions of java?
 	private boolean isStringBlank(String string) {
 		return string == null || string.trim().isEmpty();
@@ -213,13 +223,19 @@ public class ExcelReader {
 	}
 
 	private School parseSchoolRow(Row row, DataFormatter formatter) {
-		int tgid = parseInteger(formatter, row, 0, "parseSchoolRow");
+		int tgid = parseInteger(formatter, row, 0, "tgid");
 		String university = formatter.formatCellValue(row.getCell(1));
 		String nickname = formatter.formatCellValue(row.getCell(2));
 		String state = formatter.formatCellValue(row.getCell(3));
 		String color = formatter.formatCellValue(row.getCell(4));
 		String altColor = formatter.formatCellValue(row.getCell(5));
 		String logo = formatter.formatCellValue(row.getCell(6));
+		double latitude = parseDouble(formatter, row, 15, "latitude");
+		double longitude = parseDouble(formatter, row, 16, "longitude");
+		String abbreviation = formatter.formatCellValue(row.getCell(17));
+		String stadiumName = formatter.formatCellValue(row.getCell(18));
+		String city = formatter.formatCellValue(row.getCell(19));
+		int stadiumCapacity = parseInteger(formatter, row, 20, "stadium capacity");
 
 		return new School.Builder()
 				.withTgid(tgid)
@@ -229,6 +245,12 @@ public class ExcelReader {
 				.withColor(color)
 				.withAltColor(altColor)
 				.withLogo(logo)
+				.withLatitude(latitude)
+				.withLongitude(longitude)
+				.withAbbreviation(abbreviation)
+				.withStadiumName(stadiumName)
+				.withCity(city)
+				.withStadiumCapacity(stadiumCapacity)
 				.build();
 	}
 
