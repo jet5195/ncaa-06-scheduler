@@ -249,14 +249,18 @@ public class ExcelReader {
 	private void updateRivals(Row row, DataFormatter formatter) {
 		int tgid = parseInteger(formatter, row, 0, "updateRivals");
 		School school = schoolRepository.findById(tgid);
-
 		if (school != null) {
-			String rivalName = formatter.formatCellValue(row.getCell(1));
-			School rival = schoolRepository.findByName(rivalName);
-			if (rival != null) {
-				school.addRival(rival);
-			} else {
-				LOGGER.warn("Rival school " + rivalName + " not found for school " + school.getName());
+			// columns 7-14 are reserved for rival names
+			for (int i = 7; i <= 14; i++) {
+				String rivalName = formatter.formatCellValue(row.getCell(i));
+				if (!rivalName.isBlank()) {
+					School rival = schoolRepository.findByName(rivalName);
+					if (rival != null) {
+						school.addRival(rival);
+					} else {
+						LOGGER.warn("Rival school " + rivalName + " not found for school " + school.getName());
+					}
+				}
 			}
 		} else {
 			LOGGER.warn("School with TGID " + tgid + " not found");
