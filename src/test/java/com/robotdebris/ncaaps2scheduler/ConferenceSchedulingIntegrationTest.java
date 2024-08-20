@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 
+import com.robotdebris.ncaaps2scheduler.configuration.AppConstants;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
@@ -68,7 +69,9 @@ public class ConferenceSchedulingIntegrationTest {
 		// Assert
 		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
 		for (Conference conf : conferences) {
-			verifyConferenceGamesForYear(conf, year);
+			if (!AppConstants.INDEPENDENT_STRINGS.contains(conf.getName())) {
+				verifyConferenceGamesForYear(conf, year);
+			}
 		}
 	}
 
@@ -82,7 +85,25 @@ public class ConferenceSchedulingIntegrationTest {
 		// Assert
 		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
 		for (Conference conf : conferences) {
-			verifyConferenceGamesForYear(conf, year);
+			if (!AppConstants.INDEPENDENT_STRINGS.contains(conf.getName())) {
+				verifyConferenceGamesForYear(conf, year);
+			}
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideYears")
+	public void verifyConferenceGameCountsForCookyBotsConferences(int year) throws Exception {
+		MockMultipartFile file = TestUtil.createMockMultipartFile("CookyBots_Alignment.xlsx");
+		scheduleService.setAlignmentFile(file);
+		gameRepository.setYear(year);
+		scheduleService.addAllConferenceGames();
+		// Assert
+		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
+		for (Conference conf : conferences) {
+			if (!AppConstants.INDEPENDENT_STRINGS.contains(conf.getName())) {
+				verifyConferenceGamesForYear(conf, year);
+			}
 		}
 	}
 
