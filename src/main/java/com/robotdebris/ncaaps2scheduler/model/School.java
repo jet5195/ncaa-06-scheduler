@@ -270,22 +270,28 @@ public class School implements Comparable<School> {
 	// }
 
 	/**
-	 * Returns true if opponent is a rival, false if else
+	 * Returns true if the opponent is a rival, false otherwise.
 	 *
 	 * @param opponent the opponent
-	 * @return true if opponent is a rival, false if else
+	 * @return true if the opponent is a rival, false otherwise
 	 */
 	public boolean isRival(School opponent) {
-		for (int i = 0; this.getRivals() != null && i < this.getRivals().size(); i++) {
-			if (this.getRivals().get(i).getName().equals(opponent.getName())) {
-				return true;
+		if (this.getRivals() != null) {
+			for (School rival : this.getRivals()) {
+				if (rival.getName().equals(opponent.getName())) {
+					return true;
+				}
 			}
 		}
-		for (int i = 0; this.getRivals() != null && i < opponent.getRivals().size(); i++) {
-			if (opponent.getRivals().get(i).getName().equals(this.getName())) {
-				return true;
+
+		if (opponent.getRivals() != null) {
+			for (School rival : opponent.getRivals()) {
+				if (rival.getName().equals(this.getName())) {
+					return true;
+				}
 			}
 		}
+
 		return false;
 	}
 
