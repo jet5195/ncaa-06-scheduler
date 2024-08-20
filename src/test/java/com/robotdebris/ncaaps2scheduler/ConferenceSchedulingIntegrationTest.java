@@ -104,6 +104,21 @@ public class ConferenceSchedulingIntegrationTest {
 		}
 	}
 
+	@ParameterizedTest
+	@MethodSource("provideYears")
+	public void verifyConferenceGameCountsForAllScenariosConferences(int year) throws Exception {
+		MockMultipartFile file = TestUtil.createMockMultipartFile("Test_All_Scenarios_Alignment.xlsx");
+		scheduleService.setAlignmentFile(file);
+		gameRepository.setYear(year);
+		scheduleService.addAllConferenceGames();
+		// Assert
+		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
+		for (Conference conf : conferences) {
+			verifyConferenceGamesForYear(conf, year);
+			verifyAllSchoolsInConfPlayXDivRival(conf);
+		}
+	}
+
 	@Test
 	public void verifyConferenceGamesForTeamAndYears() throws Exception {
 		MockMultipartFile file = TestUtil.createMockMultipartFile("Default_06_07_Conferences.xlsx");
@@ -141,7 +156,7 @@ public class ConferenceSchedulingIntegrationTest {
 	}
 
 	private void verifyAllSchoolsInConfPlayXDivRival(Conference conf) {
-		if (conf.getSchools().getFirst().getxDivRival() != null) {
+		if (!conf.getSchools().isEmpty() && conf.getSchools().getFirst().getxDivRival() != null) {
 			for (School school : conf.getSchools()) {
 				verifySchoolPlaysXDivRival(school);
 			}
@@ -150,7 +165,10 @@ public class ConferenceSchedulingIntegrationTest {
 
 	private void verifySchoolPlaysXDivRival(School school) {
 		School xDivRival = school.getxDivRival();
-		assertThat(scheduleService.isOpponentForSchool(school, xDivRival)).isTrue();
+		String message = "For conference %s, For school '%s': expected xDivRival %s to be scheduled:".formatted(
+				school.getConference().getName(), school.getName(),
+				xDivRival);
+		assertThat(scheduleService.isOpponentForSchool(school, xDivRival)).as(message).isTrue();
 	}
 
 	private int calculateExpectedGames(Conference conf) {

@@ -691,7 +691,7 @@ public class ScheduleService {
 		for (Conference conf : conferenceService.getConferenceList()) {
 			// if conference is FBS...
 			List<School> schools = conf.getSchools();
-			if (schools != null) {
+			if (schools != null && !schools.isEmpty()) {
 				if (schools.getFirst().getConference().isFBS()) {
 					this.autoAddConferenceGames(conf);
 				}
