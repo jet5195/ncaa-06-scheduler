@@ -2,10 +2,15 @@ package com.robotdebris.ncaaps2scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,19 +20,17 @@ import org.springframework.mock.web.MockMultipartFile;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
-import com.robotdebris.ncaaps2scheduler.repository.ConferenceRepository;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
+import com.robotdebris.ncaaps2scheduler.service.SchoolService;
 import com.robotdebris.ncaaps2scheduler.util.TestUtil;
 
+@TestInstance(Lifecycle.PER_CLASS)
 @SpringBootTest(properties = "spring.profiles.active=test")
 public class NonConferenceSchedulingIntegrationTest {
     @Autowired
     private ScheduleService scheduleService;
-
-    @Autowired
-    private ConferenceRepository conferenceRepository;
 
     @Autowired
     private SchoolRepository schoolRepository;
@@ -35,9 +38,18 @@ public class NonConferenceSchedulingIntegrationTest {
     @Autowired
     private GameRepository gameRepository;
 
+    @Autowired
+    private SchoolService schoolService;
+
     @BeforeEach
     public void setUp() throws Exception {
         gameRepository.removeAll();
+    }
+
+    @BeforeAll
+    public void setupSchoolData() throws IOException, URISyntaxException {
+        MockMultipartFile file = TestUtil.createMockMultipartFile("NCAA_NEXT24_School_Data.xlsx");
+        schoolService.loadSchoolDataFromFile(file);
     }
 
     @ParameterizedTest
