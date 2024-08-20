@@ -7,6 +7,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.robotdebris.ncaaps2scheduler.configuration.AppConstants;
 import com.robotdebris.ncaaps2scheduler.serializer.SchoolIdDeserializer;
 import com.robotdebris.ncaaps2scheduler.serializer.SchoolIdSerializer;
 
@@ -232,7 +233,7 @@ public class School implements Comparable<School> {
 	 * @return true if in the same conference, false if else
 	 */
 	public boolean isInConference(School school) {
-		if (this.getConference() == null || this.getConference().getName().equalsIgnoreCase("Independent")) {
+		if (this.getConference() == null || AppConstants.INDEPENDENT_STRINGS.contains(this.getConference().getName())) {
 			return false;
 		} else if (school.getConference() == null) {
 			return false;

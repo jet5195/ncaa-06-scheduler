@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.NoWeeksAvailableException;
 import com.robotdebris.ncaaps2scheduler.SchedulerUtils;
+import com.robotdebris.ncaaps2scheduler.configuration.AppConstants;
 import com.robotdebris.ncaaps2scheduler.model.AddGameRequest;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.DayOfWeek;
@@ -640,8 +641,10 @@ public class ScheduleService {
 	// }
 
 	public void autoAddConferenceGames(Conference conf) throws Exception {
-		ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
-		scheduler.generateConferenceSchedule(conf, gameRepository);
+		if (!AppConstants.INDEPENDENT_STRINGS.contains(conf.getName())) {
+			ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
+			scheduler.generateConferenceSchedule(conf, gameRepository);
+		}
 	}
 
 	public List<Game> getBowlGames() {
