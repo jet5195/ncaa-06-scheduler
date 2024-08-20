@@ -69,9 +69,8 @@ public class ConferenceSchedulingIntegrationTest {
 		// Assert
 		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
 		for (Conference conf : conferences) {
-			if (!AppConstants.INDEPENDENT_STRINGS.contains(conf.getName())) {
-				verifyConferenceGamesForYear(conf, year);
-			}
+			verifyConferenceGamesForYear(conf, year);
+			verifyAllSchoolsInConfPlayXDivRival(conf);
 		}
 	}
 
@@ -85,9 +84,8 @@ public class ConferenceSchedulingIntegrationTest {
 		// Assert
 		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
 		for (Conference conf : conferences) {
-			if (!AppConstants.INDEPENDENT_STRINGS.contains(conf.getName())) {
-				verifyConferenceGamesForYear(conf, year);
-			}
+			verifyConferenceGamesForYear(conf, year);
+			verifyAllSchoolsInConfPlayXDivRival(conf);
 		}
 	}
 
@@ -101,9 +99,8 @@ public class ConferenceSchedulingIntegrationTest {
 		// Assert
 		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
 		for (Conference conf : conferences) {
-			if (!AppConstants.INDEPENDENT_STRINGS.contains(conf.getName())) {
-				verifyConferenceGamesForYear(conf, year);
-			}
+			verifyConferenceGamesForYear(conf, year);
+			verifyAllSchoolsInConfPlayXDivRival(conf);
 		}
 	}
 
@@ -130,15 +127,30 @@ public class ConferenceSchedulingIntegrationTest {
 	}
 
 	private void verifyConferenceGamesForYear(Conference conf, int year) {
-		int expectedGames = calculateExpectedGames(conf);
-		List<School> schools = schoolRepository.findByConference(conf);
+		if (!AppConstants.INDEPENDENT_STRINGS.contains(conf.getName())) {
+			int expectedGames = calculateExpectedGames(conf);
+			List<School> schools = schoolRepository.findByConference(conf);
 
-		for (School school : schools) {
-			List<Game> schedule = gameRepository.findGamesByTeam(school);
-			String message = "For conference '%s' and school '%s' in year %d: expected %d games, found %d."
-					.formatted(conf.getName(), school.getName(), year, expectedGames, schedule.size());
-			assertThat(schedule.size()).as(message).isEqualTo(expectedGames);
+			for (School school : schools) {
+				List<Game> schedule = gameRepository.findGamesByTeam(school);
+				String message = "For conference '%s' and school '%s' in year %d: expected %d games, found %d."
+						.formatted(conf.getName(), school.getName(), year, expectedGames, schedule.size());
+				assertThat(schedule.size()).as(message).isEqualTo(expectedGames);
+			}
 		}
+	}
+
+	private void verifyAllSchoolsInConfPlayXDivRival(Conference conf) {
+		if (conf.getSchools().getFirst().getxDivRival() != null) {
+			for (School school : conf.getSchools()) {
+				verifySchoolPlaysXDivRival(school);
+			}
+		}
+	}
+
+	private void verifySchoolPlaysXDivRival(School school) {
+		School xDivRival = school.getxDivRival();
+		assertThat(scheduleService.isOpponentForSchool(school, xDivRival)).isTrue();
 	}
 
 	private int calculateExpectedGames(Conference conf) {
