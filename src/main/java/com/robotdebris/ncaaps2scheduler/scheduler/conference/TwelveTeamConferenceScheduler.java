@@ -57,21 +57,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                     div2 = orderDivByXDivRivals(div1);
                 }
 
-                int rotationAmount;
-                if (numOfConfGames == 9) {
-                    rotationAmount = year % 6;
-                    for (int i = 0; i < rotationAmount; i++) {
-                        School s1 = div1.removeLast();
-                        div1.addFirst(s1);
-                    }
-                }
-                if (numOfConfGames == 8) {
-                    rotationAmount = year % 5;
-                    for (int i = 0; i < rotationAmount; i++) {
-                        School s1 = div1.removeLast();
-                        div1.addFirst(s1);
-                    }
-                }
+                div1 = rotateDivByYear(div1, numOfConfGames, year);
 
                 int index = 0;
                 for (School school : div1) {
@@ -80,8 +66,6 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                         scheduleCrossDivisionalRival(div1, div2, school);
                         schedule2CrossDivisionalGames(index, school, div2);
                     }
-
-                    // 0 1 2 3
                     if (numOfConfGames == 9) {
                         if (!xDivRivals) {
                             schedule4XDivGamesByIndex(school, div1, div2, index);
@@ -115,6 +99,25 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
          */
     }
 
+    private List<School> rotateDivByYear(List<School> div, int numOfConfGames, int year) {
+        int rotationAmount;
+        if (numOfConfGames == 9) {
+            rotationAmount = year % 6;
+            for (int i = 0; i < rotationAmount; i++) {
+                School s1 = div.removeLast();
+                div.addFirst(s1);
+            }
+        }
+        if (numOfConfGames == 8) {
+            rotationAmount = year % 5;
+            for (int i = 0; i < rotationAmount; i++) {
+                School s1 = div.removeLast();
+                div.addFirst(s1);
+            }
+        }
+        return div;
+    }
+
     private void schedule2CrossDivisionalGames(int index, School school, List<School> div2) {
         int opponent1Id = index + 1;
         if (opponent1Id > 5) {
@@ -143,18 +146,6 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
         opponent = div2.get(opponent2Id);
         week = scheduleService.findConfGameWeek(school, opponent);
         addYearlySeriesHelper(school, opponent, week, true);
-    }
-
-    private void scheduleCrossDivisionalRival(List<School> div1, List<School> div2, School school)
-            throws Exception {
-        School opponent = school.getxDivRival();
-        int week = scheduleService.findConfGameWeek(school, opponent);
-        // should be home or away game?
-        if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= div1.size() / 2) {
-            addYearlySeriesHelper(school, opponent, week, true);
-        } else {
-            addYearlySeriesHelper(opponent, school, week, true);
-        }
     }
 
     private void schedule12Teams8GamesNoXDivRivals(Conference conf) throws Exception {
@@ -249,16 +240,16 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
         // Schedule games against the determined opponents
         for (int opponentIndex : opponentIndices) {
             if (wouldPlayXDivRival) {
-                if (opponentIndex == 5) {
+                if (opponentIndex == div2.size() - 1) {
                     opponentIndex = 0;
                 } else {
                     opponentIndex++;
                 }
             }
             School opponent = div2.get(opponentIndex);
-            if (school.getxDivRival().equals(opponent)) {
+            if (school.getxDivRival() != null && school.getxDivRival().equals(opponent)) {
                 wouldPlayXDivRival = true;
-                if (opponentIndex == 5) {
+                if (opponentIndex == div2.size() - 1) {
                     opponentIndex = 0;
                 } else {
                     opponentIndex++;

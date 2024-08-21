@@ -1,16 +1,17 @@
 package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.GameBuilder;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 abstract class AbstractConferenceScheduler implements ConferenceScheduler {
@@ -68,11 +69,24 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
         return orderedDiv;
     }
 
-//    private boolean addYearlySeriesHelper(School s1, School s2, int week, int day, int year, boolean specifyHome) {
-//        School school1 = schoolService.schoolSearch(s1);
-//        School school2 = schoolService.schoolSearch(s2);
-//        return addYearlySeriesHelper(school1, school2, week, day, year, specifyHome);
-//    }
+    void scheduleCrossDivisionalRival(List<School> div1, List<School> div2, School school)
+            throws Exception {
+        School opponent = school.getxDivRival();
+        int week = scheduleService.findConfGameWeek(school, opponent);
+        // should be home or away game?
+        if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= div1.size() / 2) {
+            addYearlySeriesHelper(school, opponent, week, true);
+        } else {
+            addYearlySeriesHelper(opponent, school, week, true);
+        }
+    }
+
+    // private boolean addYearlySeriesHelper(School s1, School s2, int week, int
+    // day, int year, boolean specifyHome) {
+    // School school1 = schoolService.schoolSearch(s1);
+    // School school2 = schoolService.schoolSearch(s2);
+    // return addYearlySeriesHelper(school1, school2, week, day, year, specifyHome);
+    // }
 
     /**
      * Adds a game to the schedule, alternating home and away teams based on the
