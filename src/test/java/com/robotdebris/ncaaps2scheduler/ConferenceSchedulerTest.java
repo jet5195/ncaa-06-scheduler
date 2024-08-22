@@ -80,13 +80,7 @@ public class ConferenceSchedulerTest {
                 "Conference " + numOfTeams + " teams " + numOfGames + " games");
         ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
 
-        try {
-            scheduler.generateConferenceSchedule(conf, gameRepository);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        List<Game> firstSeasonSchedule = List.copyOf(gameRepository.findAll());
-        gameRepository.findAll().clear();
+        List<Game> firstSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
         gameRepository.setYear(year + 1);
 
         try {
@@ -109,6 +103,76 @@ public class ConferenceSchedulerTest {
             assertTrue(alternateHomeLocation,
                     "Expected home location to alternate between years for school " + game.getHomeTeam().getName());
         }
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideConferenceParameters")
+    public void testAllSchoolsPlayEachOther(int numOfTeams, int numOfGames, int year) {
+        gameRepository.findAll().clear();
+        gameRepository.setYear(year);
+        Conference conf = setupConference(numOfTeams, numOfGames,
+                "Conference " + numOfTeams + " teams " + numOfGames + " games");
+        ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
+
+        List<Game> firstSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
+        gameRepository.setYear(++year);
+        List<Game> secondSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
+        gameRepository.setYear(++year);
+        List<Game> thirdSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
+        gameRepository.setYear(++year);
+        List<Game> fourthSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
+        gameRepository.setYear(++year);
+        List<Game> fifthSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
+        gameRepository.setYear(++year);
+        List<Game> sixthSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
+
+        // try {
+        // scheduler.generateConferenceSchedule(conf, gameRepository);
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // }
+
+        // Verify each school plays one another each other at least once in one of the 5
+        // Lists above
+        // Verify each school plays one another at least once in one of the 5 schedules
+        List<School> schools = conf.getSchools();
+        boolean allSchoolsPlayedEachOther = true;
+
+        for (int i = 0; i < schools.size(); i++) {
+            School school1 = schools.get(i);
+            for (int j = i + 1; j < schools.size(); j++) {
+                School school2 = schools.get(j);
+                boolean schoolsPlayedEachOther = false;
+                for (List<Game> schedule : Arrays.asList(firstSeasonSchedule, secondSeasonSchedule,
+                        thirdSeasonSchedule, fourthSeasonSchedule, fifthSeasonSchedule, sixthSeasonSchedule)) {
+                    if (schedule.stream()
+                            .anyMatch(g -> (g.getHomeTeam().equals(school1) && g.getAwayTeam().equals(school2)) ||
+                                    (g.getHomeTeam().equals(school2) && g.getAwayTeam().equals(school1)))) {
+                        schoolsPlayedEachOther = true;
+                        break;
+                    }
+                }
+                if (!schoolsPlayedEachOther) {
+                    allSchoolsPlayedEachOther = false;
+                    break;
+                }
+
+            }
+        }
+
+        assertTrue(allSchoolsPlayedEachOther,
+                "Each school should play one another at least once in one of the 6 schedules");
+    }
+
+    private List<Game> getCopyOfSeasonSchedule(Conference conf, ConferenceScheduler scheduler) {
+        try {
+            scheduler.generateConferenceSchedule(conf, gameRepository);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        List<Game> firstSeasonSchedule = List.copyOf(gameRepository.findAll());
+        gameRepository.findAll().clear();
+        return firstSeasonSchedule;
     }
 
     private static Stream<Arguments> provideConferenceParameters() {
@@ -134,29 +198,6 @@ public class ConferenceSchedulerTest {
 
         return argumentsList.stream();
     }
-
-    // @Test
-    // public void whenSchedule8Games_HomeAwayDistrobutionEven() {
-    // gameRepository.setYear(0);
-    // Conference conf = setupConference(14, 9, "Conference 14 teams 9 games");
-    // ConferenceScheduler scheduler =
-    // conferenceSchedulerFactory.getScheduler(conf);
-    // try {
-    // scheduler.generateConferenceSchedule(conf, gameRepository);
-    // } catch (Exception e) {
-    // // TODO Auto-generated catch block
-    // e.printStackTrace();
-    // }
-
-    // for (School school : conf.getSchools()) {
-    // List<Game> schedule = gameRepository.findGamesByTeam(school);
-    // int homeGamesCount = (int) schedule.stream().filter(g ->
-    // g.getHomeTeam().equals(school)).count();
-    // assertEquals(4, homeGamesCount,
-    // "Expected home games count for school " + school.getName() + " to be 4 but
-    // was: " + homeGamesCount);
-    // }
-    // }
 
     Conference setupConference(int numOfTeams, int numOfGames, String conferenceName) {
         Conference conf = new Conference();
