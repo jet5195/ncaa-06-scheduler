@@ -2,6 +2,7 @@ package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,34 +30,28 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
         scheduleRoundRobinConfGames(conf.getSchools());
     }
 
+    /**
+     * Schedule round-robin conference games for a list of schools based on specific
+     * conditions.
+     *
+     * @param schoolList The list of schools participating in the round-robin
+     *                   conference games.
+     */
     void scheduleRoundRobinConfGames(List<School> schoolList) {
-        int numOfSchools = schoolList.size();
+        boolean isEvenYear = gameRepository.getYear() % 2 == 0;
+        // int i = 0;
         for (School school : schoolList) {
-            if (scheduleService.getNumOfConferenceGamesForSchool(school) < numOfSchools - 1) {
-                for (School opponent : schoolList) {
-                    if (!school.equals(opponent) && !scheduleService.isOpponentForSchool(school, opponent)) {
-                        int week = scheduleService.findConfGameWeek(school, opponent);
-                        if ((scheduleService.getNumOfAwayConferenceGamesForSchool(school) >= numOfSchools / 2)
-                                || scheduleService.getNumOfHomeConferenceGamesForSchool(opponent) >= numOfSchools / 2) {
-                            // add a home game for school
-                            if (gameRepository.getYear() % 2 == 0) {
-                                addYearlySeriesHelper(opponent, school, week, false);
-                            } else {
-                                addYearlySeriesHelper(school, opponent, week, false);
-                            }
-                        } else if ((scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= numOfSchools / 2)
-                                || scheduleService.getNumOfAwayConferenceGamesForSchool(opponent) >= numOfSchools / 2) {
-                            // add an away game for school
-                            if (gameRepository.getYear() % 2 == 0) {
-                                addYearlySeriesHelper(school, opponent, week, false);
-                            } else {
-                                addYearlySeriesHelper(opponent, school, week, false);
-                            }
-                        } else {
-                            addYearlySeriesHelper(school, opponent, week, false);
-                        }
-                    }
-                }
+            List<School> opponentsToSchedule = schoolList.stream()
+                    .filter(opponent -> !school.equals(opponent)
+                            && !scheduleService.isOpponentForSchool(school, opponent))
+                    .collect(Collectors.toList());
+            int j = 0;
+            for (School opponent : opponentsToSchedule) {
+                boolean isHomeGame = isEvenYear ? j % 2 == 0 : j % 2 == 1;
+                int week = scheduleService.findConfGameWeek(school, opponent);
+                addYearlySeriesHelper(isHomeGame ? opponent : school, isHomeGame ? school : opponent, week,
+                        true);
+                j++;
             }
         }
     }
