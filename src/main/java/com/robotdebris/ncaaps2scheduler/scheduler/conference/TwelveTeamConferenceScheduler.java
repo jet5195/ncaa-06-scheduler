@@ -50,6 +50,8 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
             // 8 conf games no rivals
             if (numOfConfGames == 8 && !xDivRivals) {
+                if (year % 2 == 1) {
+                }
                 this.schedule12Teams8GamesNoXDivRivals(conf);
             } else {
 
@@ -168,26 +170,20 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                 for (int j = 0; j < div1.size() / 2; j++) {
                     School opponent = div2.get(j);
                     int week = scheduleService.findConfGameWeek(school, opponent);
-
-                    if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= numOfConfGames / 2) {
+                    if (((year % 2) + i + j) % 2 == 0) {
                         addYearlySeriesHelper(school, opponent, week, true);
-                    } else if (scheduleService.getNumOfAwayConferenceGamesForSchool(school) >= numOfConfGames / 2) {
-                        addYearlySeriesHelper(opponent, school, week, true);
                     } else {
-                        addYearlySeriesHelper(opponent, school, week, false);
+                        addYearlySeriesHelper(opponent, school, week, true);
                     }
                 }
             } else {
                 for (int j = div1.size() / 2; j < div1.size(); j++) {
                     School opponent = div2.get(j);
                     int week = scheduleService.findConfGameWeek(school, opponent);
-
-                    if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= numOfConfGames / 2) {
-                        addYearlySeriesHelper(school, opponent, week, true);
-                    } else if (scheduleService.getNumOfAwayConferenceGamesForSchool(school) >= numOfConfGames / 2) {
+                    if (((year % 2) + i + j) % 2 == 0) {
                         addYearlySeriesHelper(opponent, school, week, true);
                     } else {
-                        addYearlySeriesHelper(opponent, school, week, false);
+                        addYearlySeriesHelper(school, opponent, week, true);
                     }
                 }
             }
