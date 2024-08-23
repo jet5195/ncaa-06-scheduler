@@ -1,6 +1,7 @@
 package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +75,44 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
         } else {
             addYearlySeriesHelper(opponent, school, week, true);
         }
+    }
+
+    void scheduleXDivGamesByIndex(School school, List<School> div1, List<School> div2, int index,
+            int[] opponentIndices)
+            throws Exception {
+        boolean wouldPlayXDivRival = false;
+        // Schedule games against the determined opponents
+        for (int j = 0; j < opponentIndices.length; j++) {
+            int opponentIndex = opponentIndices[j];
+            if (wouldPlayXDivRival) {
+                if (opponentIndex == div2.size() - 1) {
+                    opponentIndex = 0;
+                } else {
+                    opponentIndex++;
+                }
+            }
+            School opponent = div2.get(opponentIndex);
+            if (school.getxDivRival() != null && school.getxDivRival().equals(opponent)) {
+                wouldPlayXDivRival = true;
+                if (opponentIndex == div2.size() - 1) {
+                    opponentIndex = 0;
+                } else {
+                    opponentIndex++;
+                }
+                opponent = div2.get(opponentIndex);
+            }
+            int week = scheduleService.findConfGameWeek(school, opponent);
+            boolean isHomeGame = j % 2 == 0; // Alternate home and away games
+            if (index % 2 == 0) {
+                isHomeGame = !isHomeGame;
+            }
+            addYearlySeriesHelper(isHomeGame ? opponent : school, isHomeGame ? school : opponent, week, true);
+        }
+    }
+
+    List<School> rotateDivByYear(List<School> div, int rotationAmount) {
+        Collections.rotate(div, rotationAmount);
+        return div;
     }
 
     // private boolean addYearlySeriesHelper(School s1, School s2, int week, int
