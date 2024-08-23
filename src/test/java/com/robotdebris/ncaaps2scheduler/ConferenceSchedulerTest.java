@@ -222,19 +222,22 @@ public class ConferenceSchedulerTest {
     private static Stream<Arguments> provideConferenceParameters() {
         List<Integer> numOfTeamsList = Arrays.asList(12, 14);
         List<Integer> numOfGamesList = Arrays.asList(8, 9);
+        List<Boolean> xdivRivalList = Arrays.asList(false, true);
         List<Integer> yearsList = IntStream.rangeClosed(0, 10).boxed().collect(Collectors.toList());
 
         List<Arguments> argumentsList = new ArrayList<>();
+
         for (int numOfTeams : numOfTeamsList) {
             for (int numOfGames : numOfGamesList) {
-                for (int year : yearsList) {
-                    Conference confXDivRivals = setupConference(numOfTeams, numOfGames, true);
-                    Conference conf = setupConference(numOfTeams, numOfGames, false);
-                    argumentsList.add(Arguments.of(confXDivRivals, year));
-                    argumentsList.add(Arguments.of(conf, year));
+                for (boolean xDivRivals : xdivRivalList) {
+                    for (int year : yearsList) {
+                        Conference conf = setupConference(numOfTeams, numOfGames, xDivRivals);
+                        argumentsList.add(Arguments.of(conf, year));
+                    }
                 }
             }
         }
+
         // separate logic for 11 or fewer teams because numOfGames is irrelevant
         List<Integer> numOfTeamsNoDivsList = Arrays.asList(8, 9, 10, 11);
         for (int numOfTeams : numOfTeamsNoDivsList) {
