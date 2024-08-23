@@ -108,7 +108,8 @@ public class ConferenceSchedulerTest {
             if (game2.isPresent()) {
                 if (game.getHomeTeam().equals(game2.get().getHomeTeam())) {
                     fail("Expected home location to alternate between years for school "
-                            + game.getHomeTeam().getName());
+                            + game.getHomeTeam().getName()
+                            + " vs " + game.getAwayTeam().getName());
                 }
             }
         }
@@ -251,6 +252,7 @@ public class ConferenceSchedulerTest {
         conf.setName("Conference " + numOfTeams + " teams " + numOfGames + " games " + xDivRivals + " xDivRivals");
         conf.setNumOfConfGames(numOfGames);
         conf.setClassification(NCAADivision.FBS);
+        conf.setConferenceId(1);
 
         List<Division> divisions = new ArrayList<>();
         List<School> schools = new ArrayList<>();
