@@ -3,7 +3,10 @@ package com.robotdebris.ncaaps2scheduler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.doAnswer;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -16,8 +19,10 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Division;
@@ -25,8 +30,10 @@ import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
+import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 import com.robotdebris.ncaaps2scheduler.scheduler.conference.ConferenceScheduler;
 import com.robotdebris.ncaaps2scheduler.scheduler.conference.ConferenceSchedulerFactory;
+import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 
 @SpringBootTest
 public class ConferenceSchedulerTest {
@@ -35,6 +42,12 @@ public class ConferenceSchedulerTest {
 
     @Autowired
     GameRepository gameRepository;
+
+    @Autowired
+    SchoolRepository SchoolRepository;
+
+    @SpyBean
+    ScheduleService scheduleService;
 
     @ParameterizedTest
     @MethodSource("provideConferenceParameters")
@@ -80,28 +93,27 @@ public class ConferenceSchedulerTest {
         ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
 
         List<Game> firstSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
-        gameRepository.setYear(year + 1);
+        gameRepository.setYear(++year);
 
         try {
             scheduler.generateConferenceSchedule(conf, gameRepository);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         // Verify the home location alternates between years for each team
         for (Game game : firstSeasonSchedule) {
             // Check if the home location alternates between years
-            boolean alternateHomeLocation = true;
+
             Optional<Game> game2 = gameRepository.findGameByTeams(game.getAwayTeam(), game.getHomeTeam());
             if (game2.isPresent()) {
                 if (game.getHomeTeam().equals(game2.get().getHomeTeam())) {
-                    alternateHomeLocation = false;
-                    break;
+                    fail("Expected home location to alternate between years for school "
+                            + game.getHomeTeam().getName());
                 }
             }
-            assertTrue(alternateHomeLocation,
-                    "Expected home location to alternate between years for school " + game.getHomeTeam().getName());
         }
+        assertTrue(true);
+
     }
 
     @ParameterizedTest
@@ -150,6 +162,49 @@ public class ConferenceSchedulerTest {
 
         assertTrue(allSchoolsPlayedEachOther,
                 "Each school should play one another at least once in one of the 6 schedules");
+    }
+
+    private final PrintStream standardOut = System.out;
+    private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+
+    @ParameterizedTest
+    @MethodSource("provideConferenceParameters")
+    public void printSchedules(Conference conf, int year) {
+        // Mock only the specific method using the spy
+        doAnswer(invocation -> {
+            List<?> list = invocation.getArgument(0);
+            if (list.isEmpty()) {
+                return null; // Handle the empty list case
+            }
+            // Return the first item from the list if it's not empty
+            return list.get(0);
+        }).when(scheduleService).randomIntFromList(Mockito.anyList());
+        // System.setOut(new PrintStream(outputStreamCaptor));
+        gameRepository.findAll().clear();
+        gameRepository.setYear(year);
+        ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
+        try {
+            scheduler.generateConferenceSchedule(conf, gameRepository);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        School schoolA = new School.Builder().withTgid(1).withName("A").build();
+        List<Game> schoolASchedule = gameRepository.findGamesByTeam(schoolA);
+        // Print the table for the first team in the schedule
+        System.out.println(year + " Schedule for " + schoolA.getName() + ":");
+        System.out.println("--------------------------------------------------");
+        System.out.println("--------------------------------------------------");
+        int i = 1;
+        for (Game game : schoolASchedule) {
+            System.out.print(i++ + ". ");
+            if (game.getHomeTeam().equals(schoolA)) {
+                System.out.println("vs \t" + game.getAwayTeam().getName());
+            } else {
+                System.out.println("@ \t" + game.getHomeTeam().getName());
+            }
+        }
+        assertTrue(true);
     }
 
     private List<Game> getCopyOfSeasonSchedule(Conference conf, ConferenceScheduler scheduler) {

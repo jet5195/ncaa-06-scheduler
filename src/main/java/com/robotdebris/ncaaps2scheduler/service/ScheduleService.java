@@ -1042,7 +1042,7 @@ public class ScheduleService {
 		return randomIntFromList(emptyWeeks);
 	}
 
-	public int randomIntFromList(ArrayList<Integer> num) {
+	public int randomIntFromList(List<Integer> num) {
 		int max = num.size() - 1;
 		int min = 0;
 		int range = max - min + 1;
