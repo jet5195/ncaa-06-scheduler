@@ -134,7 +134,7 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
      *                    alternates yearly.
      */
     void addYearlySeriesHelper(School school1, School school2, int week, boolean specifyHome) {
-        GameBuilder builder = new GameBuilder().setWeek(week);
+        GameBuilder builder = new GameBuilder().setWeek(week).setConferenceGame(true);
 
         if (!specifyHome) {
             builder.setTeamsWithYearlyRotation(school1, school2, scheduleService.getYear());
