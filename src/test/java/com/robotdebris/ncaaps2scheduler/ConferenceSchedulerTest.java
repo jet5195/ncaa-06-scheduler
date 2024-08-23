@@ -2,9 +2,11 @@ package com.robotdebris.ncaaps2scheduler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,11 +38,10 @@ public class ConferenceSchedulerTest {
 
     @ParameterizedTest
     @MethodSource("provideConferenceParameters")
-    public void testConferenceSchedulingNumberOfHomeGames(int numOfTeams, int numOfGames, int year) {
+    public void testConferenceSchedulingNumberOfHomeGames(Conference conf, int year) {
+        int numOfGames = conf.getNumOfConfGames();
         gameRepository.findAll().clear();
         gameRepository.setYear(year);
-        Conference conf = setupConference(numOfTeams, numOfGames,
-                "Conference " + numOfTeams + " teams " + numOfGames + " games");
         if (numOfGames == 0) {
             numOfGames = conf.getSchools().size() - 1;
         }
@@ -73,11 +74,9 @@ public class ConferenceSchedulerTest {
 
     @ParameterizedTest
     @MethodSource("provideConferenceParameters")
-    public void testAlternateHomeLocationBackToBackSeasons(int numOfTeams, int numOfGames, int year) {
+    public void testAlternateHomeLocationBackToBackSeasons(Conference conf, int year) {
         gameRepository.findAll().clear();
         gameRepository.setYear(year);
-        Conference conf = setupConference(numOfTeams, numOfGames,
-                "Conference " + numOfTeams + " teams " + numOfGames + " games");
         ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
 
         List<Game> firstSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
@@ -107,11 +106,9 @@ public class ConferenceSchedulerTest {
 
     @ParameterizedTest
     @MethodSource("provideConferenceParameters")
-    public void testAllSchoolsPlayEachOther(int numOfTeams, int numOfGames, int year) {
+    public void testAllSchoolsPlayEachOther(Conference conf, int year) {
         gameRepository.findAll().clear();
         gameRepository.setYear(year);
-        Conference conf = setupConference(numOfTeams, numOfGames,
-                "Conference " + numOfTeams + " teams " + numOfGames + " games");
         ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
 
         List<Game> firstSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
@@ -125,16 +122,14 @@ public class ConferenceSchedulerTest {
         List<Game> fifthSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
         gameRepository.setYear(++year);
         List<Game> sixthSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
+        gameRepository.setYear(++year);
+        List<Game> seventhSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
 
-        // try {
-        // scheduler.generateConferenceSchedule(conf, gameRepository);
-        // } catch (Exception e) {
-        // e.printStackTrace();
-        // }
-
-        // Verify each school plays one another each other at least once in one of the 5
-        // Lists above
-        // Verify each school plays one another at least once in one of the 5 schedules
+        List<Game> allSchedules = Stream.of(firstSeasonSchedule, secondSeasonSchedule,
+                thirdSeasonSchedule, fourthSeasonSchedule, fifthSeasonSchedule, sixthSeasonSchedule,
+                seventhSeasonSchedule)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
         List<School> schools = conf.getSchools();
         boolean allSchoolsPlayedEachOther = true;
 
@@ -142,21 +137,14 @@ public class ConferenceSchedulerTest {
             School school1 = schools.get(i);
             for (int j = i + 1; j < schools.size(); j++) {
                 School school2 = schools.get(j);
-                boolean schoolsPlayedEachOther = false;
-                for (List<Game> schedule : Arrays.asList(firstSeasonSchedule, secondSeasonSchedule,
-                        thirdSeasonSchedule, fourthSeasonSchedule, fifthSeasonSchedule, sixthSeasonSchedule)) {
-                    if (schedule.stream()
-                            .anyMatch(g -> (g.getHomeTeam().equals(school1) && g.getAwayTeam().equals(school2)) ||
-                                    (g.getHomeTeam().equals(school2) && g.getAwayTeam().equals(school1)))) {
-                        schoolsPlayedEachOther = true;
-                        break;
-                    }
-                }
-                if (!schoolsPlayedEachOther) {
+                if (!allSchedules.stream()
+                        .anyMatch(g -> (g.getHomeTeam().equals(school1) && g.getAwayTeam().equals(school2)) ||
+                                (g.getHomeTeam().equals(school2) && g.getAwayTeam().equals(school1)))) {
                     allSchoolsPlayedEachOther = false;
+                    System.out.println(school1 + " doesn't play " + school2);
+                    fail(school1 + " doesn't play " + school2);
                     break;
                 }
-
             }
         }
 
@@ -184,7 +172,10 @@ public class ConferenceSchedulerTest {
         for (int numOfTeams : numOfTeamsList) {
             for (int numOfGames : numOfGamesList) {
                 for (int year : yearsList) {
-                    argumentsList.add(Arguments.of(numOfTeams, numOfGames, year));
+                    Conference confXDivRivals = setupConference(numOfTeams, numOfGames, true);
+                    Conference conf = setupConference(numOfTeams, numOfGames, false);
+                    argumentsList.add(Arguments.of(confXDivRivals, year));
+                    argumentsList.add(Arguments.of(conf, year));
                 }
             }
         }
@@ -192,16 +183,17 @@ public class ConferenceSchedulerTest {
         List<Integer> numOfTeamsNoDivsList = Arrays.asList(8, 9, 10, 11);
         for (int numOfTeams : numOfTeamsNoDivsList) {
             for (int year : yearsList) {
-                argumentsList.add(Arguments.of(numOfTeams, 0, year));
+                Conference conf = setupConference(numOfTeams, 0, false);
+                argumentsList.add(Arguments.of(conf, year));
             }
         }
 
         return argumentsList.stream();
     }
 
-    Conference setupConference(int numOfTeams, int numOfGames, String conferenceName) {
+    static Conference setupConference(int numOfTeams, int numOfGames, boolean xDivRivals) {
         Conference conf = new Conference();
-        conf.setName(conferenceName);
+        conf.setName("Conference " + numOfTeams + " teams " + numOfGames + " games " + xDivRivals + " xDivRivals");
         conf.setNumOfConfGames(numOfGames);
         conf.setClassification(NCAADivision.FBS);
 
@@ -229,6 +221,21 @@ public class ConferenceSchedulerTest {
             division.setConference(conf);
         }
 
+        if (xDivRivals) {
+            setupXDivRivals(conf);
+        }
+
         return conf;
+    }
+
+    private static void setupXDivRivals(Conference conf) {
+        if (!conf.getDivisions().isEmpty()) {
+            for (int i = 0; i < conf.getDivisions().getFirst().getSchools().size(); i++) {
+                School school = conf.getDivisions().getFirst().getSchools().get(i);
+                School xDivRival = conf.getDivisions().get(1).getSchools().get(i);
+                school.setxDivRival(xDivRival);
+                xDivRival.setxDivRival(school);
+            }
+        }
     }
 }
