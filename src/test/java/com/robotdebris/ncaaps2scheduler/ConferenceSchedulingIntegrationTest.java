@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 
+import com.robotdebris.ncaaps2scheduler.configuration.AppConstants;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
@@ -69,6 +70,7 @@ public class ConferenceSchedulingIntegrationTest {
 		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
 		for (Conference conf : conferences) {
 			verifyConferenceGamesForYear(conf, year);
+			verifyAllSchoolsInConfPlayXDivRival(conf);
 		}
 	}
 
@@ -83,6 +85,37 @@ public class ConferenceSchedulingIntegrationTest {
 		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
 		for (Conference conf : conferences) {
 			verifyConferenceGamesForYear(conf, year);
+			verifyAllSchoolsInConfPlayXDivRival(conf);
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideYears")
+	public void verifyConferenceGameCountsForCookyBotsConferences(int year) throws Exception {
+		MockMultipartFile file = TestUtil.createMockMultipartFile("CookyBots_Alignment.xlsx");
+		scheduleService.setAlignmentFile(file);
+		gameRepository.setYear(year);
+		scheduleService.addAllConferenceGames();
+		// Assert
+		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
+		for (Conference conf : conferences) {
+			verifyConferenceGamesForYear(conf, year);
+			verifyAllSchoolsInConfPlayXDivRival(conf);
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideYears")
+	public void verifyConferenceGameCountsForAllScenariosConferences(int year) throws Exception {
+		MockMultipartFile file = TestUtil.createMockMultipartFile("Test_All_Scenarios_Alignment.xlsx");
+		scheduleService.setAlignmentFile(file);
+		gameRepository.setYear(year);
+		scheduleService.addAllConferenceGames();
+		// Assert
+		List<Conference> conferences = conferenceRepository.findByNCAADivision(NCAADivision.FBS);
+		for (Conference conf : conferences) {
+			verifyConferenceGamesForYear(conf, year);
+			verifyAllSchoolsInConfPlayXDivRival(conf);
 		}
 	}
 
@@ -109,15 +142,33 @@ public class ConferenceSchedulingIntegrationTest {
 	}
 
 	private void verifyConferenceGamesForYear(Conference conf, int year) {
-		int expectedGames = calculateExpectedGames(conf);
-		List<School> schools = schoolRepository.findByConference(conf);
+		if (!AppConstants.INDEPENDENT_STRINGS.contains(conf.getName())) {
+			int expectedGames = calculateExpectedGames(conf);
+			List<School> schools = schoolRepository.findByConference(conf);
 
-		for (School school : schools) {
-			List<Game> schedule = gameRepository.findGamesByTeam(school);
-			String message = "For conference '%s' and school '%s' in year %d: expected %d games, found %d."
-					.formatted(conf.getName(), school.getName(), year, expectedGames, schedule.size());
-			assertThat(schedule.size()).as(message).isEqualTo(expectedGames);
+			for (School school : schools) {
+				List<Game> schedule = gameRepository.findGamesByTeam(school);
+				String message = "For conference '%s' and school '%s' in year %d: expected %d games, found %d."
+						.formatted(conf.getName(), school.getName(), year, expectedGames, schedule.size());
+				assertThat(schedule.size()).as(message).isEqualTo(expectedGames);
+			}
 		}
+	}
+
+	private void verifyAllSchoolsInConfPlayXDivRival(Conference conf) {
+		if (!conf.getSchools().isEmpty() && conf.getSchools().getFirst().getxDivRival() != null) {
+			for (School school : conf.getSchools()) {
+				verifySchoolPlaysXDivRival(school);
+			}
+		}
+	}
+
+	private void verifySchoolPlaysXDivRival(School school) {
+		School xDivRival = school.getxDivRival();
+		String message = "For conference %s, For school '%s': expected xDivRival %s to be scheduled:".formatted(
+				school.getConference().getName(), school.getName(),
+				xDivRival);
+		assertThat(scheduleService.isOpponentForSchool(school, xDivRival)).as(message).isTrue();
 	}
 
 	private int calculateExpectedGames(Conference conf) {

@@ -1,11 +1,13 @@
 package com.robotdebris.ncaaps2scheduler.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.robotdebris.ncaaps2scheduler.configuration.AppConstants;
 import com.robotdebris.ncaaps2scheduler.serializer.SchoolIdDeserializer;
 import com.robotdebris.ncaaps2scheduler.serializer.SchoolIdSerializer;
 
@@ -16,9 +18,9 @@ import jakarta.persistence.Id;
 public class School implements Comparable<School> {
 
 	// TEAM tscs = conference ranking
-//0 = conf champ
-//TBRK = bcs bowl ranking
-//tmrk = media poll rank
+	// 0 = conf champ
+	// TBRK = bcs bowl ranking
+	// tmrk = media poll rank
 	@Id
 	private int tgid;
 	private String name;
@@ -87,7 +89,7 @@ public class School implements Comparable<School> {
 		return conferenceId;
 	}
 
-	public void setConferenceName(Integer conferenceId) {
+	public void setConferenceId(Integer conferenceId) {
 		this.conferenceId = conferenceId;
 	}
 
@@ -151,6 +153,13 @@ public class School implements Comparable<School> {
 
 	public void setRivals(List<School> rivals) {
 		this.rivals = rivals;
+	}
+
+	public void addRival(School school) {
+		if (this.rivals == null) {
+			this.rivals = new ArrayList<>();
+		}
+		this.rivals.add(school);
 	}
 
 	public boolean isUserTeam() {
@@ -224,7 +233,7 @@ public class School implements Comparable<School> {
 	 * @return true if in the same conference, false if else
 	 */
 	public boolean isInConference(School school) {
-		if (this.getConference() == null || this.getConference().getName().equalsIgnoreCase("Independent")) {
+		if (this.getConference() == null || AppConstants.INDEPENDENT_STRINGS.contains(this.getConference().getName())) {
 			return false;
 		} else if (school.getConference() == null) {
 			return false;
@@ -235,48 +244,55 @@ public class School implements Comparable<School> {
 	/**
 	 * Prints the schedule of a school
 	 */
-//	public void printSchedule() {
-//		int i = 0;
-//		int lastWeek = -1;
-//		while (i < this.getSchedule().size()) {
-//			int nextWeek = 100;// random high number
-//			for (int j = 0; j < this.getSchedule().size(); j++) {
-//				if (this.getSchedule().get(j).getWeek() < nextWeek && this.getSchedule().get(j).getWeek() > lastWeek) {
-//					nextWeek = this.getSchedule().get(j).getWeek();
-//				}
-//			}
-//
-//			System.out.print(i + 1 + ". ");
-//			Game game = this.getSchedule().getGame(nextWeek);
-//			System.out.print(this);
-//			if (this.getTgid() == game.getHomeTeam().getTgid()) {
-//				System.out.print(" vs " + game.getAwayTeam());
-//			} else {
-//				System.out.print(" at " + game.getHomeTeam());
-//			}
-//			System.out.println(" (week " + (nextWeek + 1) + ")");
-//			i++;
-//			lastWeek = nextWeek;
-//		}
-//	}
+	// public void printSchedule() {
+	// int i = 0;
+	// int lastWeek = -1;
+	// while (i < this.getSchedule().size()) {
+	// int nextWeek = 100;// random high number
+	// for (int j = 0; j < this.getSchedule().size(); j++) {
+	// if (this.getSchedule().get(j).getWeek() < nextWeek &&
+	// this.getSchedule().get(j).getWeek() > lastWeek) {
+	// nextWeek = this.getSchedule().get(j).getWeek();
+	// }
+	// }
+	//
+	// System.out.print(i + 1 + ". ");
+	// Game game = this.getSchedule().getGame(nextWeek);
+	// System.out.print(this);
+	// if (this.getTgid() == game.getHomeTeam().getTgid()) {
+	// System.out.print(" vs " + game.getAwayTeam());
+	// } else {
+	// System.out.print(" at " + game.getHomeTeam());
+	// }
+	// System.out.println(" (week " + (nextWeek + 1) + ")");
+	// i++;
+	// lastWeek = nextWeek;
+	// }
+	// }
 
 	/**
-	 * Returns true if opponent is a rival, false if else
+	 * Returns true if the opponent is a rival, false otherwise.
 	 *
 	 * @param opponent the opponent
-	 * @return true if opponent is a rival, false if else
+	 * @return true if the opponent is a rival, false otherwise
 	 */
 	public boolean isRival(School opponent) {
-		for (int i = 0; this.getRivals() != null && i < this.getRivals().size(); i++) {
-			if (this.getRivals().get(i).getName().equals(opponent.getName())) {
-				return true;
+		if (this.getRivals() != null) {
+			for (School rival : this.getRivals()) {
+				if (rival.getName().equals(opponent.getName())) {
+					return true;
+				}
 			}
 		}
-		for (int i = 0; this.getRivals() != null && i < opponent.getRivals().size(); i++) {
-			if (opponent.getRivals().get(i).getName().equals(this.getName())) {
-				return true;
+
+		if (opponent.getRivals() != null) {
+			for (School rival : opponent.getRivals()) {
+				if (rival.getName().equals(this.getName())) {
+					return true;
+				}
 			}
 		}
+
 		return false;
 	}
 
@@ -328,6 +344,12 @@ public class School implements Comparable<School> {
 		private List<School> rivals;
 		private boolean userTeam;
 		private School xDivRival;
+		private double latitude;
+		private double longitude;
+		private String abbreviation;
+		private String stadiumName;
+		private String city;
+		private double stadiumCapacity;
 		// Other fields...
 
 		public Builder() {
@@ -394,6 +416,36 @@ public class School implements Comparable<School> {
 			return this;
 		}
 
+		public Builder withLatitude(double latitude) {
+			this.latitude = latitude;
+			return this;
+		}
+
+		public Builder withLongitude(double longitude) {
+			this.longitude = longitude;
+			return this;
+		}
+
+		public Builder withAbbreviation(String abbreviation) {
+			this.abbreviation = abbreviation;
+			return this;
+		}
+
+		public Builder withStadiumName(String stadiumName) {
+			this.stadiumName = stadiumName;
+			return this;
+		}
+
+		public Builder withCity(String city) {
+			this.city = city;
+			return this;
+		}
+
+		public Builder withStadiumCapacity(double stadiumCapacity) {
+			this.stadiumCapacity = stadiumCapacity;
+			return this;
+		}
+
 		public School build() {
 			School school = new School();
 			school.tgid = this.tgid;
@@ -408,6 +460,12 @@ public class School implements Comparable<School> {
 			school.rivals = this.rivals;
 			school.userTeam = this.userTeam;
 			school.xDivRival = this.xDivRival;
+			school.latitude = this.latitude;
+			school.longitude = this.longitude;
+			school.abbreviation = this.abbreviation;
+			school.stadiumName = this.stadiumName;
+			school.city = this.city;
+			school.stadiumCapacity = this.stadiumCapacity;
 			return school;
 		}
 	}

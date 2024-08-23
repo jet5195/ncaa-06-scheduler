@@ -43,7 +43,7 @@ public class ExcelSchoolRepository implements SchoolRepository {
 				return school;
 			}
 		}
-		LOGGER.warn("School with name '" + name + " could not be found, please check your spelling and try again.");
+		LOGGER.warn("School with name '" + name + "' could not be found, please check your spelling and try again.");
 		return null;
 	}
 

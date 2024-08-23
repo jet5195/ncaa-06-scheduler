@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.robotdebris.ncaaps2scheduler.ExcelReader;
 import com.robotdebris.ncaaps2scheduler.NoWeeksAvailableException;
 import com.robotdebris.ncaaps2scheduler.SchedulerUtils;
+import com.robotdebris.ncaaps2scheduler.configuration.AppConstants;
 import com.robotdebris.ncaaps2scheduler.model.AddGameRequest;
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.DayOfWeek;
@@ -640,8 +641,10 @@ public class ScheduleService {
 	// }
 
 	public void autoAddConferenceGames(Conference conf) throws Exception {
-		ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
-		scheduler.generateConferenceSchedule(conf, gameRepository);
+		if (!AppConstants.INDEPENDENT_STRINGS.contains(conf.getName())) {
+			ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
+			scheduler.generateConferenceSchedule(conf, gameRepository);
+		}
 	}
 
 	public List<Game> getBowlGames() {
@@ -688,7 +691,7 @@ public class ScheduleService {
 		for (Conference conf : conferenceService.getConferenceList()) {
 			// if conference is FBS...
 			List<School> schools = conf.getSchools();
-			if (schools != null) {
+			if (schools != null && !schools.isEmpty()) {
 				if (schools.getFirst().getConference().isFBS()) {
 					this.autoAddConferenceGames(conf);
 				}
@@ -1039,7 +1042,7 @@ public class ScheduleService {
 		return randomIntFromList(emptyWeeks);
 	}
 
-	public int randomIntFromList(ArrayList<Integer> num) {
+	public int randomIntFromList(List<Integer> num) {
 		int max = num.size() - 1;
 		int min = 0;
 		int range = max - min + 1;
