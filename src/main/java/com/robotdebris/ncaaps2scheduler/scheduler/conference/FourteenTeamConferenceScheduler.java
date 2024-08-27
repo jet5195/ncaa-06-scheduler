@@ -1,5 +1,6 @@
 package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,8 +31,8 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
     }
 
     private void scheduleConferenceGamesDivisions14(Conference conf, GameRepository gameRepository) throws Exception {
-        List<School> div1 = conf.getDivisions().get(0).getSchools();
-        List<School> div2 = conf.getDivisions().get(1).getSchools();
+        List<School> div1 = new ArrayList<>(conf.getDivisions().get(0).getSchools());
+        List<School> div2 = new ArrayList<>(conf.getDivisions().get(1).getSchools());
 
         // schedule inner div games
         scheduleRoundRobinConfGames(div1);

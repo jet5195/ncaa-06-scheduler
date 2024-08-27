@@ -91,9 +91,10 @@ public class ConferenceSchedulerTest {
         gameRepository.findAll().clear();
         gameRepository.setYear(year);
         ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
-
         List<Game> firstSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
+
         gameRepository.setYear(++year);
+        System.out.println("Season " + year);
 
         try {
             scheduler.generateConferenceSchedule(conf, gameRepository);
