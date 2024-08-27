@@ -1,6 +1,7 @@
 package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -105,6 +106,43 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 
         Game game = builder.build();
         scheduleService.addGame(game);
+    }
+
+    public void scheduleXDivGamesByIndex(School school, List<School> div1, List<School> div2, int index,
+            int[] opponentIndices)
+            throws Exception {
+        // Schedule games against the determined opponents
+        for (int opponentIndex : opponentIndices) {
+            School opponent = div2.get(opponentIndex);
+            if (school.getxDivRival() != null && school.getxDivRival().equals(opponent)) {
+                if (opponentIndex == div2.size() - 1) {
+                    opponentIndex = 0;
+                } else {
+                    opponentIndex++;
+                }
+                opponent = div2.get(opponentIndex);
+            }
+            if (scheduleService.isOpponentForSchool(school, opponent)) {
+                if (opponentIndex == div2.size() - 1) {
+                    opponentIndex = 0;
+                } else {
+                    opponentIndex++;
+                }
+                opponent = div2.get(opponentIndex);
+            }
+            int week = scheduleService.findConfGameWeek(school, opponent);
+            boolean isHomeGame = opponentIndex % 2 == 0; // Alternate home and away games
+            if (index % 2 == 0) {
+                isHomeGame = !isHomeGame;
+            }
+            addYearlySeriesHelper(isHomeGame ? opponent : school, isHomeGame ? school : opponent, week, true);
+        }
+    }
+
+    public List<School> rotateDivByYear(List<School> div, int year, int divisor) {
+        int rotationAmount = year % divisor;
+        Collections.rotate(div, rotationAmount);
+        return div;
     }
 
 }
