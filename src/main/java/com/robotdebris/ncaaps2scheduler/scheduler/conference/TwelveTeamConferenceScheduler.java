@@ -1,5 +1,6 @@
 package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,8 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
             // int index = 0;
             // move school order by year
 
-            List<School> div1 = conf.getDivisions().get(0).getSchools();
-            List<School> div2 = conf.getDivisions().get(1).getSchools();
+            List<School> div1 = new ArrayList<>(conf.getDivisions().get(0).getSchools());
+            List<School> div2 = new ArrayList<>(conf.getDivisions().get(1).getSchools());
 
             // schedule inner division games
             scheduleRoundRobinConfGames(div1);
@@ -97,12 +98,12 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
     private int[] getOpponentIndicesfor3Games(int index) {
         // Define a 2D array representing the opponent indices for each index
-        int[][] opponentPatterns = { { 0, 1, 2 }, // Pattern for index 0
-                { 1, 2, 3 }, // Pattern for index 1
-                { 2, 3, 4 }, // Pattern for index 2
-                { 3, 4, 5 }, // Pattern for index 3
-                { 4, 5, 0 }, // Pattern for index 4
-                { 5, 0, 1 } // Pattern for index 5
+        int[][] opponentPatterns = { { 1, 0, 2 }, // Pattern for index 0
+                { 3, 5, 4 }, // Pattern for index 1
+                { 0, 5, 1 }, // Pattern for index 2
+                { 2, 4, 3 }, // Pattern for index 3
+                { 2, 1, 3 }, // Pattern for index 4
+                { 4, 0, 5 } // Pattern for index 5
         };
 
         // Return the opponent indices for the given index
