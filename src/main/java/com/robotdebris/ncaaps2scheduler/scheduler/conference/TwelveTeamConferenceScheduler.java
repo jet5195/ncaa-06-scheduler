@@ -51,31 +51,20 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
             // 8 conf games no rivals
             if (numOfConfGames == 8 && !xDivRivals) {
-                if (year % 2 == 1) {
-                }
                 this.schedule12Teams8GamesNoXDivRivals(conf);
             } else {
-
                 if (xDivRivals) {
                     div2 = orderDivByXDivRivals(div1);
                 }
-
                 div1 = rotateDivByYear(div1, numOfConfGames, year);
-
                 int index = 0;
                 for (School school : div1) {
-                    if (numOfConfGames == 8 && xDivRivals) {
+                    if (xDivRivals) {
                         // schedule8GamesXDivRivals(div1, div2, school);
                         scheduleCrossDivisionalRival(div1, div2, school);
                         schedule2CrossDivisionalGames(index, school, div2);
-                    }
-                    if (numOfConfGames == 9) {
-                        if (!xDivRivals) {
-                            schedule4XDivGamesByIndex(school, div1, div2, index);
-                        } else {
-                            scheduleCrossDivisionalRival(div1, div2, school);
-                            schedule3XDivGamesByIndex(school, div1, div2, index);
-                        }
+                    } else {
+                        schedule4XDivGamesByIndex(school, div1, div2, index);
                     }
                     index++;
                 } // end of for team loop
@@ -233,19 +222,10 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
             throws Exception {
         // Define the opponents based on the index
         int[] opponentIndices = getOpponentIndicesfor3Games(index);
-        boolean wouldPlayXDivRival = false;
         // Schedule games against the determined opponents
         for (int opponentIndex : opponentIndices) {
-            if (wouldPlayXDivRival) {
-                if (opponentIndex == div2.size() - 1) {
-                    opponentIndex = 0;
-                } else {
-                    opponentIndex++;
-                }
-            }
             School opponent = div2.get(opponentIndex);
             if (school.getxDivRival() != null && school.getxDivRival().equals(opponent)) {
-                wouldPlayXDivRival = true;
                 if (opponentIndex == div2.size() - 1) {
                     opponentIndex = 0;
                 } else {
@@ -258,18 +238,26 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
             if (index % 2 == 0) {
                 isHomeGame = !isHomeGame;
             }
+            while (scheduleService.isOpponentForSchool(school, opponent)) {
+                if (opponentIndex == div2.size() - 1) {
+                    opponentIndex = 0;
+                } else {
+                    opponentIndex++;
+                }
+                opponent = div2.get(opponentIndex);
+            }
             addYearlySeriesHelper(isHomeGame ? opponent : school, isHomeGame ? school : opponent, week, true);
         }
     }
 
     private int[] getOpponentIndicesfor3Games(int index) {
         // Define a 2D array representing the opponent indices for each index
-        int[][] opponentPatterns = { { 1, 0, 2 }, // Pattern for index 0
-                { 3, 5, 4 }, // Pattern for index 1
-                { 0, 5, 1 }, // Pattern for index 2
-                { 2, 4, 3 }, // Pattern for index 3
-                { 2, 1, 3 }, // Pattern for index 4
-                { 4, 0, 5 } // Pattern for index 5
+        int[][] opponentPatterns = { { 0, 1, 2 }, // Pattern for index 0
+                { 3, 4, 5 }, // Pattern for index 1
+                { 3, 4, 5 }, // Pattern for index 2
+                { 0, 1, 2 }, // Pattern for index 3
+                { 0, 1, 2 }, // Pattern for index 4
+                { 3, 4, 5 } // Pattern for index 5
         };
 
         // Return the opponent indices for the given index

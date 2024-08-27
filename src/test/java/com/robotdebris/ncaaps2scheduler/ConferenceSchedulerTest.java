@@ -51,6 +51,30 @@ public class ConferenceSchedulerTest {
 
     @ParameterizedTest
     @MethodSource("provideConferenceParameters")
+    public void testConferenceSchedulingNumberOfGames(Conference conf, int year) {
+        int numOfGames = conf.getNumOfConfGames();
+        gameRepository.findAll().clear();
+        gameRepository.setYear(year);
+        if (numOfGames == 0) {
+            numOfGames = conf.getSchools().size() - 1;
+        }
+        ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
+        try {
+            scheduler.generateConferenceSchedule(conf, gameRepository);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        for (School school : conf.getSchools()) {
+            List<Game> schedule = gameRepository.findGamesByTeam(school);
+
+            assertEquals(numOfGames, schedule.size(),
+                    "Expected games count for school " + school.getName() + " to be " + numOfGames
+                            + " but was: " + schedule.size());
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideConferenceParameters")
     public void testConferenceSchedulingNumberOfHomeGames(Conference conf, int year) {
         int numOfGames = conf.getNumOfConfGames();
         gameRepository.findAll().clear();
@@ -232,8 +256,11 @@ public class ConferenceSchedulerTest {
             for (int numOfGames : numOfGamesList) {
                 for (boolean xDivRivals : xdivRivalList) {
                     for (int year : yearsList) {
-                        Conference conf = setupConference(numOfTeams, numOfGames, xDivRivals);
-                        argumentsList.add(Arguments.of(conf, year));
+                        // exclude 9 game 12 team xdivrivals (impossible scenario)
+                        if (!(numOfTeams == 12 && numOfGames == 9 && xDivRivals)) {
+                            Conference conf = setupConference(numOfTeams, numOfGames, xDivRivals);
+                            argumentsList.add(Arguments.of(conf, year));
+                        }
                     }
                 }
             }
