@@ -51,6 +51,30 @@ public class ConferenceSchedulerTest {
 
     @ParameterizedTest
     @MethodSource("provideConferenceParameters")
+    public void testConferenceSchedulingNumberOfGames(Conference conf, int year) {
+        int numOfGames = conf.getNumOfConfGames();
+        gameRepository.findAll().clear();
+        gameRepository.setYear(year);
+        if (numOfGames == 0) {
+            numOfGames = conf.getSchools().size() - 1;
+        }
+        ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
+        try {
+            scheduler.generateConferenceSchedule(conf, gameRepository);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        for (School school : conf.getSchools()) {
+            List<Game> schedule = gameRepository.findGamesByTeam(school);
+
+            assertEquals(numOfGames, schedule.size(),
+                    "Expected games count for school " + school.getName() + " to be " + numOfGames
+                            + " but was: " + schedule.size());
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideConferenceParameters")
     public void testConferenceSchedulingNumberOfHomeGames(Conference conf, int year) {
         int numOfGames = conf.getNumOfConfGames();
         gameRepository.findAll().clear();
@@ -91,9 +115,10 @@ public class ConferenceSchedulerTest {
         gameRepository.findAll().clear();
         gameRepository.setYear(year);
         ConferenceScheduler scheduler = conferenceSchedulerFactory.getScheduler(conf);
-
         List<Game> firstSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
+
         gameRepository.setYear(++year);
+        System.out.println("Season " + year);
 
         try {
             scheduler.generateConferenceSchedule(conf, gameRepository);
@@ -222,19 +247,25 @@ public class ConferenceSchedulerTest {
     private static Stream<Arguments> provideConferenceParameters() {
         List<Integer> numOfTeamsList = Arrays.asList(12, 14);
         List<Integer> numOfGamesList = Arrays.asList(8, 9);
+        List<Boolean> xdivRivalList = Arrays.asList(false, true);
         List<Integer> yearsList = IntStream.rangeClosed(0, 10).boxed().collect(Collectors.toList());
 
         List<Arguments> argumentsList = new ArrayList<>();
+
         for (int numOfTeams : numOfTeamsList) {
             for (int numOfGames : numOfGamesList) {
-                for (int year : yearsList) {
-                    Conference confXDivRivals = setupConference(numOfTeams, numOfGames, true);
-                    Conference conf = setupConference(numOfTeams, numOfGames, false);
-                    argumentsList.add(Arguments.of(confXDivRivals, year));
-                    argumentsList.add(Arguments.of(conf, year));
+                for (boolean xDivRivals : xdivRivalList) {
+                    for (int year : yearsList) {
+                        // exclude 9 game 12 team xdivrivals (impossible scenario)
+                        if (!(numOfTeams == 12 && numOfGames == 9 && xDivRivals)) {
+                            Conference conf = setupConference(numOfTeams, numOfGames, xDivRivals);
+                            argumentsList.add(Arguments.of(conf, year));
+                        }
+                    }
                 }
             }
         }
+
         // separate logic for 11 or fewer teams because numOfGames is irrelevant
         List<Integer> numOfTeamsNoDivsList = Arrays.asList(8, 9, 10, 11);
         for (int numOfTeams : numOfTeamsNoDivsList) {
