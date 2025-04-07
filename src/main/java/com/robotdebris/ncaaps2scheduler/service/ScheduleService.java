@@ -410,7 +410,7 @@ public class ScheduleService {
 			// if the first team has an opening in week 13...
 			Game game = getGameBySchoolAndWeek(rival, 12);
 			// set game to variable
-			if (game.isRemovableGame()) {
+			if (game.isConferenceGameOrRivalryGame()) {
 				// if the game that is blocking a game being added isn't required..
 				replaceGame(game, s1, rival);
 				return 1;// or should this be a 0?
@@ -420,7 +420,7 @@ public class ScheduleService {
 			// if the first team has an opening in week 12...
 			Game game = getGameBySchoolAndWeek(rival, 11);
 			// set game to variable
-			if (game.isRemovableGame()) {
+			if (game.isConferenceGameOrRivalryGame()) {
 				// if the game that is blocking a game being added isn't required..
 				replaceGame(game, s1, rival);
 				return 1;
@@ -430,7 +430,7 @@ public class ScheduleService {
 			// if the first team has an opening in week 14...
 			Game game = getGameBySchoolAndWeek(rival, 13);
 			// set game to variable
-			if (game.isRemovableGame()) {
+			if (game.isConferenceGameOrRivalryGame()) {
 				// if the game that is blocking a game being added isn't required..
 				replaceGame(game, s1, rival);
 				return 1;
@@ -440,7 +440,7 @@ public class ScheduleService {
 			// if the first team has an opening in week 13...
 			Game game = getGameBySchoolAndWeek(s1, 12);
 			// set game to variable
-			if (game.isRemovableGame()) {
+			if (game.isConferenceGameOrRivalryGame()) {
 				// if the game that is blocking a game being added isn't required..
 				replaceGame(game, s1, rival);
 				return 1;
@@ -450,7 +450,7 @@ public class ScheduleService {
 			// if the first team has an opening in week 12...
 			Game game = getGameBySchoolAndWeek(s1, 11);
 			// set game to variable
-			if (game.isRemovableGame()) {
+			if (game.isConferenceGameOrRivalryGame()) {
 				// if the game that is blocking a game being added isn't required..
 				replaceGame(game, s1, rival);
 				return 1;
@@ -460,7 +460,7 @@ public class ScheduleService {
 			// if the first team has an opening in week 14...
 			Game game = getGameBySchoolAndWeek(s1, 13);
 			// set game to variable
-			if (game.isRemovableGame()) {
+			if (game.isConferenceGameOrRivalryGame()) {
 				// if the game that is blocking a game being added isn't required..
 				replaceGame(game, s1, rival);
 				return 1;
@@ -469,7 +469,7 @@ public class ScheduleService {
 		if (!s1weeks.contains(12) && !rweeks.contains(12)) {
 			Game s1game = getGameBySchoolAndWeek(s1, 12);
 			Game rgame = getGameBySchoolAndWeek(rival, 12);
-			if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
+			if (s1game.isConferenceGameOrRivalryGame() && rgame.isConferenceGameOrRivalryGame()) {
 				removeGame(s1game);
 				replaceGame(rgame, s1, rival);
 				return 1; // should this still return a 1? I guess so. Just counting added games
@@ -479,7 +479,7 @@ public class ScheduleService {
 		if (!s1weeks.contains(11) && !rweeks.contains(11)) {
 			Game s1game = getGameBySchoolAndWeek(s1, 11);
 			Game rgame = getGameBySchoolAndWeek(rival, 11);
-			if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
+			if (s1game.isConferenceGameOrRivalryGame() && rgame.isConferenceGameOrRivalryGame()) {
 				removeGame(s1game);
 				replaceGame(rgame, s1, rival);
 				return 1;
@@ -489,7 +489,7 @@ public class ScheduleService {
 		if (!s1weeks.contains(13) && !rweeks.contains(13)) {
 			Game s1game = getGameBySchoolAndWeek(s1, 13);
 			Game rgame = getGameBySchoolAndWeek(rival, 13);
-			if (s1game.isRemovableGame() && rgame.isRemovableGame()) {
+			if (s1game.isConferenceGameOrRivalryGame() && rgame.isConferenceGameOrRivalryGame()) {
 				removeGame(s1game);
 				replaceGame(rgame, s1, rival);
 				return 1;
@@ -1011,7 +1011,7 @@ public class ScheduleService {
 		for (int i = 0; i < getScheduleBySchool(school).size(); i++) {
 			Game theGame = getScheduleBySchool(school).get(i);
 			// 0 means non-con
-			if (theGame.isRemovableGame()) {
+			if (theGame.isConferenceGameOrRivalryGame()) {
 				return theGame;
 			}
 		}

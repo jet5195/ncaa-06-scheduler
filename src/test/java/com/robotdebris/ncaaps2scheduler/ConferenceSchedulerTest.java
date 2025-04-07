@@ -44,7 +44,7 @@ public class ConferenceSchedulerTest {
     GameRepository gameRepository;
 
     @Autowired
-    SchoolRepository SchoolRepository;
+    SchoolRepository schoolRepository;
 
     @SpyBean
     ScheduleService scheduleService;

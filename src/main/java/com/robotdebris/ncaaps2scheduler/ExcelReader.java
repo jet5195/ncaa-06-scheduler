@@ -46,9 +46,9 @@ public class ExcelReader {
 	private DivisionService divisionService;
 
 	@Autowired
-	public ExcelReader(SchoolRepository schoolRepostiory, ConferenceService conferenceService,
+	public ExcelReader(SchoolRepository schoolRepository, ConferenceService conferenceService,
 			DivisionService divisionService, CollegeFootballDataService dataService) {
-		this.schoolRepository = schoolRepostiory;
+		this.schoolRepository = schoolRepository;
 		this.conferenceService = conferenceService;
 		this.divisionService = divisionService;
 		this.dataService = dataService;
@@ -199,7 +199,7 @@ public class ExcelReader {
 	/**
 	 * Populates a school list of all schools in your excel file
 	 *
-	 * @param path the path of your custom conferences excel file
+	 * @param file the excel file that gets used to populate schools
 	 * @return List<School> of all schools in your excel file
 	 * @throws IOException
 	 */
