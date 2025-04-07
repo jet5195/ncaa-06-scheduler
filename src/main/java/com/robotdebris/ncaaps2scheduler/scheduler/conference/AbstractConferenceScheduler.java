@@ -1,19 +1,17 @@
 package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.GameBuilder;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Component
 abstract class AbstractConferenceScheduler implements ConferenceScheduler {
@@ -45,7 +43,7 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
             List<School> opponentsToSchedule = schoolList.stream()
                     .filter(opponent -> !school.equals(opponent)
                             && !scheduleService.isOpponentForSchool(school, opponent))
-                    .collect(Collectors.toList());
+                    .toList();
             int j = 0;
             for (School opponent : opponentsToSchedule) {
                 boolean isHomeGame = isEvenYear ? j % 2 == 0 : j % 2 == 1;
@@ -91,7 +89,6 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
      * @param school1     The first school.
      * @param school2     The second school.
      * @param week        The week of the game.
-     * @param year        The current year.
      * @param specifyHome If true, school1 is away and school2 is home; if false,
      *                    alternates yearly.
      */
