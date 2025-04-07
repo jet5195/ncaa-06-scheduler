@@ -178,7 +178,7 @@ public class Game implements Comparable {
 	 * 
 	 * @return true if a game is not a rivalry and not in conference, false if else
 	 */
-	public boolean isRemovableGame() {
+	public boolean isConferenceGameOrRivalryGame() {
 		return !this.isConferenceGame() && !this.isRivalryGame();
 	}
 
