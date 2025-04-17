@@ -1,4 +1,6 @@
-package com.robotdebris.ncaaps2scheduler.model;
+package com.robotdebris.ncaaps2scheduler.model.playoff;
+
+import com.robotdebris.ncaaps2scheduler.model.School;
 
 public class PlayoffSchool extends School {
     private int seed;

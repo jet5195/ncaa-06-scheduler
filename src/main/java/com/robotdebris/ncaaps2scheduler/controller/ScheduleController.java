@@ -5,11 +5,11 @@ import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.GameBuilder;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 import com.robotdebris.ncaaps2scheduler.service.SchoolService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,8 +53,8 @@ public class ScheduleController {
 
     @PostMapping(value = "add-game")
     public void addGame(@RequestBody AddGameRequest addGameRequest) {
-        Game game = new GameBuilder().setAwayTeam(schoolService.schoolSearch(addGameRequest.getAwayId()))
-                .setHomeTeam(schoolService.schoolSearch(addGameRequest.getHomeId())).setWeek(addGameRequest.getWeek())
+        Game game = new GameBuilder().setAwayTeam(schoolService.findById(addGameRequest.getAwayId()))
+                .setHomeTeam(schoolService.findById(addGameRequest.getHomeId())).setWeek(addGameRequest.getWeek())
                 .setDay(addGameRequest.getDay()).setGameResult(addGameRequest.getGameResult()).build();
         scheduleService.addGame(game);
     }

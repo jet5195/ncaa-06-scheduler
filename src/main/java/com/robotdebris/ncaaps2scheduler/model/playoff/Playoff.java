@@ -1,11 +1,11 @@
-package com.robotdebris.ncaaps2scheduler.model;
+package com.robotdebris.ncaaps2scheduler.model.playoff;
 
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class Playoff{
+public class Playoff {
     private List<PlayoffGame> playoffGames;
 
     public Playoff(List<PlayoffGame> playoffGames) {

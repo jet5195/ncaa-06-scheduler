@@ -1,5 +1,6 @@
 package com.robotdebris.ncaaps2scheduler.service;
 
+import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.model.Swap;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -70,6 +71,10 @@ public class CsvExportService {
         for (int c = 0; c < game.size(); c++) {
             csvPrinter.print(game.get(c));
         }
+    }
+
+    public void writeTeamCsv(Writer writer, List<School> schoolList) throws IOException {
+        
     }
 
 }
