@@ -1,23 +1,24 @@
 package com.robotdebris.ncaaps2scheduler;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SchedulerUtils {
 
-    public static ArrayList<Integer> findEmptyWeeksHelper(ArrayList<Integer> s1weeks, ArrayList<Integer> s2weeks) {
-        ArrayList<Integer> freeWeeks = new ArrayList<>();
-        for (int i = 0; i < s1weeks.size(); i++) {
-            if (s2weeks.contains(s1weeks.get(i))) {
-                freeWeeks.add(s1weeks.get(i));
+    public static List<Integer> findEmptyWeeksHelper(List<Integer> s1weeks, List<Integer> s2weeks) {
+        List<Integer> freeWeeks = new ArrayList<>();
+        for (Integer s1week : s1weeks) {
+            if (s2weeks.contains(s1week)) {
+                freeWeeks.add(s1week);
             }
         }
         return freeWeeks;
     }
 
 
-    public static ArrayList<Integer> findEmptyWeeksInConferenceHelper(ArrayList<Integer> s1weeks, ArrayList<Integer> s2weeks,
-                                                                      int confGamesStartDate) {
-        ArrayList<Integer> freeWeeks = findEmptyWeeksHelper(s1weeks, s2weeks);
+    public static List<Integer> findEmptyWeeksInConferenceHelper(List<Integer> s1weeks, List<Integer> s2weeks,
+                                                                 int confGamesStartDate) {
+        List<Integer> freeWeeks = findEmptyWeeksHelper(s1weeks, s2weeks);
         for (int i = 0; i < freeWeeks.size(); i++) {
             int week = freeWeeks.get(i);
             if (week < confGamesStartDate) {

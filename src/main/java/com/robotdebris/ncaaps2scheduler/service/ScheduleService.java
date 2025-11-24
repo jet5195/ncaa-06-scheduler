@@ -92,12 +92,12 @@ public class ScheduleService {
         return existingMatchup.isEmpty();
     }
 
-    public ArrayList<Integer> findEmptyWeeks(School s1, School s2) {// returns list of empty weeks between 2 schools
-        ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
-        ArrayList<Integer> s2weeks = findEmptyWeeks(s2);
+    public List<Integer> findEmptyWeeks(School s1, School s2) {// returns list of empty weeks between 2 schools
+        List<Integer> s1weeks = findEmptyWeeks(s1);
+        List<Integer> s2weeks = findEmptyWeeks(s2);
 
         boolean isInConference = s1.isInConference(s2);
-        ArrayList<Integer> freeWeeks;
+        List<Integer> freeWeeks;
         if (isInConference) {
             freeWeeks = findEmptyWeeksInConferenceHelper(s1weeks, s2weeks, s1.getConference().getConfGamesStartWeek());
             if (freeWeeks.isEmpty()) {
@@ -163,7 +163,7 @@ public class ScheduleService {
                 .filter(school -> getGameBySchoolAndWeek(school, week) == null).collect(Collectors.toList());
     }
 
-    private ArrayList<Integer> fixNoEmptyWeeksForConfGame(School s1, School s2) {
+    private List<Integer> fixNoEmptyWeeksForConfGame(School s1, School s2) {
 
         // trying to schedule WVU vs PSU
         // WVU has weeks 3, 5, 7, 9 available
@@ -179,8 +179,8 @@ public class ScheduleService {
         for (Game game : gameRepository.findGamesByTeam(s1)) {
             if (s2EmptyWeeks.contains(game.getWeek())) {
                 School opponent = game.getHomeTeam().equals(s1) ? game.getAwayTeam() : game.getHomeTeam();
-                ArrayList<Integer> opponentEmptyWeeks = findEmptyWeeks(opponent);
-                ArrayList<Integer> jointEmptyWeeks = findEmptyWeeksInConferenceHelper(s1EmptyWeeks, opponentEmptyWeeks,
+                List<Integer> opponentEmptyWeeks = findEmptyWeeks(opponent);
+                List<Integer> jointEmptyWeeks = findEmptyWeeksInConferenceHelper(s1EmptyWeeks, opponentEmptyWeeks,
                         confGamesStartDate);
 
                 // move the game to another week
@@ -218,7 +218,7 @@ public class ScheduleService {
             if (isEligibleNonConfMatchup(thisSchool, rival)) {
                 // should isPossibleOpponent check this instead?
                 if (getScheduleBySchool(rival).size() < 12) {
-                    ArrayList<Integer> emptyWeeks = findEmptyWeeks(thisSchool, rival);
+                    List<Integer> emptyWeeks = findEmptyWeeks(thisSchool, rival);
                     if (emptyWeeks.contains(13)) {
                         return new SuggestedGameResponse(13, rival, isHomeGame);
                         // week 14 is empty, keep in mind week 1 is referenced by a 0, therefore 13 is
@@ -326,7 +326,7 @@ public class ScheduleService {
 
     private int addRivalryGameHelper(School s1, School rival, int rivalRank) {
         int year = gameRepository.getYear();
-        ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
+        List<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
         // TODO: move games if week 13 is taken (ie so FSU UF can be week 13 yearly
         if (rivalRank < 2) {
             if (emptyWeeks.contains(13)) {
@@ -365,9 +365,9 @@ public class ScheduleService {
     }
 
     private int aggressiveAddRivalryGameHelper(School s1, School rival) {
-        ArrayList<Integer> s1weeks = findEmptyWeeks(s1);
-        ArrayList<Integer> rweeks = findEmptyWeeks(rival);
-        ArrayList<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
+        List<Integer> s1weeks = findEmptyWeeks(s1);
+        List<Integer> rweeks = findEmptyWeeks(rival);
+        List<Integer> emptyWeeks = findEmptyWeeks(s1, rival);
         if (emptyWeeks.contains(12)) {
             Game game = new GameBuilder().setTeamsWithYearlyRotation(s1, rival, getYear()).setWeek(12)
                     .setDay(DayOfWeek.SATURDAY).build();
@@ -1017,7 +1017,7 @@ public class ScheduleService {
     }
 
     public int randomizeWeek(School school, School opponent) {
-        ArrayList<Integer> emptyWeeks = findEmptyWeeks(school, opponent);
+        List<Integer> emptyWeeks = findEmptyWeeks(school, opponent);
         if (emptyWeeks.size() > 1) {
             emptyWeeks.remove(Integer.valueOf(14));
         }
@@ -1033,8 +1033,8 @@ public class ScheduleService {
     }
 
     public int findConfGameWeek(School school, School opponent) {
-        ArrayList<Integer> emptyWeeks = findEmptyWeeks(school, opponent);
-        if (emptyWeeks.size() == 0) {
+        List<Integer> emptyWeeks = findEmptyWeeks(school, opponent);
+        if (emptyWeeks.isEmpty()) {
             emptyWeeks = fixNoEmptyWeeksForConfGame(school, opponent);
         }
 
@@ -1063,7 +1063,7 @@ public class ScheduleService {
                 && school.getRivals().get(0).equals(opponent);
     }
 
-    private int scheduleTopRivalGame(ArrayList<Integer> emptyWeeks) {
+    private int scheduleTopRivalGame(List<Integer> emptyWeeks) {
         if (emptyWeeks.contains(13)) {
             return 13;
         } else if (emptyWeeks.contains(12)) {
