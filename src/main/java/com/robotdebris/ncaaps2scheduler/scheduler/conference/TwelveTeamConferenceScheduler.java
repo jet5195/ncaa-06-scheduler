@@ -1,16 +1,15 @@
 package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 import com.robotdebris.ncaaps2scheduler.service.SchoolService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
@@ -45,7 +44,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
             scheduleRoundRobinConfGames(div2);
 
             // order by cross div rivals
-            boolean xDivRivals = div1.getFirst().getxDivRival() != null;
+            boolean xDivRivals = div1.getFirst().getXDivRival() != null;
             int numOfConfGames = conf.getNumOfConfGames();
             int year = gameRepository.getYear();
 
@@ -60,7 +59,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
         } catch (
 
-        IndexOutOfBoundsException e) {
+                IndexOutOfBoundsException e) {
             throw e;
         }
     }
@@ -91,7 +90,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
         if (opponent1Id > 5) {
             opponent1Id = 0;
         }
-        if (div2.get(opponent1Id) == school.getxDivRival()) {
+        if (div2.get(opponent1Id) == school.getXDivRival()) {
             opponent1Id = opponent1Id + 1;
             if (opponent1Id > 5) {
                 opponent1Id = 0;
@@ -105,7 +104,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
         if (opponent2Id > 5) {
             opponent2Id = 0;
         }
-        if (div2.get(opponent2Id) == school.getxDivRival()) {
+        if (div2.get(opponent2Id) == school.getXDivRival()) {
             opponent2Id = opponent2Id + 1;
             if (opponent2Id > 5) {
                 opponent2Id = 0;
@@ -165,12 +164,12 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
     private int[] getOpponentIndicesfor4Games(int index) {
         // Define a 2D array representing the opponent indices for each index
-        int[][] opponentPatterns = { { 0, 1, 2, 3 }, // Pattern for index 0
-                { 0, 1, 4, 5 }, // Pattern for index 1
-                { 2, 3, 4, 5 }, // Pattern for index 2
-                { 2, 3, 0, 1 }, // Pattern for index 3
-                { 4, 5, 0, 1 }, // Pattern for index 4
-                { 4, 5, 2, 3 } // Pattern for index 5
+        int[][] opponentPatterns = {{0, 1, 2, 3}, // Pattern for index 0
+                {0, 1, 4, 5}, // Pattern for index 1
+                {2, 3, 4, 5}, // Pattern for index 2
+                {2, 3, 0, 1}, // Pattern for index 3
+                {4, 5, 0, 1}, // Pattern for index 4
+                {4, 5, 2, 3} // Pattern for index 5
         };
 
         // Return the opponent indices for the given index
@@ -179,12 +178,12 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
     private int[] getOpponentIndicesfor3Games(int index) {
         // Define a 2D array representing the opponent indices for each index
-        int[][] opponentPatterns = { { 0, 1, 2 }, // Pattern for index 0
-                { 3, 4, 5 }, // Pattern for index 1
-                { 3, 4, 5 }, // Pattern for index 2
-                { 0, 1, 2 }, // Pattern for index 3
-                { 0, 1, 2 }, // Pattern for index 4
-                { 3, 4, 5 } // Pattern for index 5
+        int[][] opponentPatterns = {{0, 1, 2}, // Pattern for index 0
+                {3, 4, 5}, // Pattern for index 1
+                {3, 4, 5}, // Pattern for index 2
+                {0, 1, 2}, // Pattern for index 3
+                {0, 1, 2}, // Pattern for index 4
+                {3, 4, 5} // Pattern for index 5
         };
 
         // Return the opponent indices for the given index
@@ -199,7 +198,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
         // Find the next opponent, ensuring they're not the xDivRival
         int opponent2Id = (index + 2) % div2.size();
-        if (div2.get(opponent2Id).equals(school.getxDivRival())) {
+        if (div2.get(opponent2Id).equals(school.getXDivRival())) {
             opponent2Id = (opponent2Id + 1) % div2.size();
         }
         opponent = div2.get(opponent2Id);

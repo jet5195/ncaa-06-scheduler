@@ -1,21 +1,11 @@
 package com.robotdebris.ncaaps2scheduler;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.doAnswer;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
+import com.robotdebris.ncaaps2scheduler.model.*;
+import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
+import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
+import com.robotdebris.ncaaps2scheduler.scheduler.conference.ConferenceScheduler;
+import com.robotdebris.ncaaps2scheduler.scheduler.conference.ConferenceSchedulerFactory;
+import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -24,16 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
-import com.robotdebris.ncaaps2scheduler.model.Conference;
-import com.robotdebris.ncaaps2scheduler.model.Division;
-import com.robotdebris.ncaaps2scheduler.model.Game;
-import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
-import com.robotdebris.ncaaps2scheduler.model.School;
-import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
-import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
-import com.robotdebris.ncaaps2scheduler.scheduler.conference.ConferenceScheduler;
-import com.robotdebris.ncaaps2scheduler.scheduler.conference.ConferenceSchedulerFactory;
-import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doAnswer;
 
 @SpringBootTest
 public class ConferenceSchedulerTest {
@@ -164,8 +153,8 @@ public class ConferenceSchedulerTest {
         List<Game> seventhSeasonSchedule = getCopyOfSeasonSchedule(conf, scheduler);
 
         List<Game> allSchedules = Stream.of(firstSeasonSchedule, secondSeasonSchedule,
-                thirdSeasonSchedule, fourthSeasonSchedule, fifthSeasonSchedule, sixthSeasonSchedule,
-                seventhSeasonSchedule)
+                        thirdSeasonSchedule, fourthSeasonSchedule, fifthSeasonSchedule, sixthSeasonSchedule,
+                        seventhSeasonSchedule)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
         List<School> schools = conf.getSchools();
@@ -321,8 +310,8 @@ public class ConferenceSchedulerTest {
             for (int i = 0; i < conf.getDivisions().getFirst().getSchools().size(); i++) {
                 School school = conf.getDivisions().getFirst().getSchools().get(i);
                 School xDivRival = conf.getDivisions().get(1).getSchools().get(i);
-                school.setxDivRival(xDivRival);
-                xDivRival.setxDivRival(school);
+                school.setXDivRival(xDivRival);
+                xDivRival.setXDivRival(school);
             }
         }
     }

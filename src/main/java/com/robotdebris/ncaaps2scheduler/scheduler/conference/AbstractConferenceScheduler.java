@@ -58,14 +58,14 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
     List<School> orderDivByXDivRivals(List<School> div1) {
         List<School> orderedDiv = new ArrayList<>();
         for (School school : div1) {
-            orderedDiv.add(school.getxDivRival());
+            orderedDiv.add(school.getXDivRival());
         }
         return orderedDiv;
     }
 
     void scheduleCrossDivisionalRival(List<School> div1, List<School> div2, School school)
             throws Exception {
-        School opponent = school.getxDivRival();
+        School opponent = school.getXDivRival();
         int week = scheduleService.findConfGameWeek(school, opponent);
         // should be home or away game?
         if (scheduleService.getNumOfHomeConferenceGamesForSchool(school) >= div1.size() / 2) {
@@ -106,12 +106,12 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
     }
 
     public void scheduleXDivGamesByIndex(School school, List<School> div1, List<School> div2, int index,
-            int[] opponentIndices)
+                                         int[] opponentIndices)
             throws Exception {
         // Schedule games against the determined opponents
         for (int opponentIndex : opponentIndices) {
             School opponent = div2.get(opponentIndex);
-            if (school.getxDivRival() != null && school.getxDivRival().equals(opponent)) {
+            if (school.getXDivRival() != null && school.getXDivRival().equals(opponent)) {
                 if (opponentIndex == div2.size() - 1) {
                     opponentIndex = 0;
                 } else {

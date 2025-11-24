@@ -1,15 +1,14 @@
 package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler {
@@ -37,7 +36,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
         scheduleRoundRobinConfGames(div1);
         scheduleRoundRobinConfGames(div2);
 
-        boolean xDivRivals = div1.getFirst().getxDivRival() != null;
+        boolean xDivRivals = div1.getFirst().getXDivRival() != null;
         int numOfConfGames = conf.getNumOfConfGames();
         int year = gameRepository.getYear();
         int yearOffset = Math.abs(year - 2005);
@@ -149,13 +148,13 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
 
     private int[] getOpponentIndicesfor3Games(int index) {
         // Define a 2D array representing the opponent indices for each index
-        int[][] opponentPatterns = { { 0, 1, 2 }, // Pattern for index 0
-                { 3, 4, 5 }, // Pattern for index 1
-                { 6, 0, 1 }, // Pattern for index 2
-                { 4, 3, 2 }, // Pattern for index 3
-                { 0, 6, 5 }, // Pattern for index 4
-                { 1, 2, 3 }, // Pattern for index 5
-                { 4, 5, 6 } // Pattern for index 6
+        int[][] opponentPatterns = {{0, 1, 2}, // Pattern for index 0
+                {3, 4, 5}, // Pattern for index 1
+                {6, 0, 1}, // Pattern for index 2
+                {4, 3, 2}, // Pattern for index 3
+                {0, 6, 5}, // Pattern for index 4
+                {1, 2, 3}, // Pattern for index 5
+                {4, 5, 6} // Pattern for index 6
         };
 
         // Return the opponent indices for the given index
@@ -164,13 +163,13 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
 
     private int[] getOpponentIndicesfor2Games(int index) {
         // Define a 2D array representing the opponent indices for each index
-        int[][] opponentPatterns = { { 0, 1 }, // Pattern for index 0
-                { 2, 1 }, // Pattern for index 1
-                { 2, 3 }, // Pattern for index 2
-                { 4, 3 }, // Pattern for index 3
-                { 4, 5 }, // Pattern for index 4
-                { 6, 5 }, // Pattern for index 5
-                { 6, 0 } // Pattern for index 6
+        int[][] opponentPatterns = {{0, 1}, // Pattern for index 0
+                {2, 1}, // Pattern for index 1
+                {2, 3}, // Pattern for index 2
+                {4, 3}, // Pattern for index 3
+                {4, 5}, // Pattern for index 4
+                {6, 5}, // Pattern for index 5
+                {6, 0} // Pattern for index 6
         };
 
         // Return the opponent indices for the given index
