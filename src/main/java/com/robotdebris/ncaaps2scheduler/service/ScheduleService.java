@@ -89,11 +89,7 @@ public class ScheduleService {
         }
 
         Optional<Game> existingMatchup = gameRepository.findGameByTeams(game.getHomeTeam(), game.getAwayTeam());
-        if (existingMatchup.isPresent()) {
-            return false;
-        }
-
-        return true;
+        return existingMatchup.isEmpty();
     }
 
     public ArrayList<Integer> findEmptyWeeks(School s1, School s2) {// returns list of empty weeks between 2 schools
