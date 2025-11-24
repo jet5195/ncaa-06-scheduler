@@ -1,7 +1,5 @@
 package com.robotdebris.ncaaps2scheduler.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.opencsv.exceptions.CsvValidationException;
 import com.robotdebris.ncaaps2scheduler.model.Game;
 import com.robotdebris.ncaaps2scheduler.model.School;
@@ -9,14 +7,12 @@ import com.robotdebris.ncaaps2scheduler.model.SuggestedGameResponse;
 import com.robotdebris.ncaaps2scheduler.service.*;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -38,7 +34,7 @@ public class SchoolController {
     private CsvImportService csvImportService;
 
     @GetMapping
-    public List<School> getAllSchools() throws JsonMappingException, JsonProcessingException {
+    public List<School> getAllSchools() {
         return schoolService.getAllSchools();
     }
 
@@ -66,14 +62,12 @@ public class SchoolController {
 
     @GetMapping(value = "{tgid}/schedule/week/{week}/available-opponents")
     public List<School> getAvailableOpponents(@PathVariable int tgid, @PathVariable int week) {
-        List<School> availableOpponents = scheduleService.findOpenOpponentsForWeek(tgid, week);
-        return availableOpponents;
+        return scheduleService.findOpenOpponentsForWeek(tgid, week);
     }
 
     @GetMapping(value = "{tgid}/schedule/week/{week}/available-rivals")
     public List<School> getAvailableRivals(@PathVariable int tgid, @PathVariable int week) {
-        List<School> availableRivals = scheduleService.getOpenNonConferenceRivals(tgid, week);
-        return availableRivals;
+        return scheduleService.getOpenNonConferenceRivals(tgid, week);
     }
 
     @PostMapping(value = "{tgid}/schedule/week/{week}/remove-game")
@@ -84,13 +78,13 @@ public class SchoolController {
     }
 
     @GetMapping(value = "{tgid}/schedule/empty-weeks")
-    public ArrayList<Integer> getEmptyWeeks(@PathVariable int tgid) {
+    public List<Integer> getEmptyWeeks(@PathVariable int tgid) {
         School school = schoolService.findById(tgid);
         return scheduleService.findEmptyWeeks(school);
     }
 
     @GetMapping(value = "{tgid}/schedule/empty-weeks/{tgid2}")
-    public ArrayList<Integer> getEmptyWeeks(@PathVariable int tgid, @PathVariable int tgid2) {
+    public List<Integer> getEmptyWeeks(@PathVariable int tgid, @PathVariable int tgid2) {
         School school = schoolService.findById(tgid);
         School school2 = schoolService.findById(tgid2);
         return scheduleService.findEmptyWeeks(school, school2);
@@ -102,7 +96,7 @@ public class SchoolController {
     }
 
     @PostMapping(value = "upload-teams")
-    public ResponseEntity<String> uploadTeamCsv(@RequestParam("file") MultipartFile teamCsvFile) throws IOException {
+    public ResponseEntity<String> uploadTeamCsv(@RequestParam("file") MultipartFile teamCsvFile) {
         if (teamCsvFile.isEmpty()) {
             return ResponseEntity.badRequest().body("Team CSV file is empty");
         }
@@ -122,7 +116,7 @@ public class SchoolController {
 
     // Endpoint for downloading the amended team data
     @GetMapping("/download-teams")
-    public void downloadTeamCsv(HttpServletResponse response) throws IOException {
+    public void downloadTeamCsv(HttpServletResponse response) {
         response.setContentType("text/csv");
         response.setHeader("Content-Disposition", "attachment; filename=amended_teams.csv");
         // Assuming DataLoadingService or TeamDataService has the export method
@@ -132,9 +126,8 @@ public class SchoolController {
     @GetMapping(value = "download")
     public ResponseEntity<?> downloadSchoolData() {
         try {
-            ResponseEntity<ByteArrayResource> response = exportService
+            return exportService
                     .writeSchoolData(schoolService.getAllSchools());
-            return response;
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

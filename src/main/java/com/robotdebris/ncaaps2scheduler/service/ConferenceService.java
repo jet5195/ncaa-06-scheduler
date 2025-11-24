@@ -50,7 +50,7 @@ public class ConferenceService {
 
     /**
      * @param conferenceShortName the String name of the Conference you are searching for
-     * @return Conference with the same name as the the parameter inputed
+     * @return Conference with the same name as the parameter inputted
      */
     public Conference findByShortName(String conferenceShortName) {
         Conference conference = conferenceRepository.findByShortName(conferenceShortName);
