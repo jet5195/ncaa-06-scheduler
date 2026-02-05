@@ -6,17 +6,12 @@ import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.ConferenceRepository;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class ConferenceService {
-
-    static {
-        PropertyConfigurator.configure("src/main/resources/log4j.properties");
-    }
 
     private final Logger LOGGER = Logger.getLogger(ConferenceService.class.getName());
 
