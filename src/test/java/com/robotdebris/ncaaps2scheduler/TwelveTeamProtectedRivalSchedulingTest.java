@@ -34,6 +34,7 @@ class TwelveTeamProtectedRivalSchedulingTest {
         // Protected pairings must work independently of the opposite division's list order.
         Collections.reverse(conference.getDivisions().get(1).getSchools());
         Map<String, Integer> previousHosts = new HashMap<>();
+        Map<Integer, Long> previousHomeCounts = new HashMap<>();
         Map<Integer, Set<Integer>> opponentsOverCycle = new HashMap<>();
         for (int year = startYear; year < startYear + 12; year++) {
             games.removeAll();
@@ -54,7 +55,7 @@ class TwelveTeamProtectedRivalSchedulingTest {
                 assertNull(hosts.put(pair, home), "Duplicate matchup");
                 if (previousHosts.containsKey(pair)) {
                     assertNotEquals(previousHosts.get(pair), Integer.valueOf(home),
-                            "Consecutive-year matchup must reverse venue: " + pair + " in " + year);
+                            "Next meeting must reverse venue, even after a gap: " + pair + " in " + year);
                 }
             }
             for (School school : conference.getSchools()) {
@@ -74,8 +75,15 @@ class TwelveTeamProtectedRivalSchedulingTest {
                 }
                 long homeCount = schedule.stream().filter(game -> game.getHomeTeam().equals(school)).count();
                 assertTrue(homeCount == 4 || homeCount == 5, school + " has " + homeCount + " home games");
+                Long previousHomeCount = previousHomeCounts.put(school.getTgid(), homeCount);
+                if (previousHomeCount != null) {
+                    assertEquals(9L, previousHomeCount + homeCount,
+                            school + " must alternate four and five home games annually");
+                }
             }
-            previousHosts = hosts;
+            // Keep the last venue for absent matchups too, so skipped seasons
+            // cannot hide a failure to alternate at the next occurrence.
+            previousHosts.putAll(hosts);
         }
         for (School school : conference.getSchools()) {
             assertEquals(11, opponentsOverCycle.get(school.getTgid()).size(), "Every conference opponent over cycle");

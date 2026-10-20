@@ -40,13 +40,19 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
             List<School> div1 = new ArrayList<>(conf.getDivisions().get(0).getSchools());
             List<School> div2 = new ArrayList<>(conf.getDivisions().get(1).getSchools());
 
-            // schedule inner division games
-            scheduleRoundRobinConfGames(div1);
-            scheduleRoundRobinConfGames(div2);
-
-            // order by cross div rivals
             boolean xDivRivals = div1.getFirst().getxDivRival() != null;
             int numOfConfGames = conf.getNumOfConfGames();
+            if (numOfConfGames == 8 && xDivRivals) {
+                div2 = orderDivByXDivRivals(div1);
+            }
+            // schedule inner division games
+            scheduleRoundRobinConfGames(div1);
+            // Five divisional games give alternating teams three or two home games.
+            // With eight games and protected rivals, paired schools need
+            // complementary divisional totals to finish with four home games.
+            scheduleRoundRobinConfGames(div2, numOfConfGames == 8 && xDivRivals);
+
+            // order by cross div rivals
             int year = gameRepository.getYear();
 
             // 8 conf games no rivals
@@ -151,48 +157,23 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
     private void schedule12Teams8GamesNoXDivRivals(Conference conf) throws Exception {
         List<School> div1 = conf.getDivisions().get(0).getSchools();
         List<School> div2 = conf.getDivisions().get(1).getSchools();
-
-        int numOfConfGames = conf.getNumOfConfGames();
         int year = scheduleService.getYear();
-        int i = 0;
-        // if scheduleAbc == true, schedule ABC, else, XYZ
-        boolean scheduleAbc = year % 4 < 2;
-        for (School school : div1) {
-            // on the 3rd team (halfway), swap scheduleAbc, so half the teams play xyz
-            if (i == 3) {
-                scheduleAbc = !scheduleAbc;
+        // Three complete matchings give every team three cross-division games.
+        // Two even offsets supply one home and one away game to every team.
+        // The odd offset supplies the extra home game to teams that hosted only
+        // two divisional games. This balances BOTH divisions, not just the first.
+        int rotation = Math.floorMod(Math.floorDiv(year, 2), 6);
+        int[] offsets = {0, 2 + 2 * (rotation % 2), 1 + 2 * (rotation % 3)};
+        for (int offset : offsets) {
+            for (int index = 0; index < div1.size(); index++) {
+                School school = div1.get(index);
+                School opponent = div2.get((index + offset) % div2.size());
+                boolean home = offset == 0 || (offset % 2 == 1 && index % 2 == 1);
+                if (Math.floorMod(year, 2) == 1) home = !home;
+                int week = scheduleService.findConfGameWeek(school, opponent);
+                addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
             }
-
-            // if year is 0, 1, and school is 0, 1, 2... schedule abc, else xyz
-            if (scheduleAbc) {
-                for (int j = 0; j < div1.size() / 2; j++) {
-                    School opponent = div2.get(j);
-                    int week = scheduleService.findConfGameWeek(school, opponent);
-                    if (((year % 2) + i + j) % 2 == 0) {
-                        addYearlySeriesHelper(school, opponent, week, true);
-                    } else {
-                        addYearlySeriesHelper(opponent, school, week, true);
-                    }
-                }
-            } else {
-                for (int j = div1.size() / 2; j < div1.size(); j++) {
-                    School opponent = div2.get(j);
-                    int week = scheduleService.findConfGameWeek(school, opponent);
-                    if (((year % 2) + i + j) % 2 == 0) {
-                        addYearlySeriesHelper(opponent, school, week, true);
-                    } else {
-                        addYearlySeriesHelper(school, opponent, week, true);
-                    }
-                }
-            }
-            i++;
         }
-        // 0 1 2 3
-        // 1 1 2 3
-        // 2 1 2 3
-        // 3 4 5 6
-        // 4 4 5 6
-        // 5 4 5 6
     }
 
     private int[] getOpponentIndicesfor4Games(int index) {

@@ -18,15 +18,8 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
     ScheduleService scheduleService;
 
     @Override
-    public void generateConferenceSchedule(Conference conference, GameRepository gameRepository) {
-        try {
-            scheduleConferenceGamesDivisions14(conference, gameRepository);
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        // TODO Auto-generated method stub
-
+    public void generateConferenceSchedule(Conference conference, GameRepository gameRepository) throws Exception {
+        scheduleConferenceGamesDivisions14(conference, gameRepository);
     }
 
     private void scheduleConferenceGamesDivisions14(Conference conf, GameRepository gameRepository) throws Exception {
@@ -51,19 +44,57 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
                 schedule8WithRivals(div1, div2, yearOffset);
             }
         } else if (numOfConfGames == 9) {
-            if (xDivRivals) {
-                div2 = orderDivByXDivRivals(div1);
+            schedule9CrossDivisionalGames(div1, div2, year, xDivRivals);
+        }
+    }
+
+    private void schedule9CrossDivisionalGames(List<School> div1, List<School> div2,
+            int year, boolean protectedRivals) {
+        if (!protectedRivals) {
+            schedule9WithoutRivals(div1, div2, year);
+            return;
+        }
+        int seasonPair = Math.floorDiv(year, 2);
+        div2 = orderDivByXDivRivals(div1);
+        // Zero is the protected matching. Rotate one other home matching
+        // (offsets 1..3) and one away matching (4..6) over three season pairs.
+        int rotation = Math.floorMod(seasonPair, 3);
+        int[] offsets = {0, 1 + rotation, 4 + rotation};
+        // Each offset is a complete matching: every team in BOTH divisions gets
+        // one game. Six divisional games supply three home games; two home
+        // cross-division matchings yield five home games for div1 and four for
+        // div2 in even years. Odd years reverse every matchup and those totals.
+        for (int offset : offsets) {
+            for (int index = 0; index < div1.size(); index++) {
+                School school = div1.get(index);
+                School opponent = div2.get((index + offset) % div2.size());
+                int week = scheduleService.findConfGameWeek(school, opponent);
+                // Keep a matchup's base venue tied to its stable offset, not
+                // its position in this year's list. Opponents play two-year
+                // venue pairs, so the next meeting swaps host even after gaps.
+                boolean home = offset < 4;
+                if (Math.floorMod(year, 2) == 1) home = !home;
+                addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
             }
-            div1 = rotateDivByYear(div1, year, 7);
-            int index = 0;
-            for (School school : div1) {
-                if (!xDivRivals) {
-                    scheduleXDivGamesByIndex(school, div1, div2, index, getOpponentIndicesfor3Games(index));
-                } else {
-                    scheduleCrossDivisionalRival(div1, div2, school);
-                    scheduleXDivGamesByIndex(school, div1, div2, index, getOpponentIndicesfor2Games(index));
-                }
-                index++;
+        }
+    }
+
+    private void schedule9WithoutRivals(List<School> div1, List<School> div2, int year) {
+        // Walk the seven complete matchings in order, taking three each season.
+        // Seven seasons consume 21 slots: exactly three meetings per opponent.
+        // Alternate the host side by slot. A season advances by three (odd),
+        // so its 2/1 cross-division home split flips annually. A matchup returns
+        // after seven slots (also odd), so every next meeting reverses venue.
+        // Fourteen seasons consume 42 slots and complete the opponent/venue cycle.
+        int firstSlot = 3 * Math.floorMod(year, 14);
+        for (int slot = firstSlot; slot < firstSlot + 3; slot++) {
+            int offset = slot % 7;
+            boolean home = slot % 2 == 0;
+            for (int index = 0; index < div1.size(); index++) {
+                School school = div1.get(index);
+                School opponent = div2.get((index + offset) % div2.size());
+                int week = scheduleService.findConfGameWeek(school, opponent);
+                addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
             }
         }
     }
@@ -145,36 +176,6 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
          * 5 6 6 0 0 1 1 2 3: 3 4 4 5 5 6 6 0 0 1 1 2 2 3 4: 4 5 5: 5 6 6: 6 0
          */
 
-    }
-
-    private int[] getOpponentIndicesfor3Games(int index) {
-        // Define a 2D array representing the opponent indices for each index
-        int[][] opponentPatterns = { { 0, 1, 2 }, // Pattern for index 0
-                { 3, 4, 5 }, // Pattern for index 1
-                { 6, 0, 1 }, // Pattern for index 2
-                { 4, 3, 2 }, // Pattern for index 3
-                { 0, 6, 5 }, // Pattern for index 4
-                { 1, 2, 3 }, // Pattern for index 5
-                { 4, 5, 6 } // Pattern for index 6
-        };
-
-        // Return the opponent indices for the given index
-        return opponentPatterns[index];
-    }
-
-    private int[] getOpponentIndicesfor2Games(int index) {
-        // Define a 2D array representing the opponent indices for each index
-        int[][] opponentPatterns = { { 0, 1 }, // Pattern for index 0
-                { 2, 1 }, // Pattern for index 1
-                { 2, 3 }, // Pattern for index 2
-                { 4, 3 }, // Pattern for index 3
-                { 4, 5 }, // Pattern for index 4
-                { 6, 5 }, // Pattern for index 5
-                { 6, 0 } // Pattern for index 6
-        };
-
-        // Return the opponent indices for the given index
-        return opponentPatterns[index];
     }
 
 }

@@ -37,6 +37,10 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
      *                   conference games.
      */
     void scheduleRoundRobinConfGames(List<School> schoolList) {
+        scheduleRoundRobinConfGames(schoolList, false);
+    }
+
+    void scheduleRoundRobinConfGames(List<School> schoolList, boolean reverseVenues) {
         boolean isEvenYear = gameRepository.getYear() % 2 == 0;
         // int i = 0;
         for (School school : schoolList) {
@@ -47,6 +51,7 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
             int j = 0;
             for (School opponent : opponentsToSchedule) {
                 boolean isHomeGame = isEvenYear ? j % 2 == 0 : j % 2 == 1;
+                if (reverseVenues) isHomeGame = !isHomeGame;
                 int week = scheduleService.findConfGameWeek(school, opponent);
                 addYearlySeriesHelper(isHomeGame ? opponent : school, isHomeGame ? school : opponent, week,
                         true);
