@@ -34,4 +34,6 @@ build/
 output.xlsx
 /bin/
 src/main/resources/api.properties
+# Ignore working/exported spreadsheets, but keep reproducible test fixtures.
 *.xlsx
+!/src/test/resources/**/*.xlsx

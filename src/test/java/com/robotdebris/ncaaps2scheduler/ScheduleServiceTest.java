@@ -2,6 +2,7 @@ package com.robotdebris.ncaaps2scheduler;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.Game;
+import com.robotdebris.ncaaps2scheduler.model.NCAADivision;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
 import com.robotdebris.ncaaps2scheduler.repository.SchoolRepository;
@@ -33,15 +34,15 @@ public class ScheduleServiceTest {
     @Test
     public void whenFindTooFewGames_thenReturnSchoolsWithLessThanTwelveGames() {
         // Arrange
-        School schoolWithFewGames = new School.Builder().withTgid(1).build();
+        School schoolWithFewGames = fbsSchool(1);
         List<Game> fewGames = Arrays.asList(new Game[11]); // Mocking a list with 11 games
 
-        School schoolWithEnoughGames = new School.Builder().withTgid(2).build();
+        School schoolWithEnoughGames = fbsSchool(2);
         List<Game> enoughGames = Arrays.asList(new Game[12]); // Mocking a list with 12 games
 
-        School fcsSchool = new School.Builder().withTgid(2).build();
+        School fcsSchool = new School.Builder().withTgid(3).build();
         fcsSchool.setConference(Conference.blankConference);
-        List<Game> fcsGames = Arrays.asList(new Game[12]); // Mocking a list with 12 games
+        List<Game> fcsGames = Arrays.asList(new Game[11]); // Must be excluded even below the threshold.
 
         when(schoolRepository.findAll()).thenReturn(Arrays.asList(schoolWithFewGames, schoolWithEnoughGames, fcsSchool));
         when(gameRepository.findGamesByTeam(schoolWithFewGames)).thenReturn(fewGames);
@@ -55,20 +56,21 @@ public class ScheduleServiceTest {
         assertEquals(1, schoolsWithTooFewGames.size());
         assertTrue(schoolsWithTooFewGames.contains(schoolWithFewGames));
         assertFalse(schoolsWithTooFewGames.contains(schoolWithEnoughGames));
+        assertFalse(schoolsWithTooFewGames.contains(fcsSchool));
     }
 
     @Test
     public void whenFindTooManyGames_thenReturnSchoolsWithMoreThanTwelveGames() {
         // Arrange
-        School schoolWithTooManyGames = new School.Builder().withTgid(1).build();
-        List<Game> fewGames = Arrays.asList(new Game[13]); // Mocking a list with 11 games
+        School schoolWithTooManyGames = fbsSchool(1);
+        List<Game> fewGames = Arrays.asList(new Game[13]); // Only the count matters to this query.
 
-        School schoolWithEnoughGames = new School.Builder().withTgid(2).build();
+        School schoolWithEnoughGames = fbsSchool(2);
         List<Game> enoughGames = Arrays.asList(new Game[12]); // Mocking a list with 12 games
 
-        School fcsSchool = new School.Builder().withTgid(2).build();
+        School fcsSchool = new School.Builder().withTgid(3).build();
         fcsSchool.setConference(Conference.blankConference);
-        List<Game> fcsGames = Arrays.asList(new Game[12]); // Mocking a list with 12 games
+        List<Game> fcsGames = Arrays.asList(new Game[13]); // Must be excluded even above the threshold.
 
         when(schoolRepository.findAll()).thenReturn(Arrays.asList(schoolWithTooManyGames, schoolWithEnoughGames, fcsSchool));
         when(gameRepository.findGamesByTeam(schoolWithTooManyGames)).thenReturn(fewGames);
@@ -82,6 +84,7 @@ public class ScheduleServiceTest {
         assertEquals(1, schoolsWithManyFewGames.size());
         assertTrue(schoolsWithManyFewGames.contains(schoolWithTooManyGames));
         assertFalse(schoolsWithManyFewGames.contains(schoolWithEnoughGames));
+        assertFalse(schoolsWithManyFewGames.contains(fcsSchool));
     }
 
     @Test
@@ -111,6 +114,7 @@ public class ScheduleServiceTest {
         Game awayConferenceGame = mock(Game.class); // Mock the game
 
         when(awayConferenceGame.getAwayTeam()).thenReturn(testSchool);
+        when(awayConferenceGame.isConferenceGame()).thenReturn(true);
         when(awayConferenceGame.getHomeTeam()).thenReturn(conferenceSchool);
         when(conferenceSchool.isInConference(testSchool)).thenReturn(true);
 
@@ -118,6 +122,7 @@ public class ScheduleServiceTest {
         awayConferenceGame.setHomeTeam(conferenceSchool);
 
         Game homeConferenceGame = new Game();
+        homeConferenceGame.setConferenceGame(true);
         homeConferenceGame.setAwayTeam(conferenceSchool);
         homeConferenceGame.setHomeTeam(testSchool);
 
@@ -135,5 +140,12 @@ public class ScheduleServiceTest {
 
         // Assert
         assertEquals(1, numOfAwayConferenceGames, "The count of away conference games should be 1.");
+    }
+
+    // These tests characterize the existing 12-game policy, not every historical season.
+    private static School fbsSchool(int id) {
+        Conference conference = new Conference();
+        conference.setClassification(NCAADivision.FBS);
+        return new School.Builder().withTgid(id).withConference(conference).build();
     }
 }

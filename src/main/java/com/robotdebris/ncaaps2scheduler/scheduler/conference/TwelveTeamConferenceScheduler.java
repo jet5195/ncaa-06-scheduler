@@ -52,6 +52,8 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
             // 8 conf games no rivals
             if (numOfConfGames == 8 && !xDivRivals) {
                 this.schedule12Teams8GamesNoXDivRivals(conf);
+            } else if (numOfConfGames == 9 && xDivRivals) {
+                schedule9GamesWithXDivRivals(div1, year);
             } else if (xDivRivals) {
                 schedule8GamesWithXDivRivals(div1, div2, year);
             } else {
@@ -62,6 +64,36 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
         IndexOutOfBoundsException e) {
             throw e;
+        }
+    }
+
+    private void schedule9GamesWithXDivRivals(List<School> div1, int year) {
+        List<School> pairedDivision = orderDivByXDivRivals(div1);
+        // Offset zero is the protected matching. Each nonzero offset is another
+        // complete matching: every team on BOTH sides gets exactly one game.
+        // Keep the same rotating matchings for two seasons, reversing venues,
+        // then advance through six combinations over a twelve-season cycle.
+        // Offsets 0/1/2 host on one side; 3/4/5 host on the other. Retain zero,
+        // choose one of 1/2 and two of 3/4/5 to balance both divisions.
+        int rotation = Math.floorMod(Math.floorDiv(year, 2), 6);
+        int omittedAwayOffset = 3 + rotation / 2;
+        List<Integer> offsets = new ArrayList<>(List.of(0, 1 + rotation % 2));
+        for (int offset = 3; offset <= 5; offset++) {
+            if (offset != omittedAwayOffset) offsets.add(offset);
+        }
+        for (int offset : offsets) {
+            for (int index = 0; index < div1.size(); index++) {
+                School school = div1.get(index);
+                School opponent = pairedDivision.get((index + offset) % pairedDivision.size());
+                int week = scheduleService.findConfGameWeek(school, opponent);
+                // Two home and two away cross-division games per team. Combined
+                // with five divisional games this gives four or five home games.
+                // Use the offset, rather than its position in this year's list,
+                // so a matchup also reverses venues across rotation boundaries.
+                boolean home = offset < 3;
+                if (Math.floorMod(year, 2) == 1) home = !home;
+                addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
+            }
         }
     }
 

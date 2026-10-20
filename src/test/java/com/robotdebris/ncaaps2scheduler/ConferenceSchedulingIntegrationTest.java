@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -117,6 +118,25 @@ public class ConferenceSchedulingIntegrationTest {
 			verifyConferenceGamesForYear(conf, year);
 			verifyAllSchoolsInConfPlayXDivRival(conf);
 		}
+	}
+
+	@ParameterizedTest
+	@CsvSource({"Big East Conference,3", "Sun Belt Conference,13"})
+	public void allScenariosDivisionsBelongToTheirConference(String conferenceName, int conferenceId) throws Exception {
+		scheduleService.setAlignmentFile(TestUtil.createMockMultipartFile("Test_All_Scenarios_Alignment.xlsx"));
+		Conference conference = conferenceRepository.findByName(conferenceName);
+		assertThat(conference).isNotNull();
+		assertThat(conference.getConferenceId()).isEqualTo(conferenceId);
+		assertThat(conference.getSchools()).hasSize(14);
+		assertThat(conference.getDivisions()).hasSize(2);
+		conference.getDivisions().forEach(division -> {
+			assertThat(division.getConference().getConferenceId()).isEqualTo(conferenceId);
+			assertThat(division.getSchools()).hasSize(7);
+			division.getSchools().forEach(school -> {
+				assertThat(school.getConference().getConferenceId()).isEqualTo(conferenceId);
+				assertThat(school.getDivision()).isEqualTo(division);
+			});
+		});
 	}
 
 	@Test

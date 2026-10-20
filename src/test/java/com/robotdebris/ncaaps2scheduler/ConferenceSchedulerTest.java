@@ -1,6 +1,7 @@
 package com.robotdebris.ncaaps2scheduler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doAnswer;
@@ -62,7 +63,7 @@ public class ConferenceSchedulerTest {
         try {
             scheduler.generateConferenceSchedule(conf, gameRepository);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new AssertionError("Conference schedule generation failed", e);
         }
         for (School school : conf.getSchools()) {
             List<Game> schedule = gameRepository.findGamesByTeam(school);
@@ -86,7 +87,7 @@ public class ConferenceSchedulerTest {
         try {
             scheduler.generateConferenceSchedule(conf, gameRepository);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new AssertionError("Conference schedule generation failed", e);
         }
         for (School school : conf.getSchools()) {
             List<Game> schedule = gameRepository.findGamesByTeam(school);
@@ -123,7 +124,7 @@ public class ConferenceSchedulerTest {
         try {
             scheduler.generateConferenceSchedule(conf, gameRepository);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new AssertionError("Conference schedule generation failed", e);
         }
         // Verify the home location alternates between years for each team
         for (Game game : firstSeasonSchedule) {
@@ -138,7 +139,8 @@ public class ConferenceSchedulerTest {
                 }
             }
         }
-        assertTrue(true);
+        assertFalse(firstSeasonSchedule.isEmpty(), "First season must contain games to check rotation");
+        assertFalse(gameRepository.findAll().isEmpty(), "Generation must produce games");
 
     }
 
@@ -195,7 +197,7 @@ public class ConferenceSchedulerTest {
 
     @ParameterizedTest
     @MethodSource("provideConferenceParameters")
-    public void printSchedules(Conference conf, int year) {
+    public void generatedScheduleHasNoWeeklyConflictsOrDuplicateMatchups(Conference conf, int year) {
         // Mock only the specific method using the spy
         doAnswer(invocation -> {
             List<?> list = invocation.getArgument(0);
@@ -212,7 +214,7 @@ public class ConferenceSchedulerTest {
         try {
             scheduler.generateConferenceSchedule(conf, gameRepository);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new AssertionError("Conference schedule generation failed", e);
         }
 
         School schoolA = new School.Builder().withTgid(1).withName("A").build();
@@ -230,14 +232,27 @@ public class ConferenceSchedulerTest {
                 System.out.println("@ \t" + game.getHomeTeam().getName());
             }
         }
-        assertTrue(true);
+        assertFalse(gameRepository.findAll().isEmpty(), "Generation must produce games");
+        java.util.Set<String> matchups = new java.util.HashSet<>();
+        java.util.Set<String> teamWeeks = new java.util.HashSet<>();
+        for (Game game : gameRepository.findAll()) {
+            int home = game.getHomeTeam().getTgid();
+            int away = game.getAwayTeam().getTgid();
+            assertTrue(home != away, "A team cannot play itself");
+            assertTrue(game.getWeek() >= conf.getConfGamesStartWeek() && game.getWeek() < 15,
+                    "Game must fit the current conference scheduling window");
+            assertTrue(matchups.add(Math.min(home, away) + ":" + Math.max(home, away)),
+                    "Duplicate regular-season matchup: " + game);
+            assertTrue(teamWeeks.add(home + ":" + game.getWeek()), "Home team double-booked: " + game);
+            assertTrue(teamWeeks.add(away + ":" + game.getWeek()), "Away team double-booked: " + game);
+        }
     }
 
     private List<Game> getCopyOfSeasonSchedule(Conference conf, ConferenceScheduler scheduler) {
         try {
             scheduler.generateConferenceSchedule(conf, gameRepository);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new AssertionError("Conference schedule generation failed", e);
         }
         List<Game> firstSeasonSchedule = List.copyOf(gameRepository.findAll());
         gameRepository.findAll().clear();
@@ -256,11 +271,8 @@ public class ConferenceSchedulerTest {
             for (int numOfGames : numOfGamesList) {
                 for (boolean xDivRivals : xdivRivalList) {
                     for (int year : yearsList) {
-                        // exclude 9 game 12 team xdivrivals (impossible scenario)
-                        if (!(numOfTeams == 12 && numOfGames == 9 && xDivRivals)) {
-                            Conference conf = setupConference(numOfTeams, numOfGames, xDivRivals);
-                            argumentsList.add(Arguments.of(conf, year));
-                        }
+                        Conference conf = setupConference(numOfTeams, numOfGames, xDivRivals);
+                        argumentsList.add(Arguments.of(conf, year));
                     }
                 }
             }
