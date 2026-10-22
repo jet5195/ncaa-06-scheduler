@@ -597,6 +597,36 @@ or skips. All conference-classification assertions now pass. The remaining 23
 failures are exclusively the already identified placement-before-start-week
 cases; all original 870 tests still pass. Tests remain enabled and unchanged.
 
+### Start-week filtering and two-sided placement recovery (2026-10-22)
+
+Recovery now filters its final shared availability through the configured
+conference start week, just as the initial availability check does. The original
+unfiltered return could select weeks 0-2 for a conference starting in week 3.
+
+The filter alone passed 503/504 placement cases but exposed a genuine recovery
+limitation in the remaining case: 14 teams, nine games, no protected rivals,
+year 2004, start week 3, seed 7. B was free in weeks 7/8/9/12; J was free in
+4/10/13/14. None of B's candidate games could move to make room. However,
+J-L could move from week 7 to week 14, freeing week 7 for B-J. An independent
+real-generator trace confirmed these availabilities. The old recovery examined
+only B's schedule and then silently escaped into week 0.
+
+findConfGameWeek now also tries relocating a game from the other team's
+schedule when the first side cannot provide a valid shared week. This retains
+the one-game relocation approach; no general backtracking algorithm is added.
+
+ConferenceWeekRecoveryTest adds two focused cases using small partial calendars:
+one where the first team's game can move, and one where only the second team's
+game can move. Both require the new game and retained games to stay within the
+conference window, retain hosts and conference flags, and avoid weekly conflicts.
+They do not assert that an entire round robin fits within that small test window.
+
+Full-suite verification: **1,376 tests passed, zero failures, errors, or skips**.
+All 504 week-placement cases and both focused recovery cases pass, alongside
+the original 870 tests. No tests were disabled or weakened. This establishes
+the tested cases, not a guarantee that one-game relocation can solve every
+possible constrained calendar.
+
 ## Running checks
 
 Use JDK 21 and `./mvnw test` (Windows: `./mvnw.cmd test`). Avoid `verify` for

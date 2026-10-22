@@ -216,7 +216,7 @@ public class ScheduleService {
 		}
 		s1EmptyWeeks = findEmptyWeeks(s1);
 		s2EmptyWeeks = findEmptyWeeks(s2);
-		return SchedulerUtils.findEmptyWeeksHelper(s1EmptyWeeks, s2EmptyWeeks);
+		return findEmptyWeeksInConferenceHelper(s1EmptyWeeks, s2EmptyWeeks, confGamesStartDate);
 	}
 
 	public SuggestedGameResponse getSuggestedGame(int tgid) {
@@ -1055,6 +1055,10 @@ public class ScheduleService {
 		ArrayList<Integer> emptyWeeks = findEmptyWeeks(school, opponent);
 		if (emptyWeeks.size() == 0) {
 			emptyWeeks = fixNoEmptyWeeksForConfGame(school, opponent);
+			if (emptyWeeks.isEmpty()) {
+				// A movable game may belong to the other team's schedule.
+				emptyWeeks = fixNoEmptyWeeksForConfGame(opponent, school);
+			}
 		}
 
 		// Check for mutual top rivalry and attempt to schedule for week 13 or 12
