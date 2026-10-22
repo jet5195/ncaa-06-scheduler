@@ -270,6 +270,276 @@ Full-suite verification: 742 cases passed, zero failures, errors or skips.
 The new frequency assertions passed alongside all existing annual balance,
 next-meeting venue, protected-rival and conference integration checks.
 
+### Test-first conference rotation regressions (October 21, 2026)
+
+ConferenceRotationRequirementsTest adds 48 enabled JUnit cases for twelve teams /
+nine games / no protected rivals and fourteen teams / eight games / either rival
+setting. Each path is exercised from 1980, 2000, 2005 and 2020 with normal and
+reversed opposite-division ordering, for twenty-eight seasons. Conference games
+start at week 3 and stay within the current week-14 placement limit.
+
+Annual requirements and next-meeting venues are tested separately so a venue
+failure cannot hide a game-count, opponent or balance failure. Checks include
+correct totals, all divisional opponents, protected rivals, unique matchups,
+known conference opponents, no self-games or weekly conflicts, home/away balance,
+annual five/four alternation for nine games, and venue reversal after gaps.
+The venue test retains the last meeting across skipped seasons, rejects partial
+generation and checks every conference opponent is visited over the test horizon.
+No new equal-frequency policy was assumed for these three formats.
+
+Only the new class was run for this step. Result: 48 cases, 32 passes, 16 failures,
+zero errors or skips. All 24 annual-requirement cases passed. Venue results:
+
+| Format | Passed | Failed |
+| --- | ---: | ---: |
+| 12 teams, 9 games, no protected rivals | 0 | 8 |
+| 14 teams, 8 games, no protected rivals | 4 | 4 |
+| 14 teams, 8 games, protected rivals | 4 | 4 |
+
+For the twelve-team format, a natural-order run repeats G hosting E in 1980 and
+1982. For the fourteen-team formats, runs spanning 2005 repeat the same host in
+2004 and 2006; the 2005/2020 starting runs pass, including cycle boundaries.
+Those observations narrow the diagnosis without declaring a complete root cause.
+
+Production code is unchanged in this test-first step. The new tests are deliberately
+not disabled or excluded: the expanded suite is expected to be red until these
+conference rotation defects are fixed. The previously passing 742-case baseline
+was not rerun here and does not include these 48 new cases.
+
+### Diagnosis: twelve teams, nine games, no protected rivals
+
+An independent trace built a fresh twelve-school conference without the JUnit
+fixture helper, last-meeting map or mocked week selection, then called the real
+factory/generator. It confirmed the test's failure:
+
+| Year | First-division rotation | E's rotated index | E-G host |
+| --- | ---: | ---: | --- |
+| 1980 | 0 | 4 | G |
+| 1981 | 1 | 5 | No game |
+| 1982 | 2 | 0 | G |
+| 1983 | 3 | 1 | E |
+| 1984 | 4 | 2 | No game |
+| 1985 | 5 | 3 | E |
+| 1986 | 0 | 4 | G |
+
+All seasons contained the expected 54 conference games. G hosts consecutive
+actual E-G meetings in 1980/1982; E does the same in 1983/1985.
+
+TwelveTeamConferenceScheduler.schedule9Games rotates the first division by
+year % 6 and selects four opponents using that rotated row's pattern. The shared
+scheduleXDivGamesByIndex helper chooses venues from the parity of the rotated
+row index and the opposite division's fixed opponent index. G remains at opposite
+index 0. E's indices 4 and 0 in 1980 and 1982 are both even, so the helper makes
+E the away team in both years. The explicit specifyHome=true argument prevents
+the yearly-series helper from applying another venue decision.
+
+For a fixed pair, this index parity effectively flips its potential host every
+calendar year, including years the pair does not play. A two-year gap returns
+to the same parity and same host. Annual balance can therefore pass while
+next-meeting venue alternation fails. Merely switching to year parity would not
+solve that gap case either.
+
+The test's matchup key sorts the two team IDs; its immutable stored value records
+the last actual host/year. Map.put returns that previous value before replacing
+it. Thus neither reversed home/away order nor clearing the season repository
+causes the observed failure. The independent trace establishes a production
+rotation defect under the agreed next-meeting requirement. No scheduling logic
+was changed during this diagnosis.
+
+### Fix: twelve teams, nine games, no protected rivals (2026-10-22)
+
+This path retains the existing six-year opponent patterns, but chooses the host
+by counting earlier actual meetings of each pair within that cycle. Each pair
+meets four times per cycle, so venue alternation also holds across its boundary
+without retaining previous generated seasons. Other conference formats continue
+using their existing scheduling paths.
+
+TwelveTeamNineGameRotationTest adds eight preservation cases across four starting
+years and both opposing-division orders. Every rolling six-season window must
+contain four meetings per cross-division pair, with two at each stadium; every
+rolling four-season window must visit both stadiums. These eight cases passed
+before the fix as well: the old defect was consecutive meetings sharing a host,
+not a demonstrated failure of four-year stadium coverage.
+
+Full-suite verification: 798 tests, 790 passing, eight failing, no errors or
+skips. All twelve-team requirements and the eight new preservation cases pass;
+the original 742 cases also pass. The remaining eight failures are the already
+identified fourteen-team, eight-game next-meeting venue cases spanning 2005,
+with and without protected rivals. They remain enabled for the next fix.
+
+### Diagnosis: fourteen teams, eight games (2026-10-22)
+
+Both rival settings derive their opponent rotation from `Math.abs(year - 2005)`.
+This folds the timeline around 2005: 2002..2008 use offsets 3,2,1,0,1,2,3.
+An independent fourteen-school fixture, using the real Spring generator without
+the JUnit fixture/history helper or mocked weeks, confirmed these A matchups:
+
+| Year | Offset | No protected rivals | Protected rivals (A-H) |
+| --- | ---: | --- | --- |
+| 2003 | 2 | A at J; K at A | H at A; A at K |
+| 2004 | 1 | A at I; J at A | A at H; J at A |
+| 2005 | 0 | A at H; I at A | H at A; A at I |
+| 2006 | 1 | A at I; J at A | A at H; J at A |
+| 2007 | 2 | A at J; K at A | H at A; A at K |
+
+All traced seasons contain 56 games. A-J is absent in 2005, but A hosts both
+its 2004 and 2006 meetings in both formats. Without rivals, the first rotating
+opponent is always away and the second always home, so repeating the rotation
+position repeats those venues. With rivals, the protected game correctly uses
+calendar-year parity; the rotating game's venue fills the fourth home slot.
+The same rotation position and year parity in 2004/2006 therefore repeat that
+venue too. The protected rivalry itself is not the failing matchup.
+
+This explains why the 1980/2000 starting venue cases fail, while the 2005/2020
+cases pass: only the former retain meetings from both sides of the reversal.
+Annual balance remains correct; the failure is next-meeting alternation across
+the historical boundary, rather than a general failure of post-2005 rotation.
+
+A narrow candidate fix is a signed season offset, with `Math.floorMod` at each
+cycle calculation (seven seasons without rivals, twelve with rivals). This would
+keep the existing 2005-and-later schedule while extending the cycle backward
+instead of reflecting it. Merely removing `Math.abs` would leave negative Java
+remainders and invalid opponent indexes. No fourteen-team production code or
+permanent tests were changed during this diagnosis; the candidate still needs
+implementation and regression verification if selected.
+
+### Fix: fourteen teams, eight games (2026-10-22)
+
+Both eight-game paths now use the signed `year - 2005` offset and
+`Math.floorMod` for their respective seven- and twelve-season cycles. This
+extends the existing rotation backward without the 2005 reversal. The nine-game
+paths are unchanged.
+
+An independent real-generator comparison confirmed identical complete matchup
+and host lists before and after the fix for all 56 sampled seasons (2005-2032,
+both protected-rival settings). Weeks were excluded because week selection is
+random. The existing requirement tests exercise historical seasons, the 2005
+boundary, cycle boundaries, reversed opposing-division order, annual balance,
+protected/divisional opponents, and next-meeting venue alternation.
+
+Full-suite verification after this fix: **798 tests passed, zero failures,
+errors, or skips**. This includes all 48 rotation requirement cases, including
+the eight previously failing fourteen-team cases, and the twelve-team
+preservation tests. No tests were disabled or weakened.
+
+### Test-first opponent frequency audit (2026-10-22)
+
+ConferenceOpponentFrequencyTest adds 32 cases covering all eight combinations
+of 12/14 teams, 8/9 games, and protected rivals on/off. Each uses starting years
+1980 and 2000, normal/reversed opposite-division order, and rolling windows
+covering every phase of the existing rotation. Expected rotating frequency is
+derived from available cross-division slots divided by eligible opponents;
+protected pairs are checked separately for annual meetings. Home/away totals
+are also checked over windows allowing equal venue counts.
+
+The comparison windows include full existing patterns and enough repetitions
+for equal counts to be integral. In particular, the 12-team nine-game protected
+format needs a 60-season comparison because its existing 12-season pattern
+assigns 36 rotating games among five opponents. This is a diagnostic window,
+not a requirement allowing a team to wait 60 years to meet an opponent.
+
+Focused run: **32 tests, 24 passing, eight failing**, no errors or skips.
+All four cases fail for each of these formats:
+
+* 12 teams, eight games, no protected rivals: in a 12-season cycle, relative
+  cross-division offsets 0..5 occur 12,4,6,4,6,4 times, instead of six each.
+  Offset zero is always selected despite no configured protected rivalry.
+* 12 teams, nine games, protected rivals: offset zero correctly plays annually,
+  but rotating offsets 1/2 play six times each per 12 seasons, while offsets
+  3/4/5 play eight times each. Over 60 seasons these become 30 vs 40 meetings,
+  instead of 36 each. This imbalance persists through repeated cycles.
+
+The other six formats pass their frequency and venue-total assertions. These
+failures are consistent with an independent count of the offset patterns in
+the production code. No production changes were made in this test-first audit.
+The new tests remain enabled; the full suite was not rerun after adding them.
+The preceding 798-test green baseline does not include these 32 cases.
+
+### Equal-frequency fix: twelve teams, eight games, no rivals (2026-10-22)
+
+The cross-division generator now alternates two groups of three complete
+matchings. Each group plays a two-season home-and-away series before switching
+to the other group. Every cross-division pairing therefore meets twice in
+every rolling four-season window, once at each venue. There is no fixed annual
+cross-division opponent.
+
+Venue assignments give schools with three divisional home games one home
+cross-division game, and schools with two divisional home games two. Both
+divisions finish with four home and four away conference games. Each pairing's
+base venue is fixed across cycle repeats, with odd seasons reversing it.
+
+The frequency tests retain the original twelve-season regression window and
+add the stronger four-season requirement. Annual and next-meeting requirement
+tests now also include this format across four starting years and both opposing
+division orders. The separate twelve-team nine-game protected-rival frequency
+issue is outside this change and remains exposed by enabled tests.
+
+Full-suite verification: **850 tests, 846 passing, four failing**, zero errors
+or skips. All 64 annual/next-meeting requirement cases pass. The only failures
+are the four existing frequency cases for twelve teams, nine games, protected
+rivals. No tests were disabled or weakened, and no other regressions appeared.
+
+### Diagnosis: twelve teams, nine games, protected rivals (2026-10-22)
+
+schedule9GamesWithXDivRivals fixes the protected matchup at offset zero, then
+selects one offset from 1/2 and two from 3/4/5. Each selection persists for a
+two-season venue pair. The six rotating selections are 1/4/5, 2/4/5, 1/3/5,
+2/3/5, 1/3/4, 2/3/4. Thus offsets 1/2 each occupy three season pairs (six
+meetings), while offsets 3/4/5 each occupy four pairs (eight meetings).
+
+This split is coupled to the venue rule: offsets 0/1/2 host on one division's
+side in even years, while 3/4/5 host on the other side; odd years reverse it.
+The protected home matching plus one rotating home matching and two rotating
+away matchings ensures two home/two away cross-division games. Combined with
+the five divisional games this satisfies annual four/five home alternation and
+next-meeting venue reversal, but permanently biases opponent selection.
+
+The four frequency failures cover two starting years and two division orders,
+not four distinct defects. The protected matchup is correctly annual and is
+excluded from the equal-frequency comparison. Sixty years is only the test's
+common comparison window for the current twelve-year period: five repetitions
+produce 30 or 40 rotating meetings, where equal frequency would require 36.
+The imbalance is not an artifact of rounding a twelve-year window.
+
+A replacement must rotate three games among five opponents fairly while
+retaining the annual protected game and existing venue requirements. Ten seasons
+contain thirty rotating slots, allowing six meetings per opponent, three at each
+venue. That is a useful target, not an implemented or verified replacement.
+Opponent selection and venue assignment need to be redesigned together: retaining
+the current fixed two-opponent home pool and three-opponent away pool cannot
+yield equal long-run frequency. No production code or tests changed in this
+diagnosis.
+
+### Equal-frequency fix: twelve teams, nine games, protected rivals (2026-10-22)
+
+The protected matching remains annual. The three other cross-division matchings
+now advance continuously through offsets 1..5, with the hosting division
+alternating by selection slot. Each rotating pair returns every five slots,
+so every next meeting swaps venue even after skipped seasons. Ten seasons
+complete thirty slots: six meetings per rotating opponent, three at each venue.
+
+In even seasons, the rotating games give the first division two home games and
+the protected game is away; odd seasons give one rotating home game and the
+protected game at home. Both divisions therefore receive two cross-division
+home games annually. Combined with the five divisional games, each school
+alternates between five and four home conference games.
+
+This replaces consecutive two-year opponent blocks with a ten-year slot cycle;
+opponent selections and venues change for this format. No guarantee that a
+rotating opponent plays in consecutive seasons is required. The protected
+rivalry, annual balance, and next-actual-meeting venue requirements remain.
+
+Four new ten-year frequency cases failed against the old generator, alongside
+the four original sixty-year cases (40 focused cases, eight failures). Both
+windows are retained. The annual/next-meeting requirement matrix also now
+includes this format across four starting years and both opposite-division
+orders, exercising 28 consecutive seasons per case.
+
+Full-suite verification: **870 tests passed, zero failures, errors, or skips**.
+All forty frequency cases and eighty annual/next-meeting requirement cases pass,
+alongside the original integration and scheduling regressions. No tests were
+disabled or weakened.
+
 ## Running checks
 
 Use JDK 21 and `./mvnw test` (Windows: `./mvnw.cmd test`). Avoid `verify` for

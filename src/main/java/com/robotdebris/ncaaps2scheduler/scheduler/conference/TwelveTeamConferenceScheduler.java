@@ -75,31 +75,29 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
     private void schedule9GamesWithXDivRivals(List<School> div1, int year) {
         List<School> pairedDivision = orderDivByXDivRivals(div1);
-        // Offset zero is the protected matching. Each nonzero offset is another
-        // complete matching: every team on BOTH sides gets exactly one game.
-        // Keep the same rotating matchings for two seasons, reversing venues,
-        // then advance through six combinations over a twelve-season cycle.
-        // Offsets 0/1/2 host on one side; 3/4/5 host on the other. Retain zero,
-        // choose one of 1/2 and two of 3/4/5 to balance both divisions.
-        int rotation = Math.floorMod(Math.floorDiv(year, 2), 6);
-        int omittedAwayOffset = 3 + rotation / 2;
-        List<Integer> offsets = new ArrayList<>(List.of(0, 1 + rotation % 2));
-        for (int offset = 3; offset <= 5; offset++) {
-            if (offset != omittedAwayOffset) offsets.add(offset);
+        // Offset zero is the annual protected matching. Three rotating slots
+        // give div1 two home games in even years and one in odd years; this
+        // protected game supplies the other home game for an annual 2/2 split.
+        scheduleCrossDivisionMatching(div1, pairedDivision, 0, Math.floorMod(year, 2) == 1);
+
+        // Walk offsets 1..5 continuously, taking three each season. Five years
+        // contain three meetings per rotating opponent; ten contain six, with
+        // three at each venue. A pair returns every five slots (odd), so flipping
+        // the host side by slot reverses the venue on every next meeting.
+        int firstSlot = 3 * Math.floorMod(year, 10);
+        for (int slot = firstSlot; slot < firstSlot + 3; slot++) {
+            scheduleCrossDivisionMatching(div1, pairedDivision, 1 + slot % 5, slot % 2 == 0);
         }
-        for (int offset : offsets) {
-            for (int index = 0; index < div1.size(); index++) {
-                School school = div1.get(index);
-                School opponent = pairedDivision.get((index + offset) % pairedDivision.size());
-                int week = scheduleService.findConfGameWeek(school, opponent);
-                // Two home and two away cross-division games per team. Combined
-                // with five divisional games this gives four or five home games.
-                // Use the offset, rather than its position in this year's list,
-                // so a matchup also reverses venues across rotation boundaries.
-                boolean home = offset < 3;
-                if (Math.floorMod(year, 2) == 1) home = !home;
-                addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
-            }
+    }
+
+    private void scheduleCrossDivisionMatching(List<School> div1, List<School> div2,
+            int offset, boolean home) {
+        // A complete matching gives every school in BOTH divisions one game.
+        for (int index = 0; index < div1.size(); index++) {
+            School school = div1.get(index);
+            School opponent = div2.get((index + offset) % div2.size());
+            int week = scheduleService.findConfGameWeek(school, opponent);
+            addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
         }
     }
 
@@ -115,13 +113,36 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
     }
 
     private void schedule9Games(List<School> div1, List<School> div2, int year) throws Exception {
-        div1 = rotateDivByYear(div1, year, 6);
-        int index = 0;
-        for (School school : div1) {
-            // schedule 9 games
-            scheduleXDivGamesByIndex(school, div1, div2, index, getOpponentIndicesfor4Games(index));
-            index++;
+        int cycleYear = Math.floorMod(year, 6);
+        List<School> rotatedDivision = rotateDivByYear(new ArrayList<>(div1), cycleYear, 6);
+        for (int index = 0; index < rotatedDivision.size(); index++) {
+            School school = rotatedDivision.get(index);
+            int originalIndex = div1.indexOf(school);
+            for (int opponentIndex : getOpponentIndicesfor4Games(index)) {
+                School opponent = div2.get(opponentIndex);
+                // Keep the existing opponents, but flip venues on actual meetings,
+                // not on calendar years in which this pair might not play.
+                boolean home = (originalIndex + opponentIndex) % 2 != 0;
+                if (priorMeetingsInSixYearCycle(originalIndex, opponentIndex, cycleYear) % 2 != 0) {
+                    home = !home;
+                }
+                int week = scheduleService.findConfGameWeek(school, opponent);
+                addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
+            }
         }
+    }
+
+    private int priorMeetingsInSixYearCycle(int schoolIndex, int opponentIndex, int cycleYear) {
+        int meetings = 0;
+        for (int earlierYear = 0; earlierYear < cycleYear; earlierYear++) {
+            int earlierIndex = (schoolIndex + earlierYear) % 6;
+            for (int earlierOpponent : getOpponentIndicesfor4Games(earlierIndex)) {
+                if (earlierOpponent == opponentIndex) meetings++;
+            }
+        }
+        // Every pair meets four times per six-year cycle. Four venue flips return
+        // to the base venue, so this count also works across cycle boundaries.
+        return meetings;
     }
 
     private void schedule2CrossDivisionalGames(int index, School school, List<School> div2) {
@@ -158,17 +179,22 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
         List<School> div1 = conf.getDivisions().get(0).getSchools();
         List<School> div2 = conf.getDivisions().get(1).getSchools();
         int year = scheduleService.getYear();
-        // Three complete matchings give every team three cross-division games.
-        // Two even offsets supply one home and one away game to every team.
-        // The odd offset supplies the extra home game to teams that hosted only
-        // two divisional games. This balances BOTH divisions, not just the first.
-        int rotation = Math.floorMod(Math.floorDiv(year, 2), 6);
-        int[] offsets = {0, 2 + 2 * (rotation % 2), 1 + 2 * (rotation % 3)};
+        // Play each group of three complete matchings for a home-and-away pair
+        // of seasons. Every cross-division opponent is visited at both venues
+        // in four years, without an unintended annual protected opponent.
+        boolean firstGroup = Math.floorMod(Math.floorDiv(year, 2), 2) == 0;
+        int[] offsets = firstGroup ? new int[]{0, 1, 2} : new int[]{3, 4, 5};
         for (int offset : offsets) {
             for (int index = 0; index < div1.size(); index++) {
                 School school = div1.get(index);
                 School opponent = div2.get((index + offset) % div2.size());
-                boolean home = offset == 0 || (offset % 2 == 1 && index % 2 == 1);
+                // In even years, even-indexed schools have three divisional
+                // home games and need one cross-division home game; odd-indexed
+                // schools need two. These assignments also balance div2.
+                // Keep each matchup's base venue fixed across cycle repeats.
+                boolean home = firstGroup
+                        ? (index % 2 == 0 ? offset == 0 : offset != 0)
+                        : (index % 2 == 0 ? offset == 4 : offset != 3);
                 if (Math.floorMod(year, 2) == 1) home = !home;
                 int week = scheduleService.findConfGameWeek(school, opponent);
                 addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);

@@ -33,7 +33,9 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
         boolean xDivRivals = div1.getFirst().getxDivRival() != null;
         int numOfConfGames = conf.getNumOfConfGames();
         int year = gameRepository.getYear();
-        int yearOffset = Math.abs(year - 2005);
+        // Extend the rotation backward through historical seasons instead of
+        // reflecting it around 2005 and repeating the same opponents/venues.
+        int yearOffset = year - 2005;
 
         // Handle scheduling based on the number of conference games and cross-division
         // rivals
@@ -112,7 +114,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
         }
         // at this point all we have to do is alternate that 1 game.. home away SHOULD
         // be taken care of too due to xdivrival
-        int year = (yearOffset % 12) + 1;
+        int year = Math.floorMod(yearOffset, 12) + 1;
         int j = year;
         for (School school : div1) {
             // if we're in years 6-11, alternate the schedule a bit. IE, play team 2 then 1,
@@ -151,7 +153,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
 
     private void schedule8WithoutRivals(List<School> div1, List<School> div2, int yearOffset) throws Exception {
         // so there's 7 different schedules, figure it out based on the year
-        int modulo = yearOffset % 7;
+        int modulo = Math.floorMod(yearOffset, 7);
         for (int i = 0; i < 7; i++) {
             School school = div1.get(i);
             int firstOpponent = i + modulo;
