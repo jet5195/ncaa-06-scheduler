@@ -207,6 +207,7 @@ public class ScheduleService {
 							+ ", because no available week was found for " + s1 + " vs " + s2);
 					removeGame(game);
 					Game newGame = new GameBuilder().setAwayTeam(game.getAwayTeam()).setHomeTeam(game.getHomeTeam())
+							.setConferenceGame(game.isConferenceGame())
 							.setWeek(randomIntFromList(jointEmptyWeeks)).build();
 					addGame(newGame);
 					break;

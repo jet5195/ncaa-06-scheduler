@@ -540,6 +540,63 @@ All forty frequency cases and eighty annual/next-meeting requirement cases pass,
 alongside the original integration and scheduling regressions. No tests were
 disabled or weakened.
 
+### Test-first conference week placement coverage (2026-10-22)
+
+ConferenceWeekPlacementTest adds 504 cases: round-robin conferences with 8-11
+teams and all eight divisional 12/14-team formats, years 2004/2005/2020, start
+weeks 0/3, and seven selection strategies (earliest, latest, and fixed Java
+Random seeds 0/1/7/42/2026). Each starts from an empty conference-only calendar;
+there are no imported, user-entered, nonconference, or postseason games. Tight
+windows, shuffled fixtures and ordinary top-rival date preferences are outside
+this initial matrix.
+
+Only the week-choice method is stubbed: real availability checks, placement,
+game relocation, and conference generation execute. Each choice resets its
+random generator and chooses from sorted candidates. Failures identify format,
+season, start week, strategy/seed, matchup, and offending week. The tests verify
+complete seasons, required opponents, annual home balance, conference flags,
+no repeated opponents/self-games/weekly conflicts, and the conference window.
+Opponents and hosts are compared with an earliest-choice reference; reference
+metadata is not treated as correct merely because it is the reference. Every
+strategy, including earliest, receives independent correctness assertions.
+
+The initial run exposed two problems in ScheduleService's recovery path:
+
+* fixNoEmptyWeeksForConfGame rebuilds a relocated game without restoring its
+  conference flag. GameBuilder defaults that flag to false.
+* Its final availability calculation uses findEmptyWeeksHelper without the
+  conference start-week filter. findConfGameWeek can therefore choose a week
+  before the configured conference window after entering recovery.
+
+No production code was changed in this test-first step. These are placement
+recovery defects, distinct from the opponent/venue rotation fixes above.
+
+Final full-suite result: **1,374 tests, 1,330 passing, 44 failing**, zero errors
+or skips. All original 870 cases still pass. Of the 504 new cases, 460 pass;
+43 cases lose conference classification and 23 place games before the start
+week, with 22 cases exhibiting both. These counts describe this deliberate test
+matrix, not an estimated production failure probability. No tests are disabled.
+
+Examples: a ten-team round robin in 2004 starting at week 3 with EARLIEST
+selection relocates F at E but loses its conference flag, and places G at I in
+week 0. A fourteen-team nine-game no-protected-rival conference in 2004 starting
+at week 3 with SEED_7 places J at B in week 0. All cases retain complete game
+counts, the reference opponents/venues, and no weekly double-bookings; those
+properties are asserted alongside the flag and window failures.
+
+### Preserve conference classification when relocating a game (2026-10-22)
+
+fixNoEmptyWeeksForConfGame now copies the original game's conference flag into
+the replacement GameBuilder when moving it to another week. Previously the
+builder's default false value silently reclassified a relocated conference game.
+The change preserves the original value rather than unconditionally marking
+every moved game as conference. The separate recovery-window issue is unchanged.
+
+Full-suite verification: **1,374 tests, 1,351 passing, 23 failing**, zero errors
+or skips. All conference-classification assertions now pass. The remaining 23
+failures are exclusively the already identified placement-before-start-week
+cases; all original 870 tests still pass. Tests remain enabled and unchanged.
+
 ## Running checks
 
 Use JDK 21 and `./mvnw test` (Windows: `./mvnw.cmd test`). Avoid `verify` for
