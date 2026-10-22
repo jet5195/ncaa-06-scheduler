@@ -627,6 +627,114 @@ the original 870 tests. No tests were disabled or weakened. This establishes
 the tested cases, not a guarantee that one-game relocation can solve every
 possible constrained calendar.
 
+### Test-first shuffled ordering and protected pairings (2026-10-22)
+
+ConferenceOrderingRequirementsTest adds 144 shuffled cases, each requesting
+28 consecutive seasons. The matrix covers the four 8-11-team round-robin
+formats, all eight 12/14-team divisional formats, layout seeds 0/7/42, starting
+years 1980/2004, and earliest or seeded week choices (week seeds 20000/20007/20042).
+Conference play starts at week 3. Each alignment and its rival mapping stay
+fixed throughout the run; exact schedules need not match the canonical ordering.
+
+For divisional cases, the two school lists and the overall conference school
+list are shuffled independently. Seed 7 also reverses which division is processed
+first. Protected pairings use an independent permutation, are reciprocal and
+one-to-one, and are checked not to depend on corresponding list positions.
+Fixture guards verify that shuffles actually change order without changing
+membership. School/division references remain consistent.
+
+Assertions cover annual game counts, divisional/round-robin opponents, protected
+rivals, conference flags, week windows, unique matchups and weekly occupancy,
+annual home balance and alternation, next-meeting venue reversal including gaps,
+and rolling equal opponent frequency with balanced venue totals. The rolling
+windows are the established complete cycles for each format. Counts are derived
+from configured slots and eligible opponents, not copied from generated results.
+
+The initial focused run passed 140/144 cases. All 96 divisional cases passed;
+four seeded eleven-team round-robin runs exhausted placement recovery. Two
+additional canonical-order control cases use the same failing week seeds, to
+distinguish ordering sensitivity from previously untested placement sequences.
+An independent circle-method feasibility check constructed all 55 eleven-team
+round-robin games in weeks 3-13, with ten games and five home games per team,
+no duplicate matchups or weekly conflicts, and week 14 unused.
+
+No production scheduling code changed during this test-first step.
+
+The final 146-case class passes 140 cases and fails six, including both canonical
+controls. Failures are exclusively eleven-team round-robin generation exhausting
+the existing placement recovery for week seeds 20007 and 20042. The canonical
+controls fail in 1981 and 1990 respectively, just as their shuffled counterparts
+do; different team IDs label equivalent stuck schedules. The four shuffled
+failures include each seed at both starting years. They are not evidence of six
+distinct bugs or an ordering-dependent rotation defect. All 96 shuffled
+divisional cases pass the complete annual, venue and rolling-frequency checks.
+
+Full-suite verification: **1,522 tests, 1,516 passing, six failing**, zero errors
+or skips. All pre-existing 1,376 cases pass. The six new failures remain enabled
+for diagnosis and a future placement fix; no production code was changed and
+no expectations were relaxed to make the suite green.
+
+### Diagnosis: eleven-team full round-robin placement (2026-10-22)
+
+The current eleven-team path generates a full round robin: ten conference games
+per school, 55 unique games total, five home and five away. Eight- or nine-game
+eleven-team schedules are not part of this investigation.
+
+An independent real-generator trace used a ScheduleService subclass that only
+overrides week selection with sorted candidates and Random(20007), without
+Mockito or the JUnit fixture helper. In canonical A-K order, carrying the random
+sequence through seasons 1980 and 1981 reproduces the failure: 54 games placed,
+with J-K still missing. J is free in weeks 8/9/11; K is free in 4/6/10. Their
+shared allowed availability is empty. One-game recovery on either side cannot
+make a usable shared week.
+
+A search over legal moves in a detached copy of that calendar found a two-move
+solution: move G at A from week 11 to 14, then G at J from week 4 to 11; J-K can
+then play in week 4. Both relocations have free endpoints in their new weeks,
+stay within the configured 3-14 window, and preserve opponent/venue choices.
+The existing recovery stops at one relocation, so it cannot discover this chain.
+This demonstrates a calendar-placement limitation, not a requirement to support
+shorter eleven-team conference schedules. No production code changed during
+this diagnosis.
+
+### Chained conference placement recovery (2026-10-22)
+
+After one-game relocation fails on both sides, findConfGameWeek now tries
+alternating chains between two allowed weeks. It chooses one week free for
+each endpoint and follows existing games alternating between those weeks.
+If the path does not reach the other endpoint, swapping its weeks creates a
+shared free week without changing opponents or venues. Either endpoint's path
+can be tried. The scan uses a visited set and no recursive search.
+
+If no two-week path works, recovery also searches for a two-move plan involving
+additional weeks. It simulates a legal first move in a detached occupancy map,
+then checks whether one more relocation can free a shared week. Unsuccessful
+plans are undone only in that scratch map. All planned games must be conference
+games in the same conference and remain within its regular-season window.
+This stage is bounded to two moves rather than an unrestricted backtracking
+search. Seed 20042 requires it: A at C can move 8->14, then C at K 7->8,
+freeing week 7 for J-K. No two-week alternating path solved that state.
+
+The complete path is validated before any week changes occur. Paths that reach
+the other endpoint, contain nonconference games or games from another conference,
+or loop are rejected without mutation. Successful swaps update only weeks on
+the existing game objects, preserving all other fields. This fallback does not
+claim to solve every possible constrained calendar or introduce eight-/nine-game
+eleven-team scheduling.
+
+ConferenceWeekRecoveryTest now includes a small calendar requiring a chain,
+with nondefault game metadata, and an impossible three-team/two-week calendar
+that must fail without changing existing games. Before the production change,
+the chain case reproduced NoWeeksAvailableException; the other three recovery
+cases passed. The broader seeded eleven-team regressions remain enabled.
+
+Focused verification: **150 tests passed** (146 ordering/pairing cases and
+four recovery cases). Full-suite verification: **1,524 tests passed, zero
+failures, errors, or skips**. Both previously failing eleven-team seed sequences
+complete their 28-season runs, including shuffled and canonical controls.
+All existing placement, frequency, annual balance, venue alternation, and
+integration tests pass. No tests were disabled or weakened.
+
 ## Running checks
 
 Use JDK 21 and `./mvnw test` (Windows: `./mvnw.cmd test`). Avoid `verify` for

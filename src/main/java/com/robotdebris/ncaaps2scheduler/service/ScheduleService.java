@@ -8,10 +8,14 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
@@ -217,6 +221,121 @@ public class ScheduleService {
 		s1EmptyWeeks = findEmptyWeeks(s1);
 		s2EmptyWeeks = findEmptyWeeks(s2);
 		return findEmptyWeeksInConferenceHelper(s1EmptyWeeks, s2EmptyWeeks, confGamesStartDate);
+	}
+
+	private ArrayList<Integer> fixNoEmptyWeeksWithConferenceChain(School school, School opponent) {
+		int startWeek = school.getConference().getConfGamesStartWeek();
+		List<Integer> schoolWeeks = findEmptyWeeks(school).stream().filter(w -> w >= startWeek).toList();
+		List<Integer> opponentWeeks = findEmptyWeeks(opponent).stream().filter(w -> w >= startWeek).toList();
+		for (int schoolWeek : schoolWeeks) {
+			for (int opponentWeek : opponentWeeks) {
+				List<Game> chain = findConferenceWeekChain(school, opponent, schoolWeek, opponentWeek);
+				if (chain.isEmpty()) {
+					chain = findConferenceWeekChain(opponent, school, opponentWeek, schoolWeek);
+				}
+				if (!chain.isEmpty()) {
+					// In these two weeks each team has at most one game per week.
+					// Swapping the complete alternating path preserves that property.
+					// Plan first, then change only weeks on the existing game objects.
+					for (Game game : chain) {
+						game.setWeek(game.getWeek() == schoolWeek ? opponentWeek : schoolWeek);
+					}
+					return findEmptyWeeks(school, opponent);
+				}
+			}
+		}
+		// Some solutions need a third week: first move an unrelated game,
+		// then move a blocked game into the newly freed slot.
+		List<ConferenceWeekMove> moves = findTwoConferenceGameMoves(school, opponent, startWeek);
+		for (ConferenceWeekMove move : moves) move.game().setWeek(move.week());
+		if (!moves.isEmpty()) return findEmptyWeeks(school, opponent);
+		return new ArrayList<>();
+	}
+
+	private record ConferenceWeekMove(Game game, int week) { }
+
+	private List<ConferenceWeekMove> findTwoConferenceGameMoves(School school, School opponent, int startWeek) {
+		// This calendar is detached: exploring and undoing a move never changes
+		// live games. Only a complete successful plan is returned to the caller.
+		Map<School, Game[]> calendar = new HashMap<>();
+		for (Game game : gameRepository.findAll()) {
+			if (game.getWeek() >= 0 && game.getWeek() < 15) {
+				calendar.computeIfAbsent(game.getHomeTeam(), s -> new Game[15])[game.getWeek()] = game;
+				calendar.computeIfAbsent(game.getAwayTeam(), s -> new Game[15])[game.getWeek()] = game;
+			}
+		}
+		calendar.computeIfAbsent(school, s -> new Game[15]);
+		calendar.computeIfAbsent(opponent, s -> new Game[15]);
+		for (Game first : gameRepository.findAll()) {
+			if (!isMovableConferenceGame(first, school.getConference(), startWeek)) continue;
+			int oldWeek = first.getWeek();
+			for (int week = startWeek; week < 15; week++) {
+				if (!isFreeForGame(calendar, first, week)) continue;
+				moveInCalendar(calendar, first, oldWeek, week);
+				List<ConferenceWeekMove> plan = findFollowUpConferenceMove(calendar, school, opponent,
+						startWeek, new ConferenceWeekMove(first, week));
+				moveInCalendar(calendar, first, week, oldWeek);
+				if (!plan.isEmpty()) return plan;
+			}
+		}
+		return List.of();
+	}
+
+	private List<ConferenceWeekMove> findFollowUpConferenceMove(Map<School, Game[]> calendar,
+			School school, School opponent, int startWeek, ConferenceWeekMove firstMove) {
+		for (int week = startWeek; week < 15; week++) {
+			Game schoolGame = calendar.get(school)[week];
+			Game opponentGame = calendar.get(opponent)[week];
+			if (schoolGame == null && opponentGame == null) return List.of(firstMove);
+			if (schoolGame != null && opponentGame != null) continue;
+			Game blocked = schoolGame != null ? schoolGame : opponentGame;
+			if (blocked == firstMove.game()
+					|| !isMovableConferenceGame(blocked, school.getConference(), startWeek)) continue;
+			for (int destination = startWeek; destination < 15; destination++) {
+				if (isFreeForGame(calendar, blocked, destination)) {
+					return List.of(firstMove, new ConferenceWeekMove(blocked, destination));
+				}
+			}
+		}
+		return List.of();
+	}
+
+	private boolean isFreeForGame(Map<School, Game[]> calendar, Game game, int week) {
+		return calendar.get(game.getHomeTeam())[week] == null && calendar.get(game.getAwayTeam())[week] == null;
+	}
+
+	private void moveInCalendar(Map<School, Game[]> calendar, Game game, int from, int to) {
+		for (School team : List.of(game.getHomeTeam(), game.getAwayTeam())) {
+			calendar.get(team)[from] = null;
+			calendar.get(team)[to] = game;
+		}
+	}
+
+	private boolean isMovableConferenceGame(Game game, Conference conference, int startWeek) {
+		return game.isConferenceGame() && game.getWeek() >= startWeek && game.getWeek() < 15
+				&& conference.equals(game.getHomeTeam().getConference())
+				&& conference.equals(game.getAwayTeam().getConference());
+	}
+
+	private List<Game> findConferenceWeekChain(School school, School opponent, int freeWeek, int targetWeek) {
+		List<Game> chain = new ArrayList<>();
+		Set<School> visited = new HashSet<>();
+		School current = school;
+		int week = targetWeek;
+		while (visited.add(current)) {
+			// Swapping a path that reaches the other team would occupy its free
+			// week too, leaving no room for the new matchup.
+			if (current.equals(opponent)) return List.of();
+			Optional<Game> existing = gameRepository.findByTeamAndWeek(current, week);
+			if (existing.isEmpty()) return chain;
+			Game game = existing.get();
+			if (!isMovableConferenceGame(game, school.getConference(),
+					school.getConference().getConfGamesStartWeek())) return List.of();
+			chain.add(game);
+			current = game.getHomeTeam().equals(current) ? game.getAwayTeam() : game.getHomeTeam();
+			week = week == targetWeek ? freeWeek : targetWeek;
+		}
+		return List.of();
 	}
 
 	public SuggestedGameResponse getSuggestedGame(int tgid) {
@@ -1058,6 +1177,9 @@ public class ScheduleService {
 			if (emptyWeeks.isEmpty()) {
 				// A movable game may belong to the other team's schedule.
 				emptyWeeks = fixNoEmptyWeeksForConfGame(opponent, school);
+			}
+			if (emptyWeeks.isEmpty()) {
+				emptyWeeks = fixNoEmptyWeeksWithConferenceChain(school, opponent);
 			}
 		}
 
