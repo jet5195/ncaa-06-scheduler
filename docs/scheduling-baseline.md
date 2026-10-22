@@ -735,6 +735,40 @@ complete their 28-season runs, including shuffled and canonical controls.
 All existing placement, frequency, annual balance, venue alternation, and
 integration tests pass. No tests were disabled or weakened.
 
+### Strong requirements on real alignment workbooks (2026-10-22)
+
+RealAlignmentConferenceRequirementsTest adds eight integration cases using the
+four existing workbook fixtures: Default_06_07_Conferences.xlsx,
+RobotDebris_Custom_Conf_V2.xlsx, CookyBots_Alignment.xlsx, and
+Test_All_Scenarios_Alignment.xlsx. Each is exercised with earliest-week choices
+and a reproducible Random(2026) sequence through seasons 2000-2027. This covers
+224 complete conference-generation runs, including full opponent/venue cycles
+and the 2005 boundary.
+
+Each case reloads NCAA_NEXT24_School_Data.xlsx and the alignment through the
+real services, then invokes addAllConferenceGames for each season. The workbook's
+membership, divisions, configured game counts/start weeks and protected rivals
+are retained, as are ordinary rivalry lists from the school data. Only the week
+selector is stubbed. No workbook or production code was changed. Nonempty FBS
+conferences are checked; independent groups are excluded because conference
+generation deliberately skips them.
+
+Assertions cover total/per-school counts, conference-only opponents and flags,
+all divisional/round-robin opponents, protected rival preservation, unique
+matchups, weekly occupancy and configured windows, annual home balance and
+alternation, next-meeting venue reversal including gaps, and equal frequency
+with balanced venue totals over rolling complete cycles. Frequency expectations
+are calculated from loaded memberships and available rotating slots rather than
+copied from the generated schedules.
+
+Focused verification: **all eight cases passed**, with zero failures, errors,
+or skips. These tests strengthen conference generation coverage; they do not
+add import-validation, export, nonconference or postseason requirements.
+
+Full-suite verification: **1,532 tests passed, zero failures, errors, or skips**.
+All previous 1,524 cases remain green. No production fixes or fixture edits were
+needed, and no tests were disabled or weakened.
+
 ## Running checks
 
 Use JDK 21 and `./mvnw test` (Windows: `./mvnw.cmd test`). Avoid `verify` for
