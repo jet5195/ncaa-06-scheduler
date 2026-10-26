@@ -242,35 +242,6 @@ public class School implements Comparable<School> {
 	}
 
 	/**
-	 * Prints the schedule of a school
-	 */
-	// public void printSchedule() {
-	// int i = 0;
-	// int lastWeek = -1;
-	// while (i < this.getSchedule().size()) {
-	// int nextWeek = 100;// random high number
-	// for (int j = 0; j < this.getSchedule().size(); j++) {
-	// if (this.getSchedule().get(j).getWeek() < nextWeek &&
-	// this.getSchedule().get(j).getWeek() > lastWeek) {
-	// nextWeek = this.getSchedule().get(j).getWeek();
-	// }
-	// }
-	//
-	// System.out.print(i + 1 + ". ");
-	// Game game = this.getSchedule().getGame(nextWeek);
-	// System.out.print(this);
-	// if (this.getTgid() == game.getHomeTeam().getTgid()) {
-	// System.out.print(" vs " + game.getAwayTeam());
-	// } else {
-	// System.out.print(" at " + game.getHomeTeam());
-	// }
-	// System.out.println(" (week " + (nextWeek + 1) + ")");
-	// i++;
-	// lastWeek = nextWeek;
-	// }
-	// }
-
-	/**
 	 * Returns true if the opponent is a rival, false otherwise.
 	 *
 	 * @param opponent the opponent
