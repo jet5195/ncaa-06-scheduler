@@ -17,10 +17,10 @@ import java.util.List;
 abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 
     GameRepository gameRepository;
-    private ScheduleService scheduleService;
+    protected ScheduleService scheduleService;
 
     @Autowired
-    public void AbstractSchedulerFactory(GameRepository gameRepository, ScheduleService scheduleService) {
+    public void initializeSchedulingServices(GameRepository gameRepository, ScheduleService scheduleService) {
         this.gameRepository = gameRepository;
         this.scheduleService = scheduleService;
     }
@@ -42,7 +42,6 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
 
     void scheduleRoundRobinConfGames(List<School> schoolList, boolean reverseVenues) {
         boolean isEvenYear = gameRepository.getYear() % 2 == 0;
-        // int i = 0;
         for (School school : schoolList) {
             List<School> opponentsToSchedule = schoolList.stream()
                     .filter(opponent -> !school.equals(opponent)
@@ -52,9 +51,7 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
             for (School opponent : opponentsToSchedule) {
                 boolean isHomeGame = isEvenYear ? j % 2 == 0 : j % 2 == 1;
                 if (reverseVenues) isHomeGame = !isHomeGame;
-                int week = scheduleService.findConfGameWeek(school, opponent);
-                addYearlySeriesHelper(isHomeGame ? opponent : school, isHomeGame ? school : opponent, week,
-                        true);
+                scheduleConferenceGame(school, opponent, isHomeGame);
                 j++;
             }
         }
@@ -68,6 +65,23 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
         return orderedDiv;
     }
 
+    /** Place a selected matchup, keeping week selection independent of its host. */
+    void scheduleConferenceGame(School school, School opponent, boolean schoolIsHome) {
+        int week = scheduleService.findConfGameWeek(school, opponent);
+        addYearlySeriesHelper(schoolIsHome ? opponent : school,
+                schoolIsHome ? school : opponent, week, true);
+    }
+
+    /** One offset pairs every school in each equally sized division exactly once. */
+    void scheduleCrossDivisionMatching(List<School> firstDivision, List<School> secondDivision,
+            int offset, boolean firstDivisionIsHome) {
+        for (int index = 0; index < firstDivision.size(); index++) {
+            School school = firstDivision.get(index);
+            School opponent = secondDivision.get((index + offset) % secondDivision.size());
+            scheduleConferenceGame(school, opponent, firstDivisionIsHome);
+        }
+    }
+
     void scheduleCrossDivisionalRival(List<School> div1, List<School> div2, School school)
             throws Exception {
         School opponent = school.getxDivRival();
@@ -79,13 +93,6 @@ abstract class AbstractConferenceScheduler implements ConferenceScheduler {
             addYearlySeriesHelper(opponent, school, week, true);
         }
     }
-
-    // private boolean addYearlySeriesHelper(School s1, School s2, int week, int
-    // day, int year, boolean specifyHome) {
-    // School school1 = schoolService.schoolSearch(s1);
-    // School school2 = schoolService.schoolSearch(s2);
-    // return addYearlySeriesHelper(school1, school2, week, day, year, specifyHome);
-    // }
 
     /**
      * Adds a game to the schedule, alternating home and away teams based on the

@@ -3,19 +3,14 @@ package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
-import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
 
 @Component
 public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler {
-
-    @Autowired
-    ScheduleService scheduleService;
 
     @Override
     public void generateConferenceSchedule(Conference conference, GameRepository gameRepository) throws Exception {
@@ -67,17 +62,11 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
         // cross-division matchings yield five home games for div1 and four for
         // div2 in even years. Odd years reverse every matchup and those totals.
         for (int offset : offsets) {
-            for (int index = 0; index < div1.size(); index++) {
-                School school = div1.get(index);
-                School opponent = div2.get((index + offset) % div2.size());
-                int week = scheduleService.findConfGameWeek(school, opponent);
-                // Keep a matchup's base venue tied to its stable offset, not
-                // its position in this year's list. Opponents play two-year
-                // venue pairs, so the next meeting swaps host even after gaps.
-                boolean home = offset < 4;
-                if (Math.floorMod(year, 2) == 1) home = !home;
-                addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
-            }
+            // Keep the base venue tied to the stable offset, not its position
+            // in this season's list. The second season reverses each venue.
+            boolean firstDivisionIsHome = offset < 4;
+            if (Math.floorMod(year, 2) == 1) firstDivisionIsHome = !firstDivisionIsHome;
+            scheduleCrossDivisionMatching(div1, div2, offset, firstDivisionIsHome);
         }
     }
 
@@ -90,14 +79,7 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
         // Fourteen seasons consume 42 slots and complete the opponent/venue cycle.
         int firstSlot = 3 * Math.floorMod(year, 14);
         for (int slot = firstSlot; slot < firstSlot + 3; slot++) {
-            int offset = slot % 7;
-            boolean home = slot % 2 == 0;
-            for (int index = 0; index < div1.size(); index++) {
-                School school = div1.get(index);
-                School opponent = div2.get((index + offset) % div2.size());
-                int week = scheduleService.findConfGameWeek(school, opponent);
-                addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
-            }
+            scheduleCrossDivisionMatching(div1, div2, slot % 7, slot % 2 == 0);
         }
     }
 
@@ -143,12 +125,6 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
             }
             j++;
         }
-        /*
-         * 0 1 2 3 4 5 6 _____________________________ 2010 1 2 3 4 5 6 0 2011 2 3 4 5 6
-         * 0 1 2012 3 4 5 6 0 1 2 2013 4 5 6 0 1 2 3 2014 5 6 0 1 2 3 4 2015 6 0 1 2 3 4
-         * 5 2016 1 2 3 4 5 6 0
-         */
-
     }
 
     private void schedule8WithoutRivals(List<School> div1, List<School> div2, int yearOffset) throws Exception {
@@ -172,12 +148,6 @@ public class FourteenTeamConferenceScheduler extends AbstractConferenceScheduler
             int week2 = scheduleService.findConfGameWeek(school, opponent2);
             addYearlySeriesHelper(opponent2, school, week2, true);
         }
-        /*
-         *
-         * 0: 0 1 1 2 2 3 3 4 4 5 5 6 6 0 1: 1 2 2 3 3 4 4 5 5 6 6 0 0 1 2: 2 3 3 4 4 5
-         * 5 6 6 0 0 1 1 2 3: 3 4 4 5 5 6 6 0 0 1 1 2 2 3 4: 4 5 5: 5 6 6: 6 0
-         */
-
     }
 
 }

@@ -866,6 +866,25 @@ this diagnosis.
 
 ## Running checks
 
+### Conference scheduler cleanup (2026-10-26)
+
+The 12- and 14-team schedulers now share helpers for placing a selected matchup
+and scheduling a complete cross-division matching. Opponent and venue policies
+remain in each format's scheduler; week selection still happens in the existing
+game order. In particular, rules that consult the current home-game count remain
+after week selection, which can move previously scheduled games.
+
+Removed duplicate ScheduleService injection, unused 12-team scheduling methods,
+debug output, a catch that only rethrew its exception, and obsolete commented
+code. The 12-team four-opponent pattern is named once, and its protected-rival
+path shares the wraparound/skip calculation for its two rotating opponents.
+This cleanup does not introduce pods, divisionless formats, or global calendar
+planning, and does not change the known-limitations test exclusion.
+
+Verification: all **1,778 default tests passed**, with zero failures, errors or
+skips. The opt-in run reproduced all **42 known minimum-window failures**, with
+zero errors or skips.
+
 ### Deferred minimum-window cases (2026-10-23)
 
 The 42 reproducible minimum-window failures above are now explicitly tagged

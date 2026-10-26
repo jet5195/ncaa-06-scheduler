@@ -3,73 +3,53 @@ package com.robotdebris.ncaaps2scheduler.scheduler.conference;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.robotdebris.ncaaps2scheduler.model.Conference;
 import com.robotdebris.ncaaps2scheduler.model.School;
 import com.robotdebris.ncaaps2scheduler.repository.GameRepository;
-import com.robotdebris.ncaaps2scheduler.service.ScheduleService;
-import com.robotdebris.ncaaps2scheduler.service.SchoolService;
 
 @Component
 public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
 
-    @Autowired
-    ScheduleService scheduleService;
-
-    @Autowired
-    SchoolService schoolService;
+    // Four cross-division games per season; each pair meets four times in six
+    // years. Row order is part of the existing opponent rotation.
+    private static final int[][] FOUR_GAME_OPPONENT_PATTERNS = {
+            {0, 1, 2, 3}, {0, 1, 4, 5}, {2, 3, 4, 5},
+            {2, 3, 0, 1}, {4, 5, 0, 1}, {4, 5, 2, 3}
+    };
 
     @Override
     public void generateConferenceSchedule(Conference conference, GameRepository gameRepository) throws Exception {
-        if (schoolService == null) {
-            System.out.println("school service is null");
-        }
-        if (scheduleService == null) {
-            System.out.println("schedule service is null");
-        }
         scheduleConferenceGamesDivisions12(conference, gameRepository);
     }
 
     public void scheduleConferenceGamesDivisions12(Conference conf, GameRepository gameRepository) throws Exception {
-        try {
-            // int index = 0;
-            // move school order by year
+        List<School> div1 = new ArrayList<>(conf.getDivisions().get(0).getSchools());
+        List<School> div2 = new ArrayList<>(conf.getDivisions().get(1).getSchools());
 
-            List<School> div1 = new ArrayList<>(conf.getDivisions().get(0).getSchools());
-            List<School> div2 = new ArrayList<>(conf.getDivisions().get(1).getSchools());
+        boolean xDivRivals = div1.getFirst().getxDivRival() != null;
+        int numOfConfGames = conf.getNumOfConfGames();
+        if (numOfConfGames == 8 && xDivRivals) {
+            div2 = orderDivByXDivRivals(div1);
+        }
+        // schedule inner division games
+        scheduleRoundRobinConfGames(div1);
+        // Five divisional games give alternating teams three or two home games.
+        // With eight games and protected rivals, paired schools need
+        // complementary divisional totals to finish with four home games.
+        scheduleRoundRobinConfGames(div2, numOfConfGames == 8 && xDivRivals);
 
-            boolean xDivRivals = div1.getFirst().getxDivRival() != null;
-            int numOfConfGames = conf.getNumOfConfGames();
-            if (numOfConfGames == 8 && xDivRivals) {
-                div2 = orderDivByXDivRivals(div1);
-            }
-            // schedule inner division games
-            scheduleRoundRobinConfGames(div1);
-            // Five divisional games give alternating teams three or two home games.
-            // With eight games and protected rivals, paired schools need
-            // complementary divisional totals to finish with four home games.
-            scheduleRoundRobinConfGames(div2, numOfConfGames == 8 && xDivRivals);
+        int year = gameRepository.getYear();
 
-            // order by cross div rivals
-            int year = gameRepository.getYear();
-
-            // 8 conf games no rivals
-            if (numOfConfGames == 8 && !xDivRivals) {
-                this.schedule12Teams8GamesNoXDivRivals(conf);
-            } else if (numOfConfGames == 9 && xDivRivals) {
-                schedule9GamesWithXDivRivals(div1, year);
-            } else if (xDivRivals) {
-                schedule8GamesWithXDivRivals(div1, div2, year);
-            } else {
-                schedule9Games(div1, div2, year);
-            }
-
-        } catch (
-
-        IndexOutOfBoundsException e) {
-            throw e;
+        if (numOfConfGames == 8 && !xDivRivals) {
+            schedule8GamesWithoutRivals(conf);
+        } else if (numOfConfGames == 9 && xDivRivals) {
+            schedule9GamesWithXDivRivals(div1, year);
+        } else if (xDivRivals) {
+            schedule8GamesWithXDivRivals(div1, div2, year);
+        } else {
+            schedule9Games(div1, div2, year);
         }
     }
 
@@ -90,17 +70,6 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
         }
     }
 
-    private void scheduleCrossDivisionMatching(List<School> div1, List<School> div2,
-            int offset, boolean home) {
-        // A complete matching gives every school in BOTH divisions one game.
-        for (int index = 0; index < div1.size(); index++) {
-            School school = div1.get(index);
-            School opponent = div2.get((index + offset) % div2.size());
-            int week = scheduleService.findConfGameWeek(school, opponent);
-            addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
-        }
-    }
-
     private void schedule8GamesWithXDivRivals(List<School> div1, List<School> div2, int year) throws Exception {
         div2 = orderDivByXDivRivals(div1);
         div1 = rotateDivByYear(div1, year, 5);
@@ -118,7 +87,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
         for (int index = 0; index < rotatedDivision.size(); index++) {
             School school = rotatedDivision.get(index);
             int originalIndex = div1.indexOf(school);
-            for (int opponentIndex : getOpponentIndicesfor4Games(index)) {
+            for (int opponentIndex : fourGameOpponentIndices(index)) {
                 School opponent = div2.get(opponentIndex);
                 // Keep the existing opponents, but flip venues on actual meetings,
                 // not on calendar years in which this pair might not play.
@@ -126,8 +95,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                 if (priorMeetingsInSixYearCycle(originalIndex, opponentIndex, cycleYear) % 2 != 0) {
                     home = !home;
                 }
-                int week = scheduleService.findConfGameWeek(school, opponent);
-                addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
+                scheduleConferenceGame(school, opponent, home);
             }
         }
     }
@@ -136,7 +104,7 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
         int meetings = 0;
         for (int earlierYear = 0; earlierYear < cycleYear; earlierYear++) {
             int earlierIndex = (schoolIndex + earlierYear) % 6;
-            for (int earlierOpponent : getOpponentIndicesfor4Games(earlierIndex)) {
+            for (int earlierOpponent : fourGameOpponentIndices(earlierIndex)) {
                 if (earlierOpponent == opponentIndex) meetings++;
             }
         }
@@ -146,36 +114,20 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
     }
 
     private void schedule2CrossDivisionalGames(int index, School school, List<School> div2) {
-        int opponent1Id = index + 1;
-        if (opponent1Id > 5) {
-            opponent1Id = 0;
-        }
-        if (div2.get(opponent1Id) == school.getxDivRival()) {
-            opponent1Id = opponent1Id + 1;
-            if (opponent1Id > 5) {
-                opponent1Id = 0;
-            }
-        }
-        School opponent = div2.get(opponent1Id);
-        int week = scheduleService.findConfGameWeek(school, opponent);
-        addYearlySeriesHelper(opponent, school, week, true);
+        int firstOpponent = nextRotatingOpponentIndex(index, school, div2);
+        scheduleConferenceGame(school, div2.get(firstOpponent), true);
 
-        int opponent2Id = opponent1Id + 1;
-        if (opponent2Id > 5) {
-            opponent2Id = 0;
-        }
-        if (div2.get(opponent2Id) == school.getxDivRival()) {
-            opponent2Id = opponent2Id + 1;
-            if (opponent2Id > 5) {
-                opponent2Id = 0;
-            }
-        }
-        opponent = div2.get(opponent2Id);
-        week = scheduleService.findConfGameWeek(school, opponent);
-        addYearlySeriesHelper(school, opponent, week, true);
+        int secondOpponent = nextRotatingOpponentIndex(firstOpponent, school, div2);
+        scheduleConferenceGame(school, div2.get(secondOpponent), false);
     }
 
-    private void schedule12Teams8GamesNoXDivRivals(Conference conf) throws Exception {
+    private int nextRotatingOpponentIndex(int previousIndex, School school, List<School> opponents) {
+        int index = (previousIndex + 1) % opponents.size();
+        if (opponents.get(index) == school.getxDivRival()) index = (index + 1) % opponents.size();
+        return index;
+    }
+
+    private void schedule8GamesWithoutRivals(Conference conf) throws Exception {
         List<School> div1 = conf.getDivisions().get(0).getSchools();
         List<School> div2 = conf.getDivisions().get(1).getSchools();
         int year = scheduleService.getYear();
@@ -196,54 +148,13 @@ public class TwelveTeamConferenceScheduler extends AbstractConferenceScheduler {
                         ? (index % 2 == 0 ? offset == 0 : offset != 0)
                         : (index % 2 == 0 ? offset == 4 : offset != 3);
                 if (Math.floorMod(year, 2) == 1) home = !home;
-                int week = scheduleService.findConfGameWeek(school, opponent);
-                addYearlySeriesHelper(home ? opponent : school, home ? school : opponent, week, true);
+                scheduleConferenceGame(school, opponent, home);
             }
         }
     }
 
-    private int[] getOpponentIndicesfor4Games(int index) {
-        // Define a 2D array representing the opponent indices for each index
-        int[][] opponentPatterns = { { 0, 1, 2, 3 }, // Pattern for index 0
-                { 0, 1, 4, 5 }, // Pattern for index 1
-                { 2, 3, 4, 5 }, // Pattern for index 2
-                { 2, 3, 0, 1 }, // Pattern for index 3
-                { 4, 5, 0, 1 }, // Pattern for index 4
-                { 4, 5, 2, 3 } // Pattern for index 5
-        };
-
-        // Return the opponent indices for the given index
-        return opponentPatterns[index];
-    }
-
-    private int[] getOpponentIndicesfor3Games(int index) {
-        // Define a 2D array representing the opponent indices for each index
-        int[][] opponentPatterns = { { 0, 1, 2 }, // Pattern for index 0
-                { 3, 4, 5 }, // Pattern for index 1
-                { 3, 4, 5 }, // Pattern for index 2
-                { 0, 1, 2 }, // Pattern for index 3
-                { 0, 1, 2 }, // Pattern for index 4
-                { 3, 4, 5 } // Pattern for index 5
-        };
-
-        // Return the opponent indices for the given index
-        return opponentPatterns[index];
-    }
-
-    private void schedule8GamesByIndex(School school, List<School> div2, int index) throws Exception {
-        // Schedule the first opponent
-        School opponent = div2.get((index + 1) % div2.size());
-        int week = scheduleService.findConfGameWeek(school, opponent);
-        addYearlySeriesHelper(opponent, school, week, true);
-
-        // Find the next opponent, ensuring they're not the xDivRival
-        int opponent2Id = (index + 2) % div2.size();
-        if (div2.get(opponent2Id).equals(school.getxDivRival())) {
-            opponent2Id = (opponent2Id + 1) % div2.size();
-        }
-        opponent = div2.get(opponent2Id);
-        week = scheduleService.findConfGameWeek(school, opponent);
-        addYearlySeriesHelper(school, opponent, week, true);
+    private int[] fourGameOpponentIndices(int index) {
+        return FOUR_GAME_OPPONENT_PATTERNS[index];
     }
 
 }
