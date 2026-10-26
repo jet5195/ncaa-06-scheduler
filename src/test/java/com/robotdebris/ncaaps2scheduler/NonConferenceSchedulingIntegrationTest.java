@@ -59,8 +59,16 @@ public class NonConferenceSchedulingIntegrationTest {
         scheduleService.setAlignmentFile(file);
         gameRepository.setYear(year);
         scheduleService.addAllConferenceGames();
+        List<ConferenceFixture> originalConferenceGames = gameRepository.findAll().stream()
+                .map(ConferenceFixture::of).toList();
         // Assert
         scheduleService.autoAddGames(false);
+        NonConferenceSchedulingRequirementsTest.assertValidCalendar(gameRepository.findAll());
+        assertThat(gameRepository.findAll().stream().filter(Game::isConferenceGame)
+                .map(ConferenceFixture::of).toList()).containsExactlyInAnyOrderElementsOf(originalConferenceGames);
+        gameRepository.findAll().stream().filter(game -> !game.isConferenceGame()).forEach(game ->
+                assertThat(game.getHomeTeam().isInConference(game.getAwayTeam()))
+                        .as("Nonconference filler must cross conference boundaries: %s", game).isFalse());
         List<School> schools = schoolRepository.findByNCAADivision(NCAADivision.FBS);
         for (School school : schools) {
             verifyNonConfGamesForYear(school);
@@ -76,6 +84,13 @@ public class NonConferenceSchedulingIntegrationTest {
 
     public static IntStream provideYears() {
         return IntStream.rangeClosed(2000, 2010);
+    }
+
+    private record ConferenceFixture(int home, int away, int week, boolean conference) {
+        static ConferenceFixture of(Game game) {
+            return new ConferenceFixture(game.getHomeTeam().getTgid(), game.getAwayTeam().getTgid(),
+                    game.getWeek(), game.isConferenceGame());
+        }
     }
 
 }

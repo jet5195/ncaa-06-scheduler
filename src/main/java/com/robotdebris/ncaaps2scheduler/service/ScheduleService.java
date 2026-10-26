@@ -649,6 +649,10 @@ public class ScheduleService {
 					// schedule FCS game
 					List<School> fcsSchools = schoolRepository.findByNCAADivision(NCAADivision.FCS).stream()
 							.filter(opponent -> isEligibleNonConfMatchupWithEmptyWeeks(school, opponent)).toList();
+					if (fcsSchools.isEmpty()) {
+						LOGGER.warn("No eligible nonconference opponents remain for " + school);
+						break;
+					}
 					Random rand = new Random();
 					School randomOpponent = fcsSchools.get(rand.nextInt(fcsSchools.size()));
 					int week = randomizeWeek(school, randomOpponent);
@@ -1022,7 +1026,8 @@ public class ScheduleService {
 	 *         one another
 	 */
 	public boolean isEligibleNonConfMatchup(School school, School opponent) {
-		return !school.isInConference(opponent) && !this.isOpponentForSchool(school, opponent);
+		return !school.equals(opponent) && !school.isInConference(opponent)
+				&& !this.isOpponentForSchool(school, opponent);
 	}
 
 	private boolean isEligibleNonConfMatchupWithEmptyWeeks(School school, School opponent) {
